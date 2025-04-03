@@ -6,6 +6,8 @@ import 'package:abeul_planner/features/home_planner/presentation/widget/planner_
 import 'package:abeul_planner/features/calendar_planner/presentation/screen/calendar_planner_sceen.dart';
 import 'package:abeul_planner/features/daily_planner/presentation/screen/daily_planner_sceen.dart';
 import 'package:abeul_planner/features/weekly_planner/presentation/screen/weekly_planner_sceen.dart';
+// 설정 화면
+import 'package:abeul_planner/features/settings/presentation/screen/settings_screen.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: '/home',
@@ -31,7 +33,7 @@ final GoRouter router = GoRouter(
         ),
         GoRoute(
           path: '/settings',
-          builder: (context, state) => const Placeholder(), // 추후 설정 화면으로 교체
+          builder: (context, state) => const SettingsScreen(),
         ),
       ],
     ),
