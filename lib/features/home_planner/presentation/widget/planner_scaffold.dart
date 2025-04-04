@@ -22,20 +22,11 @@ class _PlannerScaffoldState extends State<PlannerScaffold> {
     '/settings',  // 4
   ];
 
-  /// 페이지 index → 바텀 네비 index로 변환
-  int _pageToTab(int pageIndex) {
-    if (pageIndex < 2) return pageIndex;
-    if (pageIndex == 2) return 2;         // 가운데 버튼
-    if (pageIndex == 3) return 3;         // calendar
-    if (pageIndex == 4) return 4;         // settings
-    throw Exception('Invalid page index');
-  }
-
   /// 바텀 네비 index → 페이지 index로 변환
   int _tabToPage(int tabIndex) {
     if (tabIndex < 2) return tabIndex;
-    if (tabIndex == 3) return 3;          // calendar
-    if (tabIndex == 4) return 4;          // settings
+    if (tabIndex == 3) return 3;
+    if (tabIndex == 4) return 4;
     throw Exception('Invalid tab index');
   }
 
