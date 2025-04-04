@@ -4,9 +4,9 @@ name: Flutter CI
 # 워크플로 실행 조건 설정
 on:
   push:
-    branches: [main]         # main 브랜치에 push 될 때 실행
+    branches: [master]         # master 브랜치에 push 될 때 실행
   pull_request:
-    branches: [main]         # main 브랜치로 PR이 생성될 때 실행
+    branches: [master]         # master 브랜치로 PR이 생성될 때 실행
 
 jobs:
   build:                     # 작업(job)의 이름
