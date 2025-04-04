@@ -11,7 +11,6 @@ class PlannerScaffold extends StatefulWidget {
 }
 
 class _PlannerScaffoldState extends State<PlannerScaffold> {
-  int _pageIndex = 2; // 실제 라우터 기준 index
   int _tabIndex = 2;  // BottomNavigationBar 기준 index
 
   final List<String> _routes = [
@@ -35,7 +34,6 @@ class _PlannerScaffoldState extends State<PlannerScaffold> {
 
     final pageIndex = _tabToPage(tabIndex);
     setState(() {
-      _pageIndex = pageIndex;
       _tabIndex = tabIndex;
     });
     context.go(_routes[pageIndex]);
@@ -52,7 +50,6 @@ class _PlannerScaffoldState extends State<PlannerScaffold> {
         child: FloatingActionButton(
           onPressed: () {
             setState(() {
-              _pageIndex = 2;
               _tabIndex = 2;
             });
             context.go(_routes[2]);
