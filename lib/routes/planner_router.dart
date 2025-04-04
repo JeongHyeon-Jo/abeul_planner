@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 // 플래너 화면
 import 'package:abeul_planner/features/home_planner/presentation/screen/planner_home_screen.dart';
