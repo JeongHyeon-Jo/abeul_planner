@@ -28,6 +28,24 @@ lib/
 - `StateNotifier` / `Notifier`: 간단한 UI 상태
 - `AsyncNotifier`, `FutureProvider`: 비동기 로직 처리
 
+## 📦 데이터 저장 방식
+**[Hive](https://docs.hivedb.dev/)** 기반 로컬 NoSQL 데이터베이스 사용  
+- 빠르고 가벼운 키-값 저장소로 Flutter에 최적화  
+- 사용자의 할 일(Task), 플래너 기록 등을 디바이스 내부에 저장  
+- 외부 서버 없이도 개인 플래너 앱으로 활용 가능  
+- 추후 Firebase 등 외부 DB 연동 시에도 병행 가능하도록 구조 설계
+
+```dart
+@HiveType(typeId: 0)
+class DailyTaskModel {
+  @HiveField(0)
+  final String title;
+
+  @HiveField(1)
+  final bool isCompleted;
+```
+}
+
 ## ⚙️ CI/CD 파이프라인 적용
 **[GitHub Actions](https://github.com/JeongHyeon-Jo/abeul_planner/blob/master/.github/workflows/flutter_ci.yml)**  
 - PR/커밋 시 자동 빌드 & 테스트 실행  
