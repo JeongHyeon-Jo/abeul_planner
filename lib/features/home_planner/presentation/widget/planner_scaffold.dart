@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 class PlannerScaffold extends StatefulWidget {
@@ -46,7 +47,7 @@ class _PlannerScaffoldState extends State<PlannerScaffold> {
 
       /// 가운데 떠 있는 플로팅 버튼 (종합 플래너)
       floatingActionButton: Transform.translate(
-        offset: const Offset(0, 30),
+        offset: Offset(0, 30.h),
         child: FloatingActionButton(
           onPressed: () {
             setState(() {
@@ -63,7 +64,7 @@ class _PlannerScaffoldState extends State<PlannerScaffold> {
 
       /// 바텀 네비게이션바
       bottomNavigationBar: SizedBox(
-        height: 70,
+        height: 70.h,
         child: BottomNavigationBar(
           currentIndex: _tabIndex,
           onTap: _onItemTapped,
