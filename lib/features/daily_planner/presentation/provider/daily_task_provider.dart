@@ -1,3 +1,4 @@
+// daily_task_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import '../../data/model/daily_task_model.dart';
@@ -34,7 +35,12 @@ class DailyTaskNotifier extends StateNotifier<List<DailyTaskModel>> {
     final task = _box.getAt(index); // 인덱스로 할 일 가져오기
     if (task != null) {
       // 완료 상태를 반전시켜 업데이트
-      _box.putAt(index, DailyTaskModel(title: task.title, isCompleted: !task.isCompleted));
+      final updatedTask = DailyTaskModel(
+        situation: task.situation,
+        action: task.action,
+        isCompleted: !task.isCompleted,
+      );
+      _box.putAt(index, updatedTask);
       state = _box.values.toList(); // 상태 다시 동기화
     }
   }
