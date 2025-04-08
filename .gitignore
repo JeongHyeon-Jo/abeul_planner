@@ -12,18 +12,16 @@
 .swiftpm/
 migrate_working_dir/
 
-# IntelliJ related
+# IntelliJ 관련 설정 파일 무시
 *.iml
 *.ipr
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
+# VS Code 설정 (필요 시 주석 해제 가능)
 #.vscode/
 
-# Flutter/Dart/Pub related
+# Flutter / Dart / Pub 관련 파일 무시
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
@@ -33,13 +31,16 @@ migrate_working_dir/
 .pub/
 /build/
 
-# Symbolication related
+# Hive 어댑터 자동 생성 파일 무시 (build_runner로 생성됨)
+*.g.dart
+
+# 심볼리케이션 관련
 app.*.symbols
 
-# Obfuscation related
+# 난독화 관련
 app.*.map.json
 
-# Android Studio will place build artifacts here
+# 안드로이드 빌드 산출물 무시
 /android/app/debug
 /android/app/profile
 /android/app/release

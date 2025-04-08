@@ -1,3 +1,4 @@
+// daily_task_model.dart
 import 'package:hive/hive.dart';
 
 part 'daily_task_model.g.dart'; // Hive가 자동 생성하는 어댑터 파일 (build_runner로 생성됨)
