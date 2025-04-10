@@ -10,7 +10,7 @@ import 'core/screen_util.dart';
 import 'routes/planner_router.dart';
 // features
 import 'features/daily_planner/data/datasource/daily_task_box.dart';
-
+import 'features/calendar_planner/data/datasource/calendar_task_box.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,9 +21,13 @@ void main() async {
   // Hive 초기화
   await Hive.initFlutter();
 
-  // 어댑터 등록 및 박스 열기
+  // DailyTask 어댑터 등록 및 박스 열기
   await DailyTaskBox.registerAdapters();
   await DailyTaskBox.openBox();
+
+  // CalendarTask 어댑터 등록 및 박스 열기
+  await CalendarTaskBox.registerAdapters();
+  await CalendarTaskBox.openBox();
 
   runApp(
     const ProviderScope(
