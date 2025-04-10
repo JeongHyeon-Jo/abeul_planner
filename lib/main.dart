@@ -1,4 +1,3 @@
-// main.dart
 import 'package:flutter/material.dart';
 // package
 import 'package:hive_flutter/hive_flutter.dart';
@@ -11,6 +10,7 @@ import 'routes/planner_router.dart';
 // features
 import 'features/daily_planner/data/datasource/daily_task_box.dart';
 import 'features/calendar_planner/data/datasource/calendar_task_box.dart';
+import 'features/weekly_planner/data/datasource/weekly_task_box.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +28,10 @@ void main() async {
   // CalendarTask 어댑터 등록 및 박스 열기
   await CalendarTaskBox.registerAdapters();
   await CalendarTaskBox.openBox();
+
+  // WeeklyTask 어댑터 등록 및 박스 열기
+  await WeeklyTaskBox.registerAdapters();
+  await WeeklyTaskBox.openBox();
 
   runApp(
     const ProviderScope(
