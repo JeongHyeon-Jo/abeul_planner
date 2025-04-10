@@ -1,10 +1,10 @@
-// planner_scaffold.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+/// 🧭 아블 플래너의 공통 레이아웃 (하단 네비 + 플로팅 버튼)
 class PlannerScaffold extends StatefulWidget {
-  final Widget child;
+  final Widget child; // 각 페이지의 화면
 
   const PlannerScaffold({super.key, required this.child});
 
@@ -13,32 +13,23 @@ class PlannerScaffold extends StatefulWidget {
 }
 
 class _PlannerScaffoldState extends State<PlannerScaffold> {
-  int _tabIndex = 2;  // BottomNavigationBar 기준 index
+  int _tabIndex = 2; // 시작은 홈 플래너
 
+  /// 탭 index에 따른 라우트 경로 리스트
   final List<String> _routes = [
-    '/daily',     // 0
-    '/weekly',    // 1
-    '/home',      // 2 (플로팅 버튼용)
-    '/calendar',  // 3
-    '/settings',  // 4
+    '/daily',     // 0: 데일리 플래너
+    '/weekly',    // 1: 위클리 플래너
+    '/home',      // 2: 홈 플래너
+    '/calendar',  // 3: 캘린더 플래너
+    '/settings',  // 4: 설정
   ];
 
-  /// 바텀 네비 index → 페이지 index로 변환
-  int _tabToPage(int tabIndex) {
-    if (tabIndex < 2) return tabIndex;
-    if (tabIndex == 3) return 3;
-    if (tabIndex == 4) return 4;
-    throw Exception('Invalid tab index');
-  }
-
+  /// 탭 클릭 시 호출되는 함수
   void _onItemTapped(int tabIndex) {
-    if (tabIndex == 2) return; // 가운데 버튼은 무시
-
-    final pageIndex = _tabToPage(tabIndex);
     setState(() {
       _tabIndex = tabIndex;
     });
-    context.go(_routes[pageIndex]);
+    context.go(_routes[tabIndex]);
   }
 
   @override
@@ -46,16 +37,11 @@ class _PlannerScaffoldState extends State<PlannerScaffold> {
     return Scaffold(
       body: widget.child,
 
-      /// 가운데 떠 있는 플로팅 버튼 (종합 플래너)
+      /// 🔘 가운데 플로팅 버튼 (홈)
       floatingActionButton: Transform.translate(
-        offset: Offset(0, 30.h),
+        offset: Offset(0, 32.h),
         child: FloatingActionButton(
-          onPressed: () {
-            setState(() {
-              _tabIndex = 2;
-            });
-            context.go(_routes[2]);
-          },
+          onPressed: () => _onItemTapped(2),
           backgroundColor: Colors.blue,
           shape: const CircleBorder(),
           child: const Icon(Icons.dashboard),
@@ -63,7 +49,7 @@ class _PlannerScaffoldState extends State<PlannerScaffold> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
-      /// 바텀 네비게이션바
+      /// 하단 네비게이션 바
       bottomNavigationBar: SizedBox(
         height: 70.h,
         child: BottomNavigationBar(
@@ -76,7 +62,7 @@ class _PlannerScaffoldState extends State<PlannerScaffold> {
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.check_circle), label: '데일리'),
             BottomNavigationBarItem(icon: Icon(Icons.view_week), label: '위클리'),
-            BottomNavigationBarItem(icon: SizedBox.shrink(), label: ''), // 가운데 버튼 자리
+            BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: '홈'),
             BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: '캘린더'),
             BottomNavigationBarItem(icon: Icon(Icons.settings), label: '설정'),
           ],
