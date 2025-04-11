@@ -9,6 +9,9 @@ import 'package:abeul_planner/features/daily_planner/data/model/daily_task_model
 // 할 일을 관리하는 상태관리 클래스 (StateNotifier)
 import 'package:abeul_planner/features/daily_planner/presentation/provider/daily_task_provider.dart';
 
+// hive
+import 'package:hive/hive.dart';
+
 // Riverpod 상태관리 도구
 import 'package:riverpod/riverpod.dart';
 
@@ -19,6 +22,9 @@ void main() {
   // 테스트 실행 전 호출되는 초기화 코드 (Hive 설정)
   setUp(() async {
     await setUpHiveForTest(); // Hive 박스 열기 및 어댑터 등록
+
+    final box = Hive.box<DailyTaskModel>('daily_tasks');
+    await box.clear();
   });
 
   // ✅ 테스트 1: 할 일을 추가하는 기능 확인
