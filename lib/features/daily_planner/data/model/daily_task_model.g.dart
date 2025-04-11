@@ -20,19 +20,22 @@ class DailyTaskModelAdapter extends TypeAdapter<DailyTaskModel> {
       situation: fields[0] as String,
       action: fields[1] as String,
       isCompleted: fields[2] as bool,
+      priority: fields[3] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, DailyTaskModel obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.situation)
       ..writeByte(1)
       ..write(obj.action)
       ..writeByte(2)
-      ..write(obj.isCompleted);
+      ..write(obj.isCompleted)
+      ..writeByte(3)
+      ..write(obj.priority);
   }
 
   @override

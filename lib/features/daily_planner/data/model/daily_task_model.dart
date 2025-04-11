@@ -7,19 +7,23 @@ part 'daily_task_model.g.dart'; // Hive가 자동 생성하는 어댑터 파일 
 /// Hive에서 로컬 저장소에 저장하기 위해 어노테이션 사용
 @HiveType(typeId: 0)
 class DailyTaskModel {
-  @HiveField(0)
+  @HiveField(0) // 상황
   final String situation;
 
-  @HiveField(1)
+  @HiveField(1) // 행동
   final String action;
 
-  @HiveField(2)
+  @HiveField(2) // 수행 여부
   final bool isCompleted;
+
+  @HiveField(3) // 중요도 필드 추가
+  final String priority;
 
   DailyTaskModel({
     required this.situation,
     required this.action,
     this.isCompleted = false,
+    this.priority = '보통',
   });
 }
 
