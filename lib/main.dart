@@ -1,12 +1,14 @@
+// main.dart
 import 'package:flutter/material.dart';
 // package
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 // core
-import 'core/screen_util.dart';
+import 'package:abeul_planner/core/screen_util.dart';
+import 'package:abeul_planner/core/theme.dart';
 // routes
-import 'routes/planner_router.dart';
+import 'package:abeul_planner/routes/planner_router.dart';
 // features
 import 'features/daily_planner/data/datasource/daily_task_box.dart';
 import 'features/calendar_planner/data/datasource/calendar_task_box.dart';
@@ -50,10 +52,7 @@ class MyApp extends StatelessWidget {
         routerConfig: router,
         title: 'Abeul Planner',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-          useMaterial3: true,
-        ),
+        theme: appLightTheme,
       ),
     );
   }
