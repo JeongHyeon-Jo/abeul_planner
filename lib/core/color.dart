@@ -1,4 +1,4 @@
-// core/color.dart
+// color.dart
 import 'package:flutter/material.dart';
 
 /// 앱 전반에서 사용하는 시그니처 색상 정의
