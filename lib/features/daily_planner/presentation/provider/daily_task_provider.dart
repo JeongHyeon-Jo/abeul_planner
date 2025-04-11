@@ -34,14 +34,27 @@ class DailyTaskNotifier extends StateNotifier<List<DailyTaskModel>> {
   void toggleTask(int index) {
     final task = _box.getAt(index); // 인덱스로 할 일 가져오기
     if (task != null) {
-      // 완료 상태를 반전시켜 업데이트
+      // 완료 상태를 반전시켜 업데이트 (중요도 유지)
       final updatedTask = DailyTaskModel(
         situation: task.situation,
         action: task.action,
         isCompleted: !task.isCompleted,
+        priority: task.priority,
       );
       _box.putAt(index, updatedTask);
       state = _box.values.toList(); // 상태 다시 동기화
     }
+  }
+
+  /// 기존 할 일 수정 (상황, 행동, 중요도)
+  void editTask(int index, DailyTaskModel updatedTask) {
+    _box.putAt(index, updatedTask);
+    state = _box.values.toList();
+  }
+
+  /// 기존 할 일 제거
+  void removeTask(int index) {
+    _box.deleteAt(index);
+    state = _box.values.toList();
   }
 }
