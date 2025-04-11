@@ -1,8 +1,8 @@
 // daily_task_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
-import '../../data/model/daily_task_model.dart';
-import '../../data/datasource/daily_task_box.dart';
+import 'package:abeul_planner/features/daily_planner/data/model/daily_task_model.dart';
+import 'package:abeul_planner/features/daily_planner/data/datasource/daily_task_box.dart';
 
 /// 일일 할 일(DailyTask)을 관리하는 Riverpod Provider
 /// 상태는 List<DailyTaskModel> 타입

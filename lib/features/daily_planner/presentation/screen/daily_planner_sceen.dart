@@ -1,8 +1,8 @@
 // daily_planner_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/model/daily_task_model.dart';
-import '../provider/daily_task_provider.dart';
+import 'package:abeul_planner/features/daily_planner/data/model/daily_task_model.dart';
+import 'package:abeul_planner/features/daily_planner/presentation/provider/daily_task_provider.dart';
 
 class DailyPlannerScreen extends ConsumerStatefulWidget {
   const DailyPlannerScreen({super.key});
