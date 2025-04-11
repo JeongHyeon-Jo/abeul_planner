@@ -2,6 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
+import 'package:abeul_planner/core/color.dart';
+import 'package:abeul_planner/core/text_styles.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_task_form.dart';
 
@@ -45,13 +49,13 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
         .getTasksForDate(_selectedDay!);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('캘린더 플래너'),
+      appBar: CustomAppBar(
+        title: '달력 플래너',
+        isTransparent: true,
         actions: [
-          // 일정 추가 버튼
           IconButton(
             onPressed: _openAddTaskDialog,
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.add, color: AppColors.text),
           )
         ],
       ),
@@ -65,30 +69,32 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
             focusedDay: _focusedDay,
             selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
             onDaySelected: _onDaySelected,
-            calendarStyle: const CalendarStyle(
+            calendarStyle: CalendarStyle(
               todayDecoration: BoxDecoration(
-                color: Colors.blue,
+                color: AppColors.accent,
                 shape: BoxShape.circle,
               ),
               selectedDecoration: BoxDecoration(
-                color: Colors.deepOrange,
+                color: AppColors.primary,
                 shape: BoxShape.circle,
               ),
+              defaultTextStyle: AppTextStyles.body,
+              weekendTextStyle: AppTextStyles.body,
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
 
           // 일정 목록
           Expanded(
             child: tasksForSelectedDay.isEmpty
-                ? const Center(child: Text('해당 날짜에 등록된 일정이 없어요.'))
+                ? Center(child: Text('해당 날짜에 등록된 일정이 없어요.', style: AppTextStyles.body))
                 : ListView.builder(
                     itemCount: tasksForSelectedDay.length,
                     itemBuilder: (context, index) {
                       final task = tasksForSelectedDay[index];
                       return ListTile(
                         leading: const Icon(Icons.event_note),
-                        title: Text('${task.time} - ${task.memo}'),
+                        title: Text('${task.time} - ${task.memo}', style: AppTextStyles.body),
                       );
                     },
                   ),
