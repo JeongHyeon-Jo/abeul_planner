@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:abeul_planner/core/color.dart';
 
 /// 🧭 아블 플래너의 공통 레이아웃 (하단 네비 + 플로팅 버튼)
 class PlannerScaffold extends StatefulWidget {
@@ -37,14 +38,14 @@ class _PlannerScaffoldState extends State<PlannerScaffold> {
     return Scaffold(
       body: widget.child,
 
-      /// 🔘 가운데 플로팅 버튼 (홈)
+      /// 🔘 가운데 플로팅 버튼 (종합 플래너)
       floatingActionButton: Transform.translate(
         offset: Offset(0, 32.h),
         child: FloatingActionButton(
           onPressed: () => _onItemTapped(2),
-          backgroundColor: Colors.blue,
+          backgroundColor: AppColors.primary,
           shape: const CircleBorder(),
-          child: const Icon(Icons.dashboard),
+          child: Icon(Icons.home, size: 32.sp),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -56,8 +57,8 @@ class _PlannerScaffoldState extends State<PlannerScaffold> {
           currentIndex: _tabIndex,
           onTap: _onItemTapped,
           type: BottomNavigationBarType.fixed,
-          selectedItemColor: Colors.blue,
-          unselectedItemColor: Colors.grey,
+          selectedItemColor: AppColors.primary,
+          unselectedItemColor: AppColors.subText,
           showUnselectedLabels: true,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.check_circle), label: '일상'),
