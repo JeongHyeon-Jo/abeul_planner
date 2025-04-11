@@ -4,9 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 
 // calendar, weekly, daily provider 불러오기
-import '../../../calendar_planner/presentation/provider/calendar_task_provider.dart';
-import '../../../weekly_planner/presentation/provider/weekly_task_provider.dart';
-import '../../../daily_planner/presentation/provider/daily_task_provider.dart';
+import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
+import 'package:abeul_planner/features/weekly_planner/presentation/provider/weekly_task_provider.dart';
+import 'package:abeul_planner/features/daily_planner/presentation/provider/daily_task_provider.dart';
 
 /// 종합 플래너 화면 (홈 플래너)
 class PlannerHomeScreen extends ConsumerWidget {
