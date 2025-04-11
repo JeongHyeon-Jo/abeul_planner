@@ -17,10 +17,10 @@ class _PlannerScaffoldState extends State<PlannerScaffold> {
 
   /// 탭 index에 따른 라우트 경로 리스트
   final List<String> _routes = [
-    '/daily',     // 0: 데일리 플래너
-    '/weekly',    // 1: 위클리 플래너
-    '/home',      // 2: 홈 플래너
-    '/calendar',  // 3: 캘린더 플래너
+    '/daily',     // 0: 일상 플래너
+    '/weekly',    // 1: 주간 플래너
+    '/home',      // 2: 종합 플래너
+    '/calendar',  // 3: 달력 플래너
     '/settings',  // 4: 설정
   ];
 
@@ -60,10 +60,10 @@ class _PlannerScaffoldState extends State<PlannerScaffold> {
           unselectedItemColor: Colors.grey,
           showUnselectedLabels: true,
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.check_circle), label: '데일리'),
-            BottomNavigationBarItem(icon: Icon(Icons.view_week), label: '위클리'),
-            BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: '홈'),
-            BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: '캘린더'),
+            BottomNavigationBarItem(icon: Icon(Icons.check_circle), label: '일상'),
+            BottomNavigationBarItem(icon: Icon(Icons.view_week), label: '주간'),
+            BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: '종합'),
+            BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: '달력'),
             BottomNavigationBarItem(icon: Icon(Icons.settings), label: '설정'),
           ],
         ),

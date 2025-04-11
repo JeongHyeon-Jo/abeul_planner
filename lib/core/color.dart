@@ -8,7 +8,7 @@ class AppColors {
   static const Color primary = Color(0xFFFF7F7F);
 
   /// 배경 색상 (연한 크림 톤)
-  static const Color background = Color(0xFFFFF4F4);
+  static const Color background = Color(0xFFFFFFFF);
 
   /// 일반 텍스트 색상
   static const Color text = Color(0xFF2D2D2D);
