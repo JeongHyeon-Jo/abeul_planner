@@ -1,5 +1,9 @@
-// weekly_planner_sceen.dart
+// weekly_planner_screen.dart
 import 'package:flutter/material.dart';
+import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
+import 'package:abeul_planner/core/text_styles.dart';
+import 'package:abeul_planner/core/color.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 // widget
 import 'package:abeul_planner/features/weekly_planner/presentation/widget/weekly_tab_content.dart';
 
@@ -31,12 +35,26 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('요일 플래너'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: days.map((day) => Tab(text: day)).toList(),
-          isScrollable: false,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight + 48.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CustomAppBar(
+              title: '주간 플래너',
+              isTransparent: true,
+            ),
+            Container(
+              color: Colors.white,
+              child: TabBar(
+                controller: _tabController,
+                tabs: days.map((day) => Tab(text: day)).toList(),
+                labelColor: AppColors.primary,
+                unselectedLabelColor: AppColors.subText,
+                indicatorColor: AppColors.primary,
+              ),
+            ),
+          ],
         ),
       ),
       body: TabBarView(
