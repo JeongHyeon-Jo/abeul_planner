@@ -74,8 +74,15 @@ class PlannerHomeScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('테마: ${t.theme}', style: AppTextStyles.body),
-                        ...t.tasks.map((task) => Card(
-                              child: ListTile(title: Text(task, style: AppTextStyles.body)),
+                        ...t.task.map((task) => Card(
+                              child: ListTile(
+                                leading: Icon(
+                                  task.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
+                                  color: task.isCompleted ? AppColors.success : AppColors.subText,
+                                ),
+                                title: Text(task.content, style: AppTextStyles.body),
+                                subtitle: Text('중요도: ${task.priority}', style: AppTextStyles.caption),
+                              ),
                             ))
                       ],
                     )),

@@ -23,16 +23,16 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
   }
 
   // 할 일 추가
-  void addTask(String day, String task) {
+  void addTask(String day, WeeklyTask task) {
     final box = WeeklyTaskBox.box;
     final index = state.indexWhere((element) => element.day == day);
     if (index != -1) {
       final updated = state[index];
-      updated.tasks.add(task);
+      updated.task.add(task);
       updated.save();
       state = [...state];
     } else {
-      final newTask = WeeklyTaskModel(day: day, theme: '', tasks: [task]);
+      final newTask = WeeklyTaskModel(day: day, theme: '', task: [task]);
       box.add(newTask);
       state = [...box.values];
     }
@@ -43,7 +43,23 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
     final index = state.indexWhere((element) => element.day == day);
     if (index != -1) {
       final updated = state[index];
-      updated.tasks.removeAt(taskIndex);
+      updated.task.removeAt(taskIndex);
+      updated.save();
+      state = [...state];
+    }
+  }
+
+  // 수행 여부 토글
+  void toggleTask(String day, int taskIndex) {
+    final index = state.indexWhere((element) => element.day == day);
+    if (index != -1) {
+      final updated = state[index];
+      final old = updated.task[taskIndex];
+      updated.task[taskIndex] = WeeklyTask(
+        content: old.content,
+        priority: old.priority,
+        isCompleted: !old.isCompleted,
+      );
       updated.save();
       state = [...state];
     }
