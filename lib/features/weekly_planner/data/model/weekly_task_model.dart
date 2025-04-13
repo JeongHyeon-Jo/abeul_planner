@@ -3,6 +3,24 @@ import 'package:hive/hive.dart';
 
 part 'weekly_task_model.g.dart';
 
+@HiveType(typeId: 3)
+class WeeklyTask {
+  @HiveField(0)
+  final String content; // 할 일 내용
+
+  @HiveField(1)
+  final String priority; // 중요도
+
+  @HiveField(2)
+  final bool isCompleted; // 수행 여부
+
+  WeeklyTask({
+    required this.content,
+    this.priority = '보통',
+    this.isCompleted = false,
+  });
+}
+
 @HiveType(typeId: 2)
 class WeeklyTaskModel extends HiveObject {
   @HiveField(0)
@@ -12,11 +30,11 @@ class WeeklyTaskModel extends HiveObject {
   String theme; // 오늘의 테마 ("집중의 날" 등)
 
   @HiveField(2)
-  List<String> tasks; // 할 일 리스트
+  List<WeeklyTask> task; // 할 일 리스트
 
   WeeklyTaskModel({
     required this.day,
     required this.theme,
-    required this.tasks,
+    required this.task,
   });
 }

@@ -34,34 +34,37 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight + 48.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CustomAppBar(
-              title: '주간 플래너',
-              isTransparent: true,
-            ),
-            Container(
-              color: Colors.white,
-              child: TabBar(
-                controller: _tabController,
-                tabs: days.map((day) => Tab(text: day)).toList(),
-                labelColor: AppColors.primary,
-                unselectedLabelColor: AppColors.subText,
-                indicatorColor: AppColors.primary,
+    return DefaultTabController(
+      length: days.length,
+      child: Scaffold(
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(kToolbarHeight + 48.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CustomAppBar(
+                title: '주간 플래너',
+                isTransparent: true,
               ),
-            ),
-          ],
+              Container(
+                color: Colors.white,
+                child: TabBar(
+                  controller: _tabController,
+                  tabs: days.map((day) => Tab(text: day)).toList(),
+                  labelColor: AppColors.primary,
+                  unselectedLabelColor: AppColors.subText,
+                  indicatorColor: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: days.map((day) {
-          return WeeklyTabContent(day: day); // 요일별 컨텐츠 위젯
-        }).toList(),
+        body: TabBarView(
+          controller: _tabController,
+          children: days.map((day) {
+            return WeeklyTabContent(day: day);
+          }).toList(),
+        ),
       ),
     );
   }
