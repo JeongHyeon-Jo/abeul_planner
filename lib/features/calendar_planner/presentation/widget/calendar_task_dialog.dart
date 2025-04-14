@@ -1,25 +1,30 @@
-// calendar_task_form.dart
+// calendar_task_dialog.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
-import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
+import 'package:abeul_planner/core/color.dart';
+import 'package:abeul_planner/core/text_styles.dart';
 import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
+import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
 
-class CalendarTaskForm extends ConsumerStatefulWidget {
+/// 캘린더 일정 추가 다이얼로그 위젯
+class CalendarTaskDialog extends ConsumerStatefulWidget {
   final DateTime selectedDate;
 
-  const CalendarTaskForm({super.key, required this.selectedDate});
+  const CalendarTaskDialog({super.key, required this.selectedDate});
 
   @override
-  ConsumerState<CalendarTaskForm> createState() => _CalendarTaskFormState();
+  ConsumerState<CalendarTaskDialog> createState() => _CalendarTaskDialogState();
 }
 
-class _CalendarTaskFormState extends ConsumerState<CalendarTaskForm> {
+class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _timeController = TextEditingController();
   final TextEditingController _memoController = TextEditingController();
   TimeOfDay? _selectedTime;
 
+  /// 시간 선택 다이얼로그 호출
   void _pickTime() async {
     final picked = await showTimePicker(
       context: context,
@@ -34,6 +39,7 @@ class _CalendarTaskFormState extends ConsumerState<CalendarTaskForm> {
     }
   }
 
+  /// 일정 저장
   void _submit() {
     if (_formKey.currentState!.validate() && _selectedTime != null) {
       final newTask = CalendarTaskModel(
@@ -59,13 +65,12 @@ class _CalendarTaskFormState extends ConsumerState<CalendarTaskForm> {
     final dateFormatted = DateFormat('yyyy년 MM월 dd일').format(widget.selectedDate);
 
     return AlertDialog(
-      title: Text('$dateFormatted 일정 추가'),
+      title: Text('$dateFormatted 일정 추가', style: AppTextStyles.title),
       content: Form(
         key: _formKey,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 시간 선택 필드
             TextFormField(
               controller: _timeController,
               readOnly: true,
@@ -76,13 +81,10 @@ class _CalendarTaskFormState extends ConsumerState<CalendarTaskForm> {
               ),
               validator: (value) => value == null || value.isEmpty ? '시간을 선택하세요' : null,
             ),
-            const SizedBox(height: 12),
-            // 메모 입력 필드
+            SizedBox(height: 12.h),
             TextFormField(
               controller: _memoController,
-              decoration: const InputDecoration(
-                labelText: '메모',
-              ),
+              decoration: const InputDecoration(labelText: '메모'),
               validator: (value) => value == null || value.isEmpty ? '메모를 입력하세요' : null,
             ),
           ],
@@ -90,12 +92,12 @@ class _CalendarTaskFormState extends ConsumerState<CalendarTaskForm> {
       ),
       actions: [
         TextButton(
-          onPressed: Navigator.of(context).pop,
-          child: const Text('취소'),
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text('취소', style: AppTextStyles.body.copyWith(color: AppColors.subText)),
         ),
         ElevatedButton(
           onPressed: _submit,
-          child: const Text('추가'),
+          child: Text('추가', style: AppTextStyles.button),
         ),
       ],
     );
