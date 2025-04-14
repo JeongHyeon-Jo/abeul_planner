@@ -1,0 +1,89 @@
+// task_tile.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:abeul_planner/features/daily_planner/data/model/daily_task_model.dart';
+import 'package:abeul_planner/core/color.dart';
+import 'package:abeul_planner/core/text_styles.dart';
+
+/// 개별 할 일 항목 위젯
+class TaskTile extends StatelessWidget {
+  final DailyTaskModel task; // 할 일 모델
+  final int index; // 해당 항목의 인덱스
+  final bool isEditing; // 편집 모드 여부
+  final VoidCallback onEdit; // 편집 버튼 콜백
+  final VoidCallback onToggle; // 체크박스 변경 콜백
+
+  const TaskTile({
+    super.key,
+    required this.task,
+    required this.index,
+    required this.isEditing,
+    required this.onEdit,
+    required this.onToggle,
+  });
+
+  /// 중요도에 따른 아이콘 반환 함수
+  Widget _getPriorityIcon(String priority) {
+    switch (priority) {
+      case '중요':
+        return Icon(Icons.priority_high, color: Colors.red, size: 20.sp);
+      case '보통':
+        return Icon(Icons.circle, color: Colors.orange, size: 14.sp);
+      case '낮음':
+      default:
+        return Icon(Icons.arrow_downward, color: Colors.grey, size: 14.sp);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: ValueKey('$index-${task.situation}'),
+      margin: EdgeInsets.symmetric(vertical: 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: AppColors.primary, width: 1.w),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 4.r,
+            offset: Offset(0, 2.h),
+          )
+        ],
+      ),
+      child: Row(
+        children: [
+          _getPriorityIcon(task.priority),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(task.situation, style: AppTextStyles.body),
+                SizedBox(height: 4.h),
+                Text(task.action, style: AppTextStyles.caption),
+              ],
+            ),
+          ),
+          if (isEditing) ...[
+            IconButton(
+              icon: Icon(Icons.edit, color: AppColors.subText, size: 20.sp),
+              onPressed: onEdit,
+            ),
+            Icon(Icons.drag_indicator, size: 24.sp),
+          ] else
+            SizedBox(
+              width: 24.w,
+              height: 24.w,
+              child: Checkbox(
+                value: task.isCompleted,
+                onChanged: (_) => onToggle(),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
