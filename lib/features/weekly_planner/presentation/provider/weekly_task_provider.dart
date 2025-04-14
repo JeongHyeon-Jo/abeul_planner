@@ -28,11 +28,11 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
     final index = state.indexWhere((element) => element.day == day);
     if (index != -1) {
       final updated = state[index];
-      updated.task.add(task);
+      updated.tasks.add(task);
       updated.save();
       state = [...state];
     } else {
-      final newTask = WeeklyTaskModel(day: day, theme: '', task: [task]);
+      final newTask = WeeklyTaskModel(day: day, theme: '', tasks: [task]);
       box.add(newTask);
       state = [...box.values];
     }
@@ -43,7 +43,7 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
     final index = state.indexWhere((element) => element.day == day);
     if (index != -1) {
       final updated = state[index];
-      updated.task.removeAt(taskIndex);
+      updated.tasks.removeAt(taskIndex);
       updated.save();
       state = [...state];
     }
@@ -54,8 +54,8 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
     final index = state.indexWhere((element) => element.day == day);
     if (index != -1) {
       final updated = state[index];
-      final old = updated.task[taskIndex];
-      updated.task[taskIndex] = WeeklyTask(
+      final old = updated.tasks[taskIndex];
+      updated.tasks[taskIndex] = WeeklyTask(
         content: old.content,
         priority: old.priority,
         isCompleted: !old.isCompleted,
