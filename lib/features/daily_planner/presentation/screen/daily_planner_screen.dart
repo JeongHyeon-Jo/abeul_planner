@@ -206,7 +206,7 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(12.r),
-                              border: Border.all(color: AppColors.divider),
+                              border: Border.all(color: AppColors.primary),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black12,
