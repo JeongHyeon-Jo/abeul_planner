@@ -12,6 +12,9 @@ class WeeklyTaskBox {
     if (!Hive.isAdapterRegistered(2)) {
       Hive.registerAdapter(WeeklyTaskModelAdapter());
     }
+    if (!Hive.isAdapterRegistered(3)) {
+      Hive.registerAdapter(WeeklyTaskAdapter());
+    }
   }
 
   // 박스 열기

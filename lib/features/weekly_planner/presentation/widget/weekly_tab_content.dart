@@ -1,148 +1,112 @@
 // weekly_tab_content.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:abeul_planner/core/color.dart';
 import 'package:abeul_planner/core/text_styles.dart';
 import 'package:abeul_planner/features/weekly_planner/data/model/weekly_task_model.dart';
+import 'package:abeul_planner/features/weekly_planner/presentation/provider/weekly_task_provider.dart';
 
-class WeeklyTabContent extends StatefulWidget {
-  final String day;
+/// 요일별 탭에 보여질 개별 플래너 콘텐츠 위젯
+/// - 각 요일별 테마와 할 일 목록을 표시/편집할 수 있음
+/// - 할 일 추가는 상위에서 관리됨
+class WeeklyTabContent extends ConsumerWidget {
+  final String day; // 해당 요일 ('월', '화' 등)
+  final bool isEditing; // 상위에서 전달된 편집 모드 여부
 
-  const WeeklyTabContent({super.key, required this.day});
-
-  @override
-  State<WeeklyTabContent> createState() => _WeeklyTabContentState();
-}
-
-class _WeeklyTabContentState extends State<WeeklyTabContent> {
-  final TextEditingController _themeController = TextEditingController();
-  final List<WeeklyTask> task = [];
-
-  String _selectedPriority = '보통';
-  final List<String> _priorityKeys = ['낮음', '보통', '중요'];
-
-  Icon _getPriorityIcon(String priority) {
-    switch (priority) {
-      case '중요':
-        return Icon(Icons.priority_high, color: Colors.red, size: 20.sp);
-      case '보통':
-        return Icon(Icons.circle, color: Colors.orange, size: 14.sp);
-      case '낮음':
-      default:
-        return Icon(Icons.arrow_downward, color: Colors.grey, size: 14.sp);
-    }
-  }
-
-  void _showAddTaskDialog() {
-    final TextEditingController _contentController = TextEditingController();
-    String priority = '보통';
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('할 일 추가', style: AppTextStyles.title),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _contentController,
-                decoration: const InputDecoration(labelText: '할 일 내용'),
-              ),
-              SizedBox(height: 12.h),
-              DropdownButtonFormField<String>(
-                value: priority,
-                items: _priorityKeys.map((level) => DropdownMenuItem(
-                  value: level,
-                  child: Row(
-                    children: [
-                      _getPriorityIcon(level),
-                      SizedBox(width: 8.w),
-                      Text(level, style: AppTextStyles.body),
-                    ],
-                  ),
-                )).toList(),
-                onChanged: (value) {
-                  if (value != null) priority = value;
-                },
-                decoration: const InputDecoration(labelText: '중요도'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('취소', style: AppTextStyles.body.copyWith(color: AppColors.subText)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final content = _contentController.text.trim();
-                if (content.isEmpty) return;
-
-                setState(() {
-                  task.add(WeeklyTask(content: content, priority: priority));
-                });
-                Navigator.of(context).pop();
-              },
-              child: Text('추가', style: AppTextStyles.button),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  const WeeklyTabContent({super.key, required this.day, required this.isEditing});
 
   @override
-  void dispose() {
-    _themeController.dispose();
-    super.dispose();
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 요일에 해당하는 주간 플래너 상태 불러오기
+    final weekTask = ref.watch(weeklyTaskProvider)
+        .firstWhere((t) => t.day == day, orElse: () => WeeklyTaskModel(day: day, theme: '', tasks: []));
 
-  @override
-  Widget build(BuildContext context) {
+    // 테마 입력을 위한 컨트롤러 (초기값은 기존 테마)
+    final themeController = TextEditingController(text: weekTask.theme);
+
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddTaskDialog,
-        backgroundColor: AppColors.accent,
-        child: const Icon(Icons.add),
-      ),
       body: Padding(
-        padding: EdgeInsets.all(16.w),
+        padding: EdgeInsets.all(16.0.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              controller: _themeController,
-              decoration: InputDecoration(
-                labelText: '오늘은 어떤 날인가요?',
-                hintText: '예: 휴식의 날, 집중의 날 등',
-                border: const OutlineInputBorder(),
-              ),
-            ),
+            // 편집 모드일 경우 테마 입력 필드, 아닐 경우 텍스트 출력
+            isEditing
+                ? TextField(
+                    controller: themeController,
+                    decoration: InputDecoration(
+                      hintText: '$day요일의 테마를 정해보세요.',
+                      border: const OutlineInputBorder(),
+                    ),
+                    onSubmitted: (value) {
+                      ref.read(weeklyTaskProvider.notifier).setTheme(day, value);
+                    },
+                  )
+                : Text(
+                    weekTask.theme.isEmpty
+                        ? '$day요일의 테마를 정해보세요.'
+                        : weekTask.theme,
+                    style: AppTextStyles.body,
+                  ),
             SizedBox(height: 16.h),
+
+            // 할 일 목록 표시
             Expanded(
-              child: ListView.builder(
-                itemCount: task.length,
-                itemBuilder: (context, index) {
-                  final t = task[index];
-                  return ListTile(
-                    leading: _getPriorityIcon(t.priority),
-                    title: Text(t.content, style: AppTextStyles.body),
-                    trailing: Checkbox(
-                      value: t.isCompleted,
-                      onChanged: (value) {
-                        setState(() {
-                          task[index] = WeeklyTask(
-                            content: t.content,
-                            priority: t.priority,
-                            isCompleted: value ?? false,
-                          );
-                        });
+              child: weekTask.tasks.isEmpty
+                  ? Center(child: Text('등록된 할 일이 없어요.', style: AppTextStyles.body))
+                  : ListView.builder(
+                      itemCount: weekTask.tasks.length,
+                      itemBuilder: (context, index) {
+                        final t = weekTask.tasks[index];
+                        return Container(
+                          margin: EdgeInsets.symmetric(vertical: 6.h),
+                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12.r),
+                            border: Border.all(color: AppColors.divider),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 4,
+                                offset: Offset(0, 2),
+                              )
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              // 중요도에 따른 아이콘 출력
+                              Icon(
+                                t.priority == '중요'
+                                    ? Icons.priority_high
+                                    : t.priority == '보통'
+                                        ? Icons.circle
+                                        : Icons.arrow_downward,
+                                color: t.priority == '중요'
+                                    ? Colors.red
+                                    : t.priority == '보통'
+                                        ? Colors.orange
+                                        : Colors.grey,
+                                size: 20.sp,
+                              ),
+                              SizedBox(width: 12.w),
+                              // 할 일 내용
+                              Expanded(
+                                child: Text(t.content, style: AppTextStyles.body),
+                              ),
+                              // 완료 여부 체크박스
+                              Checkbox(
+                                value: t.isCompleted,
+                                onChanged: (_) {
+                                  ref.read(weeklyTaskProvider.notifier).toggleTask(day, index);
+                                },
+                              ),
+                            ],
+                          ),
+                        );
                       },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),
