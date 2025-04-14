@@ -1,7 +1,10 @@
+// settings_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
 import 'package:abeul_planner/core/text_styles.dart';
 import 'package:abeul_planner/core/color.dart';
+import 'package:abeul_planner/features/settings/presentation/widget/settings_tile.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -13,29 +16,41 @@ class SettingsScreen extends StatelessWidget {
         title: '설정',
         isTransparent: true,
       ),
-      body: ListView(
-        children: [
-          // 알림 설정
-          ListTile(
-            leading: Icon(Icons.notifications),
-            title: Text('알림 설정', style: AppTextStyles.body),
-            trailing: Icon(Icons.arrow_forward_ios, size: 16),
+      body: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(color: AppColors.primary, width: 1.w),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4.r,
+                offset: Offset(0, 2.h),
+              ),
+            ],
           ),
-
-          // 테마 설정
-          ListTile(
-            leading: Icon(Icons.color_lens),
-            title: Text('테마 설정', style: AppTextStyles.body),
-            trailing: Icon(Icons.arrow_forward_ios, size: 16),
+          child: Column(
+            children: [
+              const SettingsTile(
+                icon: Icons.notifications,
+                title: '알림 설정',
+              ),
+              Divider(height: 1.h, color: AppColors.primary),
+              const SettingsTile(
+                icon: Icons.color_lens,
+                title: '테마 설정',
+              ),
+              Divider(height: 1.h, color: AppColors.primary),
+              const SettingsTile(
+                icon: Icons.info,
+                title: '앱 정보',
+              ),
+              Divider(height: 1.h, color: AppColors.primary),
+            ],
           ),
-
-          // 앱 정보
-          ListTile(
-            leading: Icon(Icons.info),
-            title: Text('앱 정보', style: AppTextStyles.body),
-            trailing: Icon(Icons.arrow_forward_ios, size: 16),
-          ),
-        ],
+        ),
       ),
     );
   }
