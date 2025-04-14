@@ -52,12 +52,11 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
       appBar: CustomAppBar(
         title: '달력 플래너',
         isTransparent: true,
-        actions: [
-          IconButton(
-            onPressed: _openAddTaskDialog,
-            icon: const Icon(Icons.add, color: AppColors.text),
-          )
-        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _openAddTaskDialog,
+        backgroundColor: AppColors.accent,
+        child: const Icon(Icons.add),
       ),
       body: Column(
         children: [
@@ -69,6 +68,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
             focusedDay: _focusedDay,
             selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
             onDaySelected: _onDaySelected,
+            daysOfWeekHeight: 35.h,
             calendarStyle: CalendarStyle(
               todayDecoration: BoxDecoration(
                 color: AppColors.accent,
@@ -81,8 +81,12 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
               defaultTextStyle: AppTextStyles.body,
               weekendTextStyle: AppTextStyles.body,
             ),
+            daysOfWeekStyle: DaysOfWeekStyle(
+              weekdayStyle: AppTextStyles.body.copyWith(fontSize: 14.sp),
+              weekendStyle: AppTextStyles.body.copyWith(fontSize: 14.sp),
+            ),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 10.h),
 
           // 일정 목록
           Expanded(
