@@ -37,8 +37,11 @@ class WeeklyTabContent extends ConsumerWidget {
                     controller: themeController,
                     decoration: InputDecoration(
                       hintText: '$day요일의 테마를 정해보세요.',
-                      border: const OutlineInputBorder(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
                     ),
+                    style: AppTextStyles.body,
                     onSubmitted: (value) {
                       ref.read(weeklyTaskProvider.notifier).setTheme(day, value);
                     },
@@ -49,7 +52,15 @@ class WeeklyTabContent extends ConsumerWidget {
                         : weekTask.theme,
                     style: AppTextStyles.body,
                   ),
-            SizedBox(height: 16.h),
+            SizedBox(height: 12.h),
+
+            // 테마와 할 일 목록 사이 구분선 추가 (양 끝까지)
+            Container(
+              width: 1.sw,
+              height: 1.h,
+              color: AppColors.primary,
+            ),
+            SizedBox(height: 12.h),
 
             // 할 일 목록 표시
             Expanded(
@@ -69,7 +80,7 @@ class WeeklyTabContent extends ConsumerWidget {
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black12,
-                                blurRadius: 4,
+                                blurRadius: 4.r,
                                 offset: Offset(0, 2),
                               )
                             ],

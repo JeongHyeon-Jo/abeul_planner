@@ -22,10 +22,10 @@ class WeeklyPlannerScreen extends ConsumerStatefulWidget {
 
 class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
     with TickerProviderStateMixin {
-  late TabController _tabController; // 요일 탭 컨트롤러
+  late TabController _tabController;
 
   final List<String> days = ['월', '화', '수', '목', '금', '토', '일'];
-  bool _isEditing = false; // 편집 모드 여부
+  bool _isEditing = false;
 
   @override
   void initState() {
@@ -39,7 +39,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
     super.dispose();
   }
 
-  /// 할 일 추가 다이얼로그
+  /// 할 일 추가 다이얼로그 표시
   void _showAddTaskDialog(BuildContext context) {
     String selectedDay = days.first;
     final TextEditingController _contentController = TextEditingController();
@@ -53,7 +53,6 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 요일 선택
             DropdownButtonFormField<String>(
               value: selectedDay,
               items: days
@@ -68,15 +67,11 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
               decoration: const InputDecoration(labelText: '요일 선택'),
             ),
             SizedBox(height: 8.h),
-
-            // 할 일 입력
             TextField(
               controller: _contentController,
               decoration: const InputDecoration(labelText: '할 일 내용'),
             ),
             SizedBox(height: 8.h),
-
-            // 중요도 선택
             DropdownButtonFormField<String>(
               value: priority,
               items: _priorityKeys
@@ -101,14 +96,13 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
             onPressed: () {
               final content = _contentController.text.trim();
               if (content.isEmpty) return;
-              // 선택된 요일에 할 일 추가
               ref.read(weeklyTaskProvider.notifier).addTask(
                 selectedDay,
                 WeeklyTask(content: content, priority: priority),
               );
               Navigator.of(context).pop();
               setState(() {
-                _tabController.index = days.indexOf(selectedDay); // 해당 요일 탭으로 이동
+                _tabController.index = days.indexOf(selectedDay);
               });
             },
             child: Text('추가', style: AppTextStyles.button),
@@ -128,9 +122,8 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // 상단 커스텀 앱바
               CustomAppBar(
-                title: '주간 플래너',
+                title: '',
                 isTransparent: true,
                 actions: [
                   TextButton(
@@ -142,32 +135,74 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
                   ),
                 ],
               ),
-              // 요일 탭
-              Container(
-                color: Colors.white,
-                child: TabBar(
-                  controller: _tabController,
-                  tabs: days.map((day) => Tab(text: day)).toList(),
-                  labelColor: AppColors.primary,
-                  unselectedLabelColor: AppColors.subText,
-                  indicatorColor: AppColors.primary,
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      )
+                    ],
+                    border: Border.all(color: AppColors.primary),
+                  ),
+                  child: TabBar(
+                    controller: _tabController,
+                    indicator: UnderlineTabIndicator(
+                      borderSide: BorderSide(width: 3.h, color: AppColors.highlight),
+                      insets: EdgeInsets.symmetric(horizontal: 8.w), // ✅ 탭 내부만 색칠되도록 조정
+                    ),
+                    indicatorSize: TabBarIndicatorSize.label,
+                    labelColor: AppColors.text,
+                    unselectedLabelColor: AppColors.subText,
+                    labelStyle: AppTextStyles.body,
+                    tabs: List.generate(days.length, (index) {
+                      return Container(
+                        alignment: Alignment.center,
+                        child: Text(days[index]),
+                      );
+                    }),
+                    dividerColor: AppColors.primary,
+                    indicatorPadding: EdgeInsets.zero,
+                    padding: EdgeInsets.zero,
+                    labelPadding: EdgeInsets.zero,
+                  ),
                 ),
               ),
             ],
           ),
         ),
-        // 할 일 추가 버튼
         floatingActionButton: FloatingActionButton(
           onPressed: () => _showAddTaskDialog(context),
           backgroundColor: AppColors.accent,
           child: const Icon(Icons.add),
         ),
-        // 요일별 콘텐츠 화면
-        body: TabBarView(
-          controller: _tabController,
-          children: days.map((day) {
-            return WeeklyTabContent(day: day, isEditing: _isEditing);
-          }).toList(),
+        body: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
+              ],
+              border: Border.all(color: AppColors.primary),
+            ),
+            child: TabBarView(
+              controller: _tabController,
+              children: days.map((day) {
+                return WeeklyTabContent(day: day, isEditing: _isEditing);
+              }).toList(),
+            ),
+          ),
         ),
       ),
     );

@@ -172,7 +172,7 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: '일상 플래너',
+        title: '',
         isTransparent: true,
         actions: [
           TextButton(
