@@ -76,14 +76,7 @@ class WeeklyTabContent extends ConsumerWidget {
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12.r),
-                            border: Border.all(color: AppColors.divider),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 4.r,
-                                offset: Offset(0, 2),
-                              )
-                            ],
+                            border: Border.all(color: AppColors.primary),
                           ),
                           child: Row(
                             children: [

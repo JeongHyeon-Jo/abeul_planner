@@ -154,7 +154,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
                     controller: _tabController,
                     indicator: UnderlineTabIndicator(
                       borderSide: BorderSide(width: 3.h, color: AppColors.highlight),
-                      insets: EdgeInsets.symmetric(horizontal: 8.w), // ✅ 탭 내부만 색칠되도록 조정
+                      insets: EdgeInsets.symmetric(horizontal: 8.w),
                     ),
                     indicatorSize: TabBarIndicatorSize.label,
                     labelColor: AppColors.text,
@@ -166,7 +166,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
                         child: Text(days[index]),
                       );
                     }),
-                    dividerColor: AppColors.primary,
+                    dividerColor: Colors.transparent,
                     indicatorPadding: EdgeInsets.zero,
                     padding: EdgeInsets.zero,
                     labelPadding: EdgeInsets.zero,
