@@ -50,7 +50,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: '달력 플래너',
+        title: '',
         isTransparent: true,
       ),
       floatingActionButton: FloatingActionButton(
@@ -60,48 +60,109 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
       ),
       body: Column(
         children: [
-          // 테이블 캘린더 위젯
-          TableCalendar(
-            locale: 'ko_KR',
-            firstDay: DateTime.utc(2020, 1, 1),
-            lastDay: DateTime.utc(2030, 12, 31),
-            focusedDay: _focusedDay,
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            onDaySelected: _onDaySelected,
-            daysOfWeekHeight: 35.h,
-            calendarStyle: CalendarStyle(
-              todayDecoration: BoxDecoration(
-                color: AppColors.accent,
-                shape: BoxShape.circle,
+          // 캘린더 박스를 둥근 모서리와 그림자로 감쌈
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+                border: Border.all(color: AppColors.primary),
               ),
-              selectedDecoration: BoxDecoration(
-                color: AppColors.primary,
-                shape: BoxShape.circle,
+              child: Column(
+                children: [
+                  TableCalendar(
+                    locale: 'ko_KR',
+                    firstDay: DateTime.utc(2020, 1, 1),
+                    lastDay: DateTime.utc(2030, 12, 31),
+                    focusedDay: _focusedDay,
+                    availableCalendarFormats: const {
+                      CalendarFormat.month: '월간',
+                    },
+                    selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                    onDaySelected: _onDaySelected,
+                    daysOfWeekHeight: 35.h,
+                    headerStyle: HeaderStyle(
+                      formatButtonVisible: false, // 포맷 전환 버튼 숨김
+                      titleCentered: true,
+                      titleTextStyle: AppTextStyles.title,
+                      leftChevronIcon: Icon(Icons.chevron_left, color: AppColors.text),
+                      rightChevronIcon: Icon(Icons.chevron_right, color: AppColors.text),
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(color: AppColors.primary), // 헤더 아래 선
+                        ),
+                      ),
+                    ),
+                    daysOfWeekStyle: DaysOfWeekStyle(
+                      weekdayStyle: AppTextStyles.body.copyWith(fontSize: 14.sp),
+                      weekendStyle: AppTextStyles.body.copyWith(fontSize: 14.sp),
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(color: AppColors.primary), // 요일 아래 선
+                        ),
+                      ),
+                    ),
+                    calendarStyle: CalendarStyle(
+                      todayDecoration: BoxDecoration(
+                        color: AppColors.highlight,
+                        shape: BoxShape.circle,
+                      ),
+                      selectedDecoration: BoxDecoration(
+                        color: AppColors.accent,
+                        shape: BoxShape.circle,
+                      ),
+                      defaultTextStyle: AppTextStyles.body,
+                      weekendTextStyle: AppTextStyles.body,
+                    ),
+                  ),
+                ],
               ),
-              defaultTextStyle: AppTextStyles.body,
-              weekendTextStyle: AppTextStyles.body,
-            ),
-            daysOfWeekStyle: DaysOfWeekStyle(
-              weekdayStyle: AppTextStyles.body.copyWith(fontSize: 14.sp),
-              weekendStyle: AppTextStyles.body.copyWith(fontSize: 14.sp),
             ),
           ),
-          SizedBox(height: 10.h),
 
-          // 일정 목록
-          Expanded(
-            child: tasksForSelectedDay.isEmpty
-                ? Center(child: Text('해당 날짜에 등록된 일정이 없어요.', style: AppTextStyles.body))
-                : ListView.builder(
-                    itemCount: tasksForSelectedDay.length,
-                    itemBuilder: (context, index) {
-                      final task = tasksForSelectedDay[index];
-                      return ListTile(
-                        leading: const Icon(Icons.event_note),
-                        title: Text('${task.time} - ${task.memo}', style: AppTextStyles.body),
-                      );
-                    },
+          // 일정 목록 박스도 동일한 스타일로 감쌈
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
                   ),
+                ],
+                border: Border.all(color: AppColors.primary),
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                child: SizedBox(
+                  height: 260.h, // 높이 고정 또는 필요시 Flexible 대체 가능
+                  child: tasksForSelectedDay.isEmpty
+                      ? Center(child: Text('해당 날짜에 등록된 일정이 없어요.', style: AppTextStyles.body))
+                      : ListView.builder(
+                          itemCount: tasksForSelectedDay.length,
+                          itemBuilder: (context, index) {
+                            final task = tasksForSelectedDay[index];
+                            return ListTile(
+                              leading: const Icon(Icons.event_note),
+                              title: Text('${task.time} - ${task.memo}', style: AppTextStyles.body),
+                            );
+                          },
+                        ),
+                ),
+              ),
+            ),
           )
         ],
       ),

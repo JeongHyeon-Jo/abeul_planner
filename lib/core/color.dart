@@ -19,6 +19,9 @@ class AppColors {
   /// 포인트 색상 (진한 코랄톤)
   static const Color accent = Color(0xFFFF6F61);
 
+  /// 오늘 날짜 배경에 사용할 강조 색상 (연한 코랄 오렌지)
+  static const Color highlight = Color(0xFFFF9F84);
+
   /// 테두리, 분리선 등에 사용하는 중립색
   static const Color divider = Color(0xFFE0E0E0);
 
