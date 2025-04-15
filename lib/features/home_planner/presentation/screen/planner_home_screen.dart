@@ -11,6 +11,10 @@ import 'package:abeul_planner/core/color.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
 import 'package:abeul_planner/features/weekly_planner/presentation/provider/weekly_task_provider.dart';
 import 'package:abeul_planner/features/daily_planner/presentation/provider/daily_task_provider.dart';
+// section widget
+import 'package:abeul_planner/features/home_planner/presentation/widget/calendar_section.dart';
+import 'package:abeul_planner/features/home_planner/presentation/widget/weekly_section.dart';
+import 'package:abeul_planner/features/home_planner/presentation/widget/daily_section.dart';
 
 /// 종합 플래너 화면 (홈 플래너)
 class PlannerHomeScreen extends ConsumerWidget {
@@ -58,58 +62,21 @@ class PlannerHomeScreen extends ConsumerWidget {
                   // 📅 달력 플래너
                   Text('달력 플래너', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
                   Divider(color: AppColors.primary),
-                  if (calendarTasks.where((task) => task.date.year == now.year && task.date.month == now.month && task.date.day == now.day).isEmpty)
-                    Text('오늘 일정이 없습니다.', style: AppTextStyles.body)
-                  else
-                    ...calendarTasks
-                        .where((task) => task.date.year == now.year && task.date.month == now.month && task.date.day == now.day)
-                        .map((task) => Card(
-                              child: ListTile(
-                                title: Text(task.memo, style: AppTextStyles.body),
-                                subtitle: Text(task.time, style: AppTextStyles.caption),
-                              ),
-                            )),
+                  CalendarSection(now: now, calendarTasks: calendarTasks),
 
                   Divider(color: AppColors.primary),
 
                   // 📆 주간 플래너
                   Text('주간 플래너 ($weekday요일)', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
                   Divider(color: AppColors.primary),
-                  ...weeklyTasks
-                      .where((t) => t.day == weekday)
-                      .map((t) => Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('테마: ${t.theme}', style: AppTextStyles.body),
-                              SizedBox(height: 8.h),
-                              ...t.tasks.map((task) => Card(
-                                    child: ListTile(
-                                      leading: Icon(
-                                        task.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-                                        color: task.isCompleted ? AppColors.success : AppColors.subText,
-                                      ),
-                                      title: Text(task.content, style: AppTextStyles.body),
-                                      subtitle: Text('중요도: ${task.priority}', style: AppTextStyles.caption),
-                                    ),
-                                  )),
-                            ],
-                          )),
+                  WeeklySection(weekday: weekday, weeklyTasks: weeklyTasks),
 
                   Divider(color: AppColors.primary),
 
                   // 📝 일상 플래너
                   Text('일상 플래너', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
                   Divider(color: AppColors.primary),
-                  if (dailyTasks.isEmpty)
-                    Text('일상 기록이 없습니다.', style: AppTextStyles.body)
-                  else
-                    ...dailyTasks.map((t) => Card(
-                          child: ListTile(
-                            leading: const Icon(Icons.check),
-                            title: Text(t.situation, style: AppTextStyles.body),
-                            subtitle: Text(t.action, style: AppTextStyles.caption),
-                          ),
-                        )),
+                  DailySection(dailyTasks: dailyTasks),
                 ],
               ),
             ),
