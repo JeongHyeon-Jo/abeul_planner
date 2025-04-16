@@ -9,13 +9,12 @@ import 'package:abeul_planner/features/daily_planner/data/model/daily_task_model
 import 'package:abeul_planner/features/daily_planner/presentation/provider/daily_task_provider.dart';
 
 /// 할 일 추가 및 수정 다이얼로그 위젯
-class TaskDialog extends ConsumerWidget {
+class TaskDialog extends ConsumerStatefulWidget {
   final DailyTaskModel? task;
   final int? index;
   final TextEditingController situationController;
   final TextEditingController actionController;
   final String selectedPriority;
-  final ValueChanged<String> onPriorityChanged;
   final ValueChanged<int> onDelete;
 
   const TaskDialog({
@@ -25,54 +24,66 @@ class TaskDialog extends ConsumerWidget {
     required this.situationController,
     required this.actionController,
     required this.selectedPriority,
-    required this.onPriorityChanged,
     required this.onDelete,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TaskDialog> createState() => _TaskDialogState();
+}
+
+class _TaskDialogState extends ConsumerState<TaskDialog> {
+  late String _localPriority;
+
+  @override
+  void initState() {
+    super.initState();
+    _localPriority = widget.selectedPriority;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final priorityKeys = ['낮음', '보통', '중요'];
 
     return AlertDialog(
-      title: Text(task == null ? '새 플랜 추가' : '플랜 수정', style: AppTextStyles.title),
+      title: Text(widget.task == null ? '새 플랜 추가' : '플랜 수정', style: AppTextStyles.title),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-              controller: situationController,
+              controller: widget.situationController,
               decoration: const InputDecoration(labelText: '상황 (예: 출근하면)'),
             ),
             SizedBox(height: 8.h),
             TextField(
-              controller: actionController,
+              controller: widget.actionController,
               decoration: const InputDecoration(labelText: '행동 (예: 스트레칭하기)'),
             ),
             SizedBox(height: 8.h),
             DropdownButtonFormField<String>(
-              value: selectedPriority,
+              value: _localPriority,
               items: priorityKeys.map((level) => DropdownMenuItem(
                 value: level,
                 child: Row(
                   children: [
-                    getPriorityIcon(level), // 중요도 아이콘 사용
+                    getPriorityIcon(level),
                     SizedBox(width: 8.w),
                     Text(level, style: AppTextStyles.body),
                   ],
                 ),
               )).toList(),
               onChanged: (value) {
-                if (value != null) onPriorityChanged(value);
+                if (value != null) setState(() => _localPriority = value);
               },
               decoration: const InputDecoration(labelText: '중요도'),
             ),
-            if (task != null)
+            if (widget.task != null)
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    onDelete(index!);
+                    widget.onDelete(widget.index!);
                   },
                   child: Text('플랜 제거', style: AppTextStyles.caption.copyWith(color: Colors.red)),
                 ),
@@ -83,34 +94,34 @@ class TaskDialog extends ConsumerWidget {
       actions: [
         TextButton(
           onPressed: () {
-            situationController.clear();
-            actionController.clear();
+            widget.situationController.clear();
+            widget.actionController.clear();
             Navigator.of(context).pop();
           },
           child: Text('취소', style: AppTextStyles.body.copyWith(color: AppColors.subText)),
         ),
         ElevatedButton(
           onPressed: () {
-            final situation = situationController.text.trim();
-            final action = actionController.text.trim();
+            final situation = widget.situationController.text.trim();
+            final action = widget.actionController.text.trim();
 
             if (situation.isEmpty || action.isEmpty) return;
 
             final newTask = DailyTaskModel(
               situation: situation,
               action: action,
-              isCompleted: task?.isCompleted ?? false,
-              priority: selectedPriority,
+              isCompleted: widget.task?.isCompleted ?? false,
+              priority: _localPriority,
             );
 
-            if (task == null) {
+            if (widget.task == null) {
               ref.read(dailyTaskProvider.notifier).addTask(newTask);
             } else {
-              ref.read(dailyTaskProvider.notifier).editTask(index!, newTask);
+              ref.read(dailyTaskProvider.notifier).editTask(widget.index!, newTask);
             }
 
-            situationController.clear();
-            actionController.clear();
+            widget.situationController.clear();
+            widget.actionController.clear();
             Navigator.of(context).pop();
           },
           child: Text('저장', style: AppTextStyles.button),

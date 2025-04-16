@@ -26,10 +26,9 @@ class DailyPlannerScreen extends ConsumerStatefulWidget {
 class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
   final TextEditingController _situationController = TextEditingController(); // 상황 입력 컨트롤러
   final TextEditingController _actionController = TextEditingController(); // 행동 입력 컨트롤러
-  String _selectedPriority = '보통'; // 선택된 중요도 기본값
-  String _filterPriority = '전체'; // 필터링할 중요도 (전체, 낮음, 보통, 중요)
+  String _filterPriority = '전체'; // 중요도 필터 값 ('전체', '낮음', '보통', '중요')
   bool _isEditing = false; // 편집 모드 여부
-  int? _editingIndex; // 편집 중인 인덱스
+  int? _editingIndex; // 현재 편집 중인 인덱스
 
   @override
   void dispose() {
@@ -38,8 +37,21 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
     super.dispose();
   }
 
-  // 플랜 추가 및 수정 다이얼로그 표시
+  /// 플랜 추가 또는 수정 다이얼로그 호출 함수
   void _showTaskDialog({DailyTaskModel? task, int? index}) {
+    // 초기 선택된 중요도 값 설정 (기본값은 '보통')
+    String selectedPriority = task?.priority ?? '보통';
+
+    if (task != null) {
+      // 수정인 경우 기존 값 입력
+      _situationController.text = task.situation;
+      _actionController.text = task.action;
+    } else {
+      // 추가인 경우 초기화
+      _situationController.clear();
+      _actionController.clear();
+    }
+
     showDialog(
       context: context,
       builder: (context) => TaskDialog(
@@ -47,14 +59,13 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
         index: index,
         situationController: _situationController,
         actionController: _actionController,
-        selectedPriority: _selectedPriority,
-        onPriorityChanged: (value) => setState(() => _selectedPriority = value),
+        selectedPriority: selectedPriority,
         onDelete: (idx) => _showDeleteDialog(idx),
       ),
     );
   }
 
-  // 삭제 확인 다이얼로그 표시
+  /// 삭제 다이얼로그 호출 함수
   void _showDeleteDialog(int index) {
     showDialog(
       context: context,
@@ -62,9 +73,9 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
     );
   }
 
-  // 중요도 필터 선택 모달 표시
+  /// 중요도 필터 다이얼로그 표시 함수
   void _showPriorityFilterDialog() {
-    final priorities = ['낮음', '보통', '중요'];
+    final priorities = ['전체', '낮음', '보통', '중요'];
     showModalBottomSheet(
       context: context,
       builder: (_) => Padding(
@@ -73,10 +84,12 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
           mainAxisSize: MainAxisSize.min,
           children: priorities.map((priority) {
             return ListTile(
-              leading: getPriorityIcon(priority), // 중요도 아이콘 표시
-              title: Text('중요도: $priority'), // 리스트에서 선택 가능한 중요도 항목
+              leading: priority == '전체'
+                  ? const Icon(Icons.close, color: AppColors.subText) // 전체 보기용 아이콘
+                  : getPriorityIcon(priority),
+              title: Text(priority == '전체' ? '전체 보기' : '중요도: $priority'),
               onTap: () {
-                setState(() => _filterPriority = priority); // 선택 시 필터 적용
+                setState(() => _filterPriority = priority); // 필터 적용
                 Navigator.of(context).pop();
               },
             );
@@ -88,9 +101,9 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final tasks = ref.watch(dailyTaskProvider); // 전체 할 일 목록 가져오기
+    final tasks = ref.watch(dailyTaskProvider); // 전체 플랜 목록
 
-    // 중요도 필터링 적용
+    // 필터링된 목록 생성
     final filteredTasks = _filterPriority == '전체'
         ? tasks
         : tasks.where((task) => task.priority == _filterPriority).toList();
@@ -104,45 +117,30 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
     return Scaffold(
       appBar: CustomAppBar(
         title: _filterPriority == '전체'
-            ? Text('', style: AppTextStyles.title) // 전체일 경우 타이틀 없음
+            ? Text('', style: AppTextStyles.title)
             : Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  getPriorityIcon(_filterPriority), // 현재 필터 아이콘 표시
+                  getPriorityIcon(_filterPriority), // 필터 아이콘
                   SizedBox(width: 6.w),
-                  Text(
-                    '중요도: $_filterPriority', // 현재 필터 상태 표시
-                    style: AppTextStyles.title.copyWith(color: AppColors.text),
-                  ),
+                  Text('중요도: $_filterPriority', style: AppTextStyles.title.copyWith(color: AppColors.text)),
                   SizedBox(width: 8.w),
                   GestureDetector(
-                    onTap: () => setState(() => _filterPriority = '전체'), // 필터 해제
-                    child: Icon(
-                      Icons.close,
-                      size: 20.sp,
-                      color: AppColors.subText,
-                    ),
+                    onTap: () => setState(() => _filterPriority = '전체'), // 필터 해제 (전체 보기)
+                    child: Icon(Icons.close, size: 20.sp, color: AppColors.subText),
                   ),
                 ],
               ),
-        isTransparent: true,
+        isTransparent: true, // 투명 앱바 여부
         leading: IconButton(
-          icon: Icon(
-            Icons.filter_list,
-            color: AppColors.text,
-            size: 27.sp,
-          ),
+          icon: Icon(Icons.filter_list, color: AppColors.text, size: 27.sp),
           onPressed: _showPriorityFilterDialog, // 필터 버튼
           tooltip: '중요도 필터',
         ),
         actions: [
           IconButton(
-            icon: Icon(
-              _isEditing ? Icons.check : Icons.edit, // 편집 모드 전환 버튼
-              color: _isEditing ? AppColors.success : AppColors.text,
-              size: 27.sp,
-            ),
-            onPressed: () => setState(() => _isEditing = !_isEditing),
+            icon: Icon(_isEditing ? Icons.check : Icons.edit, color: _isEditing ? AppColors.success : AppColors.text, size: 27.sp),
+            onPressed: () => setState(() => _isEditing = !_isEditing), // 편집 모드 전환
           ),
         ],
       ),
@@ -156,31 +154,26 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
                 Padding(
                   padding: EdgeInsets.only(bottom: 12.h),
                   child: Center(
-                    child: Text(
-                      '플랜을 길게 눌러 순서를 변경해 보세요.', // 편집 안내 문구
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.subText,
-                      ),
-                    ),
+                    child: Text('플랜을 길게 눌러 순서를 변경해 보세요.', style: AppTextStyles.caption.copyWith(color: AppColors.subText)),
                   ),
                 ),
               Expanded(
                 child: sortedTasks.isEmpty
-                    ? Center(child: Text('아직 등록된 약속이 없어요.', style: AppTextStyles.body)) // 할 일 없음 안내
+                    ? Center(child: Text('아직 등록된 약속이 없어요.', style: AppTextStyles.body)) // 등록된 플랜이 없을 경우
                     : ReorderableListView.builder(
                         itemCount: sortedTasks.length,
                         onReorder: (oldIndex, newIndex) {
-                          ref.read(dailyTaskProvider.notifier).reorderTask(oldIndex, newIndex); // 순서 변경
+                          ref.read(dailyTaskProvider.notifier).reorderTask(oldIndex, newIndex); // 순서 변경 처리
                         },
                         itemBuilder: (context, index) => TaskTile(
-                          key: ValueKey('$index-${sortedTasks[index].situation}'), // 키 설정
+                          key: ValueKey('$index-${sortedTasks[index].situation}'),
                           task: sortedTasks[index],
                           index: index,
                           isEditing: _isEditing,
-                          onEdit: () => _showTaskDialog(task: sortedTasks[index], index: index), // 편집
+                          onEdit: () => _showTaskDialog(task: sortedTasks[index], index: index), // 편집 다이얼로그
                           onToggle: () => ref.read(dailyTaskProvider.notifier).toggleTask(
-                                tasks.indexOf(sortedTasks[index]), // 체크박스 토글
-                              ),
+                                tasks.indexOf(sortedTasks[index]),
+                              ), // 체크박스 토글
                         ),
                       ),
               ),
@@ -188,9 +181,8 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
           ),
         ),
       ),
-      // 플랜 추가 버튼
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showTaskDialog(), // 할 일 추가
+        onPressed: () => _showTaskDialog(), // 플랜 추가 다이얼로그
         backgroundColor: AppColors.accent,
         child: const Icon(Icons.add),
       ),
