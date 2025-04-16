@@ -6,7 +6,7 @@ import 'package:abeul_planner/core/text_styles.dart';
 
 /// 앱 전체에서 재사용 가능한 커스텀 앱바
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String title; // 앱바 타이틀
+  final Widget title; // 앱바 타이틀을 위젯으로 변경
   final Widget? leading; // 왼쪽 위젯 (필요할 경우 직접 지정)
   final List<Widget>? actions; // 오른쪽 위젯들
   final bool isTransparent; // 배경 투명 여부
@@ -22,31 +22,17 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      systemOverlayStyle: isTransparent
-        ? const SystemUiOverlayStyle(
-            statusBarColor: Colors.transparent,
-            statusBarIconBrightness: Brightness.dark,
-          )
-        : const SystemUiOverlayStyle(
-            statusBarColor: Colors.transparent,
-            statusBarIconBrightness: Brightness.dark,
-          ),
-
+      systemOverlayStyle: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+      ),
       backgroundColor:
           isTransparent ? Colors.transparent : AppColors.primary, // 배경 색상
       elevation: isTransparent ? 0 : 1, // 투명 시 그림자 제거
       centerTitle: true,
       automaticallyImplyLeading: false, // 자동 뒤로가기 제거
-
       leading: leading, // 기본 뒤로가기 제공 안 함
-
-      title: Text(
-        title,
-        style: AppTextStyles.title.copyWith(
-          color: isTransparent ? AppColors.text : Colors.white,
-        ),
-      ),
-
+      title: title, // 텍스트 대신 위젯 전체를 타이틀로 사용
       actions: actions,
     );
   }

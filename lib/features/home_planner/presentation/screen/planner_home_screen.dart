@@ -31,8 +31,11 @@ class PlannerHomeScreen extends ConsumerWidget {
     final weekday = DateFormat('E', 'ko_KR').format(now);
 
     return Scaffold(
-      appBar: const CustomAppBar(
-        title: '종합 플래너',
+      appBar: CustomAppBar(
+        title: Text(
+          '',
+          style: AppTextStyles.title.copyWith(color: AppColors.text),
+        ),
         isTransparent: true,
       ),
       body: Padding(
