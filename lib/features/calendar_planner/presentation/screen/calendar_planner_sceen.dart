@@ -8,7 +8,9 @@ import 'package:abeul_planner/features/calendar_planner/presentation/provider/ca
 import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_task_dialog.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_widget.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_task_list.dart';
+import 'package:abeul_planner/core/text_styles.dart';
 
+/// 캘린더 플래너 메인 화면
 class CalendarPlannerScreen extends ConsumerStatefulWidget {
   const CalendarPlannerScreen({super.key});
 
@@ -17,15 +19,16 @@ class CalendarPlannerScreen extends ConsumerStatefulWidget {
 }
 
 class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
-  DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay;
+  DateTime _focusedDay = DateTime.now(); // 현재 포커스된 날짜
+  DateTime? _selectedDay; // 선택된 날짜
 
   @override
   void initState() {
     super.initState();
-    _selectedDay = _focusedDay;
+    _selectedDay = _focusedDay; // 초기 선택 날짜 설정
   }
 
+  /// 날짜 선택 시 상태 갱신
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     setState(() {
       _selectedDay = selectedDay;
@@ -33,6 +36,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
     });
   }
 
+  /// 일정 추가 다이얼로그 표시
   void _openAddTaskDialog() {
     showDialog(
       context: context,
@@ -42,26 +46,32 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 선택된 날짜에 해당하는 일정 가져오기
     final tasksForSelectedDay = ref.watch(calendarTaskProvider.notifier)
         .getTasksForDate(_selectedDay!);
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: '',
+        title: Text(
+          '캘린더 플래너',
+          style: AppTextStyles.title.copyWith(color: AppColors.text),
+        ),
         isTransparent: true,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _openAddTaskDialog,
+        onPressed: _openAddTaskDialog, // 일정 추가 버튼
         backgroundColor: AppColors.accent,
         child: const Icon(Icons.add),
       ),
       body: Column(
         children: [
+          // 달력 위젯
           CalendarWidget(
             focusedDay: _focusedDay,
             selectedDay: _selectedDay,
             onDaySelected: _onDaySelected,
           ),
+          // 선택된 날짜의 일정 리스트
           CalendarTaskList(tasks: tasksForSelectedDay),
         ],
       ),

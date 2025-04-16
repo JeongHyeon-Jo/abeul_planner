@@ -23,18 +23,18 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
 
-  final List<String> days = ['월', '화', '수', '목', '금', '토', '일'];
-  bool _isEditing = false;
+  final List<String> days = ['월', '화', '수', '목', '금', '토', '일']; // 요일 목록
+  bool _isEditing = false; // 편집 모드 여부
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: days.length, vsync: this);
+    _tabController = TabController(length: days.length, vsync: this); // 탭 컨트롤러 초기화
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _tabController.dispose(); // 탭 컨트롤러 해제
     super.dispose();
   }
 
@@ -46,7 +46,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
         days: days,
         onTaskAdded: (selectedDay) {
           setState(() {
-            _tabController.index = days.indexOf(selectedDay);
+            _tabController.index = days.indexOf(selectedDay); // 선택된 요일 탭으로 이동
           });
         },
       ),
@@ -59,14 +59,19 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
       length: days.length,
       child: Scaffold(
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(kToolbarHeight + 48.h),
+          preferredSize: Size.fromHeight(kToolbarHeight + 48.h), // AppBar 높이 설정
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // 상단 커스텀 앱바
               CustomAppBar(
-                title: '',
+                title: Text(
+                  '주간 플래너',
+                  style: AppTextStyles.title.copyWith(color: AppColors.text),
+                ),
                 isTransparent: true,
                 actions: [
+                  // 편집 모드 토글 버튼
                   TextButton(
                     onPressed: () => setState(() => _isEditing = !_isEditing),
                     child: Text(
@@ -76,6 +81,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
                   ),
                 ],
               ),
+              // 요일 탭바
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Container(
@@ -94,7 +100,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
                   child: TabBar(
                     controller: _tabController,
                     indicator: UnderlineTabIndicator(
-                      borderSide: BorderSide(width: 3.h, color: AppColors.highlight),
+                      borderSide: BorderSide(width: 3.h, color: AppColors.highlight), // 선택 탭 인디케이터 스타일
                       insets: EdgeInsets.symmetric(horizontal: 8.w),
                     ),
                     indicatorSize: TabBarIndicatorSize.label,
@@ -104,7 +110,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
                     tabs: List.generate(days.length, (index) {
                       return Container(
                         alignment: Alignment.center,
-                        child: Text(days[index], style: AppTextStyles.body),
+                        child: Text(days[index], style: AppTextStyles.body), // 요일 이름 표시
                       );
                     }),
                     dividerColor: Colors.transparent,
@@ -118,7 +124,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () => _showAddTaskDialog(context),
+          onPressed: () => _showAddTaskDialog(context), // 플랜 추가 버튼
           backgroundColor: AppColors.accent,
           child: Icon(Icons.add, size: 24.sp),
         ),
@@ -140,7 +146,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
             child: TabBarView(
               controller: _tabController,
               children: days.map((day) {
-                return WeeklyTabContent(day: day, isEditing: _isEditing);
+                return WeeklyTabContent(day: day, isEditing: _isEditing); // 각 요일에 해당하는 할 일 목록
               }).toList(),
             ),
           ),

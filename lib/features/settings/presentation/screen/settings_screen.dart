@@ -12,8 +12,11 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(
-        title: '설정',
+      appBar: CustomAppBar(
+        title: Text(
+          '설정',
+          style: AppTextStyles.title.copyWith(color: AppColors.text),
+        ),
         isTransparent: true,
       ),
       body: Padding(
