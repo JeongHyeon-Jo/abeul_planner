@@ -61,9 +61,23 @@ class TaskTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(task.situation, style: AppTextStyles.body),
+                // 상황 텍스트 (완료 시 회색 + 취소선)
+                Text(
+                  task.situation,
+                  style: AppTextStyles.body.copyWith(
+                    decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                    color: task.isCompleted ? AppColors.subText : AppColors.text,
+                  ),
+                ),
                 SizedBox(height: 4.h),
-                Text(task.action, style: AppTextStyles.caption),
+                // 행동 텍스트 (완료 시 회색 + 취소선)
+                Text(
+                  task.action,
+                  style: AppTextStyles.caption.copyWith(
+                    decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                    color: task.isCompleted ? AppColors.subText : AppColors.subText,
+                  ),
+                ),
               ],
             ),
           ),

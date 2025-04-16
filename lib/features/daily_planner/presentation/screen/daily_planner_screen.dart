@@ -20,11 +20,11 @@ class DailyPlannerScreen extends ConsumerStatefulWidget {
 }
 
 class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
-  final TextEditingController _situationController = TextEditingController();
-  final TextEditingController _actionController = TextEditingController();
-  String _selectedPriority = '보통';
-  bool _isEditing = false;
-  int? _editingIndex;
+  final TextEditingController _situationController = TextEditingController(); // 상황 입력 컨트롤러
+  final TextEditingController _actionController = TextEditingController(); // 행동 입력 컨트롤러
+  String _selectedPriority = '보통'; // 선택된 중요도 기본값
+  bool _isEditing = false; // 편집 모드 여부
+  int? _editingIndex; // 편집 중인 인덱스
 
   @override
   void dispose() {
@@ -33,6 +33,7 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
     super.dispose();
   }
 
+  // 플랜 추가 및 수정 다이얼로그 표시
   void _showTaskDialog({DailyTaskModel? task, int? index}) {
     showDialog(
       context: context,
@@ -48,6 +49,7 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
     );
   }
 
+  // 삭제 확인 다이얼로그 표시
   void _showDeleteDialog(int index) {
     showDialog(
       context: context,
@@ -57,13 +59,20 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final tasks = ref.watch(dailyTaskProvider);
+    final tasks = ref.watch(dailyTaskProvider); // 전체 플랜 상태 가져오기
+
+    // 완료 여부에 따라 정렬: 미완료 → 완료
+    final sortedTasks = [
+      ...tasks.where((task) => !task.isCompleted),
+      ...tasks.where((task) => task.isCompleted),
+    ];
 
     return Scaffold(
       appBar: CustomAppBar(
         title: '',
         isTransparent: true,
         actions: [
+          // 편집 모드 토글 버튼
           TextButton(
             onPressed: () => setState(() => _isEditing = !_isEditing),
             child: Text(
@@ -79,12 +88,13 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // 편집 모드일 때 안내 문구
               if (_isEditing)
                 Padding(
                   padding: EdgeInsets.only(bottom: 12.h),
                   child: Center(
                     child: Text(
-                      '드래그 해서 순서를 변경해 보세요.',
+                      '플랜을 길게 눌러 순서를 변경해 보세요.',
                       style: AppTextStyles.caption.copyWith(
                         color: AppColors.subText,
                       ),
@@ -92,20 +102,23 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
                   ),
                 ),
               Expanded(
-                child: tasks.isEmpty
+                child: sortedTasks.isEmpty
                     ? Center(child: Text('아직 등록된 약속이 없어요.', style: AppTextStyles.body))
                     : ReorderableListView.builder(
-                        itemCount: tasks.length,
+                        itemCount: sortedTasks.length,
                         onReorder: (oldIndex, newIndex) {
+                          // 순서 변경 처리
                           ref.read(dailyTaskProvider.notifier).reorderTask(oldIndex, newIndex);
                         },
                         itemBuilder: (context, index) => TaskTile(
-                          key: ValueKey('$index-${tasks[index].situation}'),
-                          task: tasks[index],
+                          key: ValueKey('$index-${sortedTasks[index].situation}'),
+                          task: sortedTasks[index],
                           index: index,
                           isEditing: _isEditing,
-                          onEdit: () => _showTaskDialog(task: tasks[index], index: index),
-                          onToggle: () => ref.read(dailyTaskProvider.notifier).toggleTask(index),
+                          onEdit: () => _showTaskDialog(task: sortedTasks[index], index: index),
+                          onToggle: () => ref.read(dailyTaskProvider.notifier).toggleTask(
+                                tasks.indexOf(sortedTasks[index]), // 실제 인덱스 기준으로 toggle
+                              ),
                         ),
                       ),
               ),
@@ -113,6 +126,7 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
           ),
         ),
       ),
+      // 플랜 추가 버튼
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showTaskDialog(),
         backgroundColor: AppColors.accent,
