@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:abeul_planner/features/daily_planner/data/model/daily_task_model.dart';
 import 'package:abeul_planner/core/color.dart';
 import 'package:abeul_planner/core/text_styles.dart';
+import 'package:abeul_planner/core/widgets/priority_icon.dart';
 
 /// 개별 할 일 항목 위젯
 class TaskTile extends StatelessWidget {
@@ -21,19 +22,6 @@ class TaskTile extends StatelessWidget {
     required this.onEdit,
     required this.onToggle,
   });
-
-  /// 중요도에 따른 아이콘 반환 함수
-  Widget _getPriorityIcon(String priority) {
-    switch (priority) {
-      case '중요':
-        return Icon(Icons.priority_high, color: Colors.red, size: 20.sp);
-      case '보통':
-        return Icon(Icons.circle, color: Colors.orange, size: 14.sp);
-      case '낮음':
-      default:
-        return Icon(Icons.arrow_downward, color: Colors.grey, size: 14.sp);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +43,7 @@ class TaskTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _getPriorityIcon(task.priority),
+          getPriorityIcon(task.priority), // 중요도에 따른 아이콘 사용
           SizedBox(width: 12.w),
           Expanded(
             child: Column(

@@ -9,7 +9,7 @@ Widget getPriorityIcon(String priority) {
     case '중요':
       return Icon(Icons.priority_high, color: Colors.red, size: 20.sp);
     case '보통':
-      return Icon(Icons.adjust, color: Colors.orange, size: 20.sp);
+      return Icon(Icons.circle, color: Colors.orange, size: 20.sp);
     case '낮음':
     default:
       return Icon(Icons.arrow_downward, color: AppColors.lowPriority, size: 20.sp);
