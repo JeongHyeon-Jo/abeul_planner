@@ -30,4 +30,7 @@ class AppColors {
 
   /// 성공/완료 상태를 나타내는 색상
   static const Color success = Color(0xFF6FCF97);
+
+  /// 중요도 낮음 표시용 하늘색
+  static const Color lowPriority = Color(0xFF81D4FA);
 }

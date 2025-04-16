@@ -6,25 +6,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:abeul_planner/features/daily_planner/data/model/daily_task_model.dart';
 import 'package:abeul_planner/features/daily_planner/presentation/provider/daily_task_provider.dart';
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
+import 'package:abeul_planner/core/widgets/priority_icon.dart';
 import 'package:abeul_planner/core/color.dart';
 import 'package:abeul_planner/core/text_styles.dart';
 // 위젯
 import 'package:abeul_planner/features/daily_planner/presentation/widget/task_tile.dart';
 import 'package:abeul_planner/features/daily_planner/presentation/widget/task_dialog.dart';
 import 'package:abeul_planner/features/daily_planner/presentation/widget/delete_dialog.dart';
-
-/// 중요도에 따른 아이콘 반환 함수
-Widget _getPriorityIcon(String priority) {
-  switch (priority) {
-    case '중요':
-      return Icon(Icons.priority_high, color: Colors.red, size: 20.sp);
-    case '보통':
-      return Icon(Icons.circle, color: Colors.orange, size: 14.sp);
-    case '낮음':
-    default:
-      return Icon(Icons.arrow_downward, color: Colors.grey, size: 14.sp);
-  }
-}
 
 /// 일상 플래너 메인 화면
 class DailyPlannerScreen extends ConsumerStatefulWidget {
@@ -84,7 +72,7 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
           mainAxisSize: MainAxisSize.min,
           children: priorities.map((priority) {
             return ListTile(
-              leading: _getPriorityIcon(priority), // 중요도 아이콘 표시
+              leading: getPriorityIcon(priority), // 중요도 아이콘 표시
               title: Text('중요도: $priority'), // 리스트에서 선택 가능한 중요도 항목
               onTap: () {
                 setState(() => _filterPriority = priority); // 선택 시 필터 적용
@@ -119,7 +107,7 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
             : Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _getPriorityIcon(_filterPriority), // 현재 필터 아이콘 표시
+                  getPriorityIcon(_filterPriority), // 현재 필터 아이콘 표시
                   SizedBox(width: 6.w),
                   Text(
                     '중요도: $_filterPriority', // 현재 필터 상태 표시
