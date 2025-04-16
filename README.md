@@ -45,6 +45,9 @@ class DailyTaskModel {
   final bool isCompleted;
 ```
 }
+```
+flutter pub run build_runner build --delete-conflicting-outputs
+```
 
 ## ⚙️ CI/CD 파이프라인 적용
 **[GitHub Actions](https://github.com/JeongHyeon-Jo/abeul_planner/blob/master/.github/workflows/flutter_ci.yml)**  
