@@ -77,14 +77,27 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
         child: Padding(
           padding: EdgeInsets.all(16.0.w),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (_isEditing)
+                Padding(
+                  padding: EdgeInsets.only(bottom: 12.h),
+                  child: Center(
+                    child: Text(
+                      '드래그 해서 순서를 변경해 보세요.',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.subText,
+                      ),
+                    ),
+                  ),
+                ),
               Expanded(
                 child: tasks.isEmpty
                     ? Center(child: Text('아직 등록된 약속이 없어요.', style: AppTextStyles.body))
                     : ReorderableListView.builder(
                         itemCount: tasks.length,
                         onReorder: (oldIndex, newIndex) {
-                          // TODO: 순서 변경 로직 추가 필요
+                          ref.read(dailyTaskProvider.notifier).reorderTask(oldIndex, newIndex);
                         },
                         itemBuilder: (context, index) => TaskTile(
                           key: ValueKey('$index-${tasks[index].situation}'),

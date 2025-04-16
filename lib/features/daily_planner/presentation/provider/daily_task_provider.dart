@@ -57,4 +57,21 @@ class DailyTaskNotifier extends StateNotifier<List<DailyTaskModel>> {
     _box.deleteAt(index);
     state = _box.values.toList();
   }
+
+  /// 순서 변경 함수 추가
+  void reorderTask(int oldIndex, int newIndex) async {
+    final currentTasks = [...state];
+
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+
+    final item = currentTasks.removeAt(oldIndex);
+    currentTasks.insert(newIndex, item);
+
+    // Hive 초기화 후 재저장
+    await _box.clear(); // 전체 삭제
+    await _box.addAll(currentTasks); // 새 순서대로 저장
+    state = _box.values.toList(); // 상태 반영
+  }
 }
