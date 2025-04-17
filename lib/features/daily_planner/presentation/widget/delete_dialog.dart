@@ -15,8 +15,8 @@ class DeleteDialog extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return AlertDialog(
-      title: Text('플랜 제거', style: AppTextStyles.title),
-      content: Text('정말 이 플랜을 제거하시겠습니까?', style: AppTextStyles.body),
+      title: Text('일정 제거', style: AppTextStyles.title),
+      content: Text('정말 이 일정을 제거하시겠습니까?', style: AppTextStyles.body),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),

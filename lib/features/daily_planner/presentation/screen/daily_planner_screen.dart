@@ -154,7 +154,7 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
                 Padding(
                   padding: EdgeInsets.only(bottom: 12.h),
                   child: Center(
-                    child: Text('플랜을 길게 눌러 순서를 변경해 보세요.', style: AppTextStyles.caption.copyWith(color: AppColors.subText)),
+                    child: Text('일정을 길게 눌러 순서를 변경해 보세요.', style: AppTextStyles.caption.copyWith(color: AppColors.subText)),
                   ),
                 ),
               Expanded(
@@ -182,7 +182,7 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showTaskDialog(), // 플랜 추가 다이얼로그
+        onPressed: () => _showTaskDialog(), // 일정 추가 다이얼로그
         backgroundColor: AppColors.accent,
         child: const Icon(Icons.add),
       ),

@@ -45,7 +45,7 @@ class _TaskDialogState extends ConsumerState<TaskDialog> {
     final priorityKeys = ['낮음', '보통', '중요'];
 
     return AlertDialog(
-      title: Text(widget.task == null ? '새 플랜 추가' : '플랜 수정', style: AppTextStyles.title),
+      title: Text(widget.task == null ? '새 일정 추가' : '일정 수정', style: AppTextStyles.title),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -85,7 +85,7 @@ class _TaskDialogState extends ConsumerState<TaskDialog> {
                     Navigator.of(context).pop();
                     widget.onDelete(widget.index!);
                   },
-                  child: Text('플랜 제거', style: AppTextStyles.caption.copyWith(color: Colors.red)),
+                  child: Text('일정 제거', style: AppTextStyles.caption.copyWith(color: Colors.red)),
                 ),
               ),
           ],
