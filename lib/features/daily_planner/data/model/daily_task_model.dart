@@ -3,7 +3,7 @@ import 'package:hive/hive.dart';
 
 part 'daily_task_model.g.dart';
 
-/// 일일 할 일(Task)을 나타내는 모델 클래스
+/// 일일 일정(Task)을 나타내는 모델 클래스
 /// Hive에서 로컬 저장소에 저장하기 위해 어노테이션 사용
 @HiveType(typeId: 0)
 class DailyTaskModel {

@@ -4,7 +4,7 @@ import 'package:hive/hive.dart';
 import 'package:abeul_planner/features/daily_planner/data/model/daily_task_model.dart';
 import 'package:abeul_planner/features/daily_planner/data/datasource/daily_task_box.dart';
 
-/// 일일 할 일(DailyTask)을 관리하는 Riverpod Provider
+/// 일일 일정(DailyTask)을 관리하는 Riverpod Provider
 final dailyTaskProvider = StateNotifierProvider<DailyTaskNotifier, List<DailyTaskModel>>((ref) {
   return DailyTaskNotifier();
 });
@@ -46,7 +46,7 @@ class DailyTaskNotifier extends StateNotifier<List<DailyTaskModel>> {
     state = updatedTasks;
   }
 
-  /// 새로운 할 일 추가
+  /// 새로운 일정 추가
   void addTask(DailyTaskModel task) {
     _box.add(task);
     state = _box.values.toList();
@@ -68,13 +68,13 @@ class DailyTaskNotifier extends StateNotifier<List<DailyTaskModel>> {
     }
   }
 
-  /// 기존 할 일 수정
+  /// 기존 일정 수정
   void editTask(int index, DailyTaskModel updatedTask) {
     _box.putAt(index, updatedTask);
     state = _box.values.toList();
   }
 
-  /// 기존 할 일 제거
+  /// 기존 일정 제거
   void removeTask(int index) {
     _box.deleteAt(index);
     state = _box.values.toList();
