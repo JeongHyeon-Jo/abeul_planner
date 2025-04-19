@@ -80,8 +80,8 @@ class DailyTaskNotifier extends StateNotifier<List<DailyTaskModel>> {
     state = _box.values.toList();
   }
 
-  /// 순서 변경 함수
-  void reorderTask(int oldIndex, int newIndex) async {
+  /// 순서 변경 함수 (드래그로 이동 시)
+  void reorderTask(int oldIndex, int newIndex) {
     final currentTasks = [...state];
 
     if (oldIndex < newIndex) {
@@ -91,8 +91,11 @@ class DailyTaskNotifier extends StateNotifier<List<DailyTaskModel>> {
     final item = currentTasks.removeAt(oldIndex);
     currentTasks.insert(newIndex, item);
 
-    await _box.clear();
-    await _box.addAll(currentTasks);
-    state = _box.values.toList();
+    // Hive에 순서 반영
+    for (int i = 0; i < currentTasks.length; i++) {
+      _box.putAt(i, currentTasks[i]);
+    }
+
+    state = [...currentTasks];
   }
 }
