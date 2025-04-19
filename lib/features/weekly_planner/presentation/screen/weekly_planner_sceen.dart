@@ -29,7 +29,12 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: days.length, vsync: this);
+
+    // 오늘 요일에 맞는 탭 인덱스를 기본으로 설정 (월: 1, 일: 7 → 배열 인덱스는 0~6)
+    final now = DateTime.now();
+    final weekday = now.weekday;
+    final todayIndex = (weekday - 1).clamp(0, 6);
+    _tabController = TabController(length: days.length, vsync: this, initialIndex: todayIndex);
   }
 
   @override
@@ -38,6 +43,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
     super.dispose();
   }
 
+    /// 할 일 추가 다이얼로그 표시
   void _showAddTaskDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -52,6 +58,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
     );
   }
 
+    /// 중요도 필터 다이얼로그 표시
   void _showPriorityFilterDialog() {
     showModalBottomSheet(
       context: context,
@@ -134,6 +141,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
                     ],
                     border: Border.all(color: AppColors.primary, width: 1.w),
                   ),
+                  // 요일 탭바
                   child: TabBar(
                     controller: _tabController,
                     indicator: UnderlineTabIndicator(
@@ -180,6 +188,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
               ],
               border: Border.all(color: AppColors.primary, width: 1.w),
             ),
+            // 요일별 화면 내용
             child: TabBarView(
               controller: _tabController,
               children: days.map((day) {
