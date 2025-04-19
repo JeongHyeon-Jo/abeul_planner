@@ -63,7 +63,7 @@ class TaskTile extends StatelessWidget {
                   task.action,
                   style: AppTextStyles.caption.copyWith(
                     decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-                    color: task.isCompleted ? AppColors.subText : AppColors.subText,
+                    color: task.isCompleted ? AppColors.subText : AppColors.actionText,
                   ),
                 ),
               ],
