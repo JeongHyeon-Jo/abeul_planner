@@ -10,18 +10,19 @@ import 'package:abeul_planner/core/color.dart';
 
 /// 요일별 탭에 보여질 개별 플래너 콘텐츠 위젯
 class WeeklyTabContent extends ConsumerWidget {
-  final String day;
-  final bool isEditing;
-  final String filterPriority; // 중요도 필터 추가
+  final String day; // 현재 요일
+  final bool isEditing; // 편집 모드 여부
+  final String filterPriority; // 중요도 필터 값
 
   const WeeklyTabContent({super.key, required this.day, required this.isEditing, required this.filterPriority});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 해당 요일의 일정 모델 가져오기 (없으면 빈 모델 생성)
     final weekTask = ref.watch(weeklyTaskProvider)
         .firstWhere((t) => t.day == day, orElse: () => WeeklyTaskModel(day: day, theme: '', tasks: []));
 
-    // 필터링된 할 일 목록 생성
+    // 중요도 필터 적용된 일정 목록 생성
     final filteredTasks = filterPriority == '전체'
         ? weekTask.tasks
         : weekTask.tasks.where((task) => task.priority == filterPriority).toList();
@@ -32,7 +33,7 @@ class WeeklyTabContent extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 테마 영역 위젯 분리
+            // 테마 입력/출력 영역
             WeeklyThemeSection(
               day: day,
               theme: weekTask.theme,
@@ -48,9 +49,13 @@ class WeeklyTabContent extends ConsumerWidget {
             ),
             SizedBox(height: 12.h),
 
-            // 할 일 목록 위젯 분리
+            // 일정 리스트 영역
             Expanded(
-              child: WeeklyTaskList(day: day, tasks: filteredTasks),
+              child: WeeklyTaskList(
+                day: day,
+                tasks: filteredTasks,
+                isEditing: isEditing,
+              ),
             ),
           ],
         ),
