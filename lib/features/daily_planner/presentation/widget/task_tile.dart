@@ -74,7 +74,10 @@ class TaskTile extends StatelessWidget {
               icon: Icon(Icons.edit, color: AppColors.subText, size: 20.sp),
               onPressed: onEdit,
             ),
-            Icon(Icons.drag_indicator, size: 24.sp),
+            ReorderableDragStartListener(
+              index: index,
+              child: Icon(Icons.drag_indicator, size: 24.sp, color: AppColors.subText),
+            ),
           ] else
             SizedBox(
               width: 24.w,

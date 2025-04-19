@@ -10,12 +10,12 @@ import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
 import 'package:abeul_planner/core/widgets/priority_icon.dart';
 import 'package:abeul_planner/core/color.dart';
 import 'package:abeul_planner/core/text_styles.dart';
-// 위젯
+// widget
 import 'package:abeul_planner/features/daily_planner/presentation/widget/task_tile.dart';
 import 'package:abeul_planner/features/daily_planner/presentation/widget/task_dialog.dart';
 import 'package:abeul_planner/features/daily_planner/presentation/widget/delete_dialog.dart';
 
-/// 일상 플래너 메인 화면
+// 일상 플래너 메인 화면
 class DailyPlannerScreen extends ConsumerStatefulWidget {
   const DailyPlannerScreen({super.key});
 
@@ -24,11 +24,10 @@ class DailyPlannerScreen extends ConsumerStatefulWidget {
 }
 
 class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
-  final TextEditingController _situationController = TextEditingController(); // 상황 입력 컨트롤러
-  final TextEditingController _actionController = TextEditingController(); // 행동 입력 컨트롤러
-  String _filterPriority = '전체'; // 중요도 필터 값 ('전체', '낮음', '보통', '중요')
+  final TextEditingController _situationController = TextEditingController(); // 상황 입력
+  final TextEditingController _actionController = TextEditingController(); // 행동 입력
+  String _filterPriority = '전체'; // // 중요도 필터 값 ('전체', '낮음', '보통', '중요')
   bool _isEditing = false; // 편집 모드 여부
-  int? _editingIndex; // 현재 편집 중인 인덱스
 
   @override
   void dispose() {
@@ -37,17 +36,14 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
     super.dispose();
   }
 
-  /// 플랜 추가 또는 수정 다이얼로그 호출 함수
+  // 플랜 추가 또는 수정 다이얼로그 호출 함수
   void _showTaskDialog({DailyTaskModel? task, int? index}) {
-    // 초기 선택된 중요도 값 설정 (기본값은 '보통')
     String selectedPriority = task?.priority ?? '보통';
 
     if (task != null) {
-      // 수정인 경우 기존 값 입력
       _situationController.text = task.situation;
       _actionController.text = task.action;
     } else {
-      // 추가인 경우 초기화
       _situationController.clear();
       _actionController.clear();
     }
@@ -65,7 +61,7 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
     );
   }
 
-  /// 삭제 다이얼로그 호출 함수
+  // 삭제 다이얼로그 호출 함수
   void _showDeleteDialog(int index) {
     showDialog(
       context: context,
@@ -73,7 +69,7 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
     );
   }
 
-  /// 중요도 필터 다이얼로그 표시 함수
+  // 중요도 필터 다이얼로그 표시 함수
   void _showPriorityFilterDialog() {
     final priorities = ['전체', '낮음', '보통', '중요'];
     showModalBottomSheet(
@@ -85,11 +81,11 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
           children: priorities.map((priority) {
             return ListTile(
               leading: priority == '전체'
-                  ? const Icon(Icons.close, color: AppColors.subText) // 전체 보기용 아이콘
+                  ? const Icon(Icons.close, color: AppColors.subText)
                   : getPriorityIcon(priority),
               title: Text(priority == '전체' ? '전체 보기' : '중요도: $priority'),
               onTap: () {
-                setState(() => _filterPriority = priority); // 필터 적용
+                setState(() => _filterPriority = priority);
                 Navigator.of(context).pop();
               },
             );
@@ -101,20 +97,20 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final tasks = ref.watch(dailyTaskProvider); // 전체 플랜 목록
+    final tasks = ref.watch(dailyTaskProvider);
 
-    // 필터링된 목록 생성
+    // 필터된 일정 목록
     final filteredTasks = _filterPriority == '전체'
         ? tasks
         : tasks.where((task) => task.priority == _filterPriority).toList();
 
-    // 미완료 → 완료 순으로 정렬 (편집 중이면 원래 순서 유지)
+    // 편집 모드일 때는 순서 유지, 아닐 때는 미완료 우선 정렬
     final sortedTasks = _isEditing
-      ? filteredTasks
-      : [
-          ...filteredTasks.where((task) => !task.isCompleted),
-          ...filteredTasks.where((task) => task.isCompleted),
-        ];
+        ? filteredTasks
+        : [
+            ...filteredTasks.where((task) => !task.isCompleted),
+            ...filteredTasks.where((task) => task.isCompleted),
+          ];
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -123,26 +119,30 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
             : Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  getPriorityIcon(_filterPriority), // 필터 아이콘
+                  getPriorityIcon(_filterPriority),
                   SizedBox(width: 6.w),
                   Text('중요도: $_filterPriority', style: AppTextStyles.title.copyWith(color: AppColors.text)),
                   SizedBox(width: 8.w),
                   GestureDetector(
-                    onTap: () => setState(() => _filterPriority = '전체'), // 필터 해제 (전체 보기)
+                    onTap: () => setState(() => _filterPriority = '전체'),
                     child: Icon(Icons.close, size: 20.sp, color: AppColors.subText),
                   ),
                 ],
               ),
-        isTransparent: true, // 투명 앱바 여부
+        isTransparent: true,
         leading: IconButton(
           icon: Icon(Icons.filter_list, color: AppColors.text, size: 27.sp),
-          onPressed: _showPriorityFilterDialog, // 필터 버튼
+          onPressed: _showPriorityFilterDialog,
           tooltip: '중요도 필터',
         ),
         actions: [
           IconButton(
-            icon: Icon(_isEditing ? Icons.check : Icons.edit, color: _isEditing ? AppColors.success : AppColors.text, size: 27.sp),
-            onPressed: () => setState(() => _isEditing = !_isEditing), // 편집 모드 전환
+            icon: Icon(
+              _isEditing ? Icons.check : Icons.edit,
+              color: _isEditing ? AppColors.success : AppColors.text,
+              size: 27.sp,
+            ),
+            onPressed: () => setState(() => _isEditing = !_isEditing),
           ),
         ],
       ),
@@ -152,39 +152,37 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (_isEditing)
-                Padding(
-                  padding: EdgeInsets.only(bottom: 12.h),
-                  child: Center(
-                    child: Text('일정을 길게 눌러 순서를 변경해 보세요.', style: AppTextStyles.caption.copyWith(color: AppColors.subText)),
-                  ),
-                ),
               Expanded(
                 child: sortedTasks.isEmpty
-                    ? Center(child: Text('아직 등록된 약속이 없어요.', style: AppTextStyles.body)) // 등록된 플랜이 없을 경우
+                    ? Center(child: Text('아직 등록된 약속이 없어요.', style: AppTextStyles.body))
                     : ReorderableListView.builder(
+                        buildDefaultDragHandles: false,
                         itemCount: sortedTasks.length,
                         onReorder: (oldIndex, newIndex) {
-                          ref.read(dailyTaskProvider.notifier).reorderTask(oldIndex, newIndex); // 순서 변경 처리
+                          ref.read(dailyTaskProvider.notifier).reorderTask(oldIndex, newIndex);
                         },
-                        itemBuilder: (context, index) => TaskTile(
-                          key: ValueKey('$index-${sortedTasks[index].situation}'),
-                          task: sortedTasks[index],
-                          index: index,
-                          isEditing: _isEditing,
-                          onEdit: () => _showTaskDialog(task: sortedTasks[index], index: index), // 편집 다이얼로그
-                          onToggle: () => ref.read(dailyTaskProvider.notifier).toggleTask(
-                                tasks.indexOf(sortedTasks[index]),
-                              ), // 체크박스 토글
-                        ),
+                        itemBuilder: (context, index) {
+                          final task = sortedTasks[index];
+                          return TaskTile(
+                            key: ValueKey('$index-${task.situation}'),
+                            task: task,
+                            index: index,
+                            isEditing: _isEditing,
+                            onEdit: () => _showTaskDialog(task: task, index: index),
+                            onToggle: () => ref.read(dailyTaskProvider.notifier).toggleTask(
+                                  tasks.indexOf(task),
+                                ),
+                          );
+                        },
                       ),
               ),
             ],
           ),
         ),
       ),
+      // 일정 추가 버튼
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showTaskDialog(), // 일정 추가 다이얼로그
+        onPressed: () => _showTaskDialog(),
         backgroundColor: AppColors.accent,
         child: const Icon(Icons.add),
       ),
