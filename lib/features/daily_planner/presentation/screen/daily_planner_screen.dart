@@ -11,9 +11,9 @@ import 'package:abeul_planner/core/widgets/priority_icon.dart';
 import 'package:abeul_planner/core/color.dart';
 import 'package:abeul_planner/core/text_styles.dart';
 // widget
-import 'package:abeul_planner/features/daily_planner/presentation/widget/task_tile.dart';
-import 'package:abeul_planner/features/daily_planner/presentation/widget/task_dialog.dart';
-import 'package:abeul_planner/features/daily_planner/presentation/widget/delete_dialog.dart';
+import 'package:abeul_planner/features/daily_planner/presentation/widget/daily_task_tile.dart';
+import 'package:abeul_planner/features/daily_planner/presentation/widget/daily_task_dialog.dart';
+import 'package:abeul_planner/features/daily_planner/presentation/widget/daily_delete_dialog.dart';
 
 // 일상 플래너 메인 화면
 class DailyPlannerScreen extends ConsumerStatefulWidget {
@@ -50,7 +50,7 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => TaskDialog(
+      builder: (context) => DailyTaskDialog(
         task: task,
         index: index,
         situationController: _situationController,
@@ -65,7 +65,7 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
   void _showDeleteDialog(int index) {
     showDialog(
       context: context,
-      builder: (context) => DeleteDialog(index: index),
+      builder: (context) => DailyDeleteDialog(index: index),
     );
   }
 
@@ -163,7 +163,7 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
                         },
                         itemBuilder: (context, index) {
                           final task = sortedTasks[index];
-                          return TaskTile(
+                          return DailyTaskTile(
                             key: ValueKey('$index-${task.situation}'),
                             task: task,
                             index: index,

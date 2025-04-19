@@ -7,10 +7,10 @@ import 'package:abeul_planner/core/text_styles.dart';
 import 'package:abeul_planner/features/daily_planner/presentation/provider/daily_task_provider.dart';
 
 /// 플랜 제거 확인 다이얼로그
-class DeleteDialog extends ConsumerWidget {
+class DailyDeleteDialog extends ConsumerWidget {
   final int index; // 삭제할 인덱스
 
-  const DeleteDialog({super.key, required this.index});
+  const DailyDeleteDialog({super.key, required this.index});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
