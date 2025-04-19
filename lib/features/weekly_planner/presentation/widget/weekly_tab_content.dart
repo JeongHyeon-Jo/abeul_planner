@@ -12,13 +12,19 @@ import 'package:abeul_planner/core/color.dart';
 class WeeklyTabContent extends ConsumerWidget {
   final String day;
   final bool isEditing;
+  final String filterPriority; // 중요도 필터 추가
 
-  const WeeklyTabContent({super.key, required this.day, required this.isEditing});
+  const WeeklyTabContent({super.key, required this.day, required this.isEditing, required this.filterPriority});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final weekTask = ref.watch(weeklyTaskProvider)
         .firstWhere((t) => t.day == day, orElse: () => WeeklyTaskModel(day: day, theme: '', tasks: []));
+
+    // 필터링된 할 일 목록 생성
+    final filteredTasks = filterPriority == '전체'
+        ? weekTask.tasks
+        : weekTask.tasks.where((task) => task.priority == filterPriority).toList();
 
     return Scaffold(
       body: Padding(
@@ -44,7 +50,7 @@ class WeeklyTabContent extends ConsumerWidget {
 
             // 할 일 목록 위젯 분리
             Expanded(
-              child: WeeklyTaskList(day: day, tasks: weekTask.tasks),
+              child: WeeklyTaskList(day: day, tasks: filteredTasks),
             ),
           ],
         ),
