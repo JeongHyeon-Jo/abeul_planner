@@ -7,14 +7,14 @@ import 'package:abeul_planner/core/text_styles.dart';
 import 'package:abeul_planner/core/widgets/priority_icon.dart';
 
 /// 개별 할 일 항목 위젯
-class TaskTile extends StatelessWidget {
+class DailyTaskTile extends StatelessWidget {
   final DailyTaskModel task; // 할 일 모델
   final int index; // 해당 항목의 인덱스
   final bool isEditing; // 편집 모드 여부
   final VoidCallback onEdit; // 편집 버튼 콜백
   final VoidCallback onToggle; // 체크박스 변경 콜백
 
-  const TaskTile({
+  const DailyTaskTile({
     super.key,
     required this.task,
     required this.index,

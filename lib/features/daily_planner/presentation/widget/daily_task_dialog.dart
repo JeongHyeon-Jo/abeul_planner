@@ -9,7 +9,7 @@ import 'package:abeul_planner/features/daily_planner/data/model/daily_task_model
 import 'package:abeul_planner/features/daily_planner/presentation/provider/daily_task_provider.dart';
 
 /// 할 일 추가 및 수정 다이얼로그 위젯
-class TaskDialog extends ConsumerStatefulWidget {
+class DailyTaskDialog extends ConsumerStatefulWidget {
   final DailyTaskModel? task;
   final int? index;
   final TextEditingController situationController;
@@ -17,7 +17,7 @@ class TaskDialog extends ConsumerStatefulWidget {
   final String selectedPriority;
   final ValueChanged<int> onDelete;
 
-  const TaskDialog({
+  const DailyTaskDialog({
     super.key,
     required this.task,
     required this.index,
@@ -28,10 +28,10 @@ class TaskDialog extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<TaskDialog> createState() => _TaskDialogState();
+  ConsumerState<DailyTaskDialog> createState() => _DailyTaskDialogState();
 }
 
-class _TaskDialogState extends ConsumerState<TaskDialog> {
+class _DailyTaskDialogState extends ConsumerState<DailyTaskDialog> {
   late String _localPriority;
 
   @override
