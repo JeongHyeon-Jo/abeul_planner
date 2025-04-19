@@ -108,11 +108,13 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
         ? tasks
         : tasks.where((task) => task.priority == _filterPriority).toList();
 
-    // 미완료 → 완료 순으로 정렬
-    final sortedTasks = [
-      ...filteredTasks.where((task) => !task.isCompleted),
-      ...filteredTasks.where((task) => task.isCompleted),
-    ];
+    // 미완료 → 완료 순으로 정렬 (편집 중이면 원래 순서 유지)
+    final sortedTasks = _isEditing
+      ? filteredTasks
+      : [
+          ...filteredTasks.where((task) => !task.isCompleted),
+          ...filteredTasks.where((task) => task.isCompleted),
+        ];
 
     return Scaffold(
       appBar: CustomAppBar(
