@@ -7,27 +7,39 @@ import 'package:abeul_planner/core/color.dart';
 import 'package:abeul_planner/features/weekly_planner/data/model/weekly_task_model.dart';
 import 'package:abeul_planner/features/weekly_planner/presentation/provider/weekly_task_provider.dart';
 
-/// 주간 플래너 할 일 추가 다이얼로그
+/// 주간 일정 추가 및 수정 다이얼로그 위젯
 class WeeklyTaskDialog extends ConsumerStatefulWidget {
-  final List<String> days;
-  final void Function(String selectedDay) onTaskAdded;
+  final List<String> days; // 요일 리스트
+  final void Function(String selectedDay) onTaskAdded; // 일정 추가 콜백
+  final WeeklyTask? existingTask; // 수정할 기존 일정
+  final int? editingIndex; // 수정할 일정의 인덱스
+  final String? editingDay; // 수정할 요일
 
-  const WeeklyTaskDialog({super.key, required this.days, required this.onTaskAdded});
+  const WeeklyTaskDialog({
+    super.key,
+    required this.days,
+    required this.onTaskAdded,
+    this.existingTask,
+    this.editingIndex,
+    this.editingDay,
+  });
 
   @override
   ConsumerState<WeeklyTaskDialog> createState() => _WeeklyTaskDialogState();
 }
 
 class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
-  final TextEditingController _contentController = TextEditingController();
-  String _selectedDay = '월';
-  String _priority = '보통';
-  final List<String> _priorityKeys = ['낮음', '보통', '중요'];
+  final TextEditingController _contentController = TextEditingController(); // 일정 내용 입력 컨트롤러
+  String _selectedDay = '월'; // 선택된 요일
+  String _priority = '보통'; // 선택된 중요도
+  final List<String> _priorityKeys = ['낮음', '보통', '중요']; // 중요도 목록
 
   @override
   void initState() {
     super.initState();
-    _selectedDay = widget.days.first;
+    _selectedDay = widget.editingDay ?? widget.days.first; // 수정 모드이면 해당 요일으로 초기화
+    _contentController.text = widget.existingTask?.content ?? ''; // 수정 모드이면 내용 채우기
+    _priority = widget.existingTask?.priority ?? '보통'; // 수정 모드이면 중요도 설정
   }
 
   @override
@@ -38,11 +50,14 @@ class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isEditMode = widget.existingTask != null; // 수정 모드 여부 판단
+
     return AlertDialog(
-      title: Text('플래너 추가', style: AppTextStyles.title),
+      title: Text(isEditMode ? '일정 수정' : '일정 추가', style: AppTextStyles.title),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // 요일 선택
           DropdownButtonFormField<String>(
             value: _selectedDay,
             items: widget.days
@@ -57,11 +72,15 @@ class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
             decoration: const InputDecoration(labelText: '요일 선택'),
           ),
           SizedBox(height: 8.h),
+
+          // 일정 내용 입력
           TextField(
             controller: _contentController,
-            decoration: const InputDecoration(labelText: '할 일 내용'),
+            decoration: const InputDecoration(labelText: '일정 내용'),
           ),
           SizedBox(height: 8.h),
+
+          // 중요도 선택
           DropdownButtonFormField<String>(
             value: _priority,
             items: _priorityKeys
@@ -78,24 +97,39 @@ class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
         ],
       ),
       actions: [
+        // 취소 버튼
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text('취소', style: AppTextStyles.body.copyWith(color: AppColors.subText)),
         ),
+
+        // 저장 버튼 (추가 또는 수정)
         ElevatedButton(
           onPressed: () {
             final content = _contentController.text.trim();
             if (content.isEmpty) return;
 
-            ref.read(weeklyTaskProvider.notifier).addTask(
-              _selectedDay,
-              WeeklyTask(content: content, priority: _priority),
-            );
+            final newTask = WeeklyTask(content: content, priority: _priority);
+
+            if (isEditMode && widget.editingIndex != null && widget.editingDay != null) {
+              // 수정 모드 처리
+              ref.read(weeklyTaskProvider.notifier).editTask(
+                    widget.editingDay!,
+                    widget.editingIndex!,
+                    newTask,
+                  );
+            } else {
+              // 추가 모드 처리
+              ref.read(weeklyTaskProvider.notifier).addTask(
+                    _selectedDay,
+                    newTask,
+                  );
+              widget.onTaskAdded(_selectedDay);
+            }
 
             Navigator.of(context).pop();
-            widget.onTaskAdded(_selectedDay);
           },
-          child: Text('추가', style: AppTextStyles.button),
+          child: Text('저장', style: AppTextStyles.button),
         ),
       ],
     );

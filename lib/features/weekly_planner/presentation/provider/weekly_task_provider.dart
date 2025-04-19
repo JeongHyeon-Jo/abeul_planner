@@ -22,7 +22,7 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
     state = box.values.toList();
   }
 
-  // 할 일 추가
+  // 일정 추가
   void addTask(String day, WeeklyTask task) {
     final box = WeeklyTaskBox.box;
     final index = state.indexWhere((element) => element.day == day);
@@ -38,12 +38,23 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
     }
   }
 
-  // 할 일 삭제
+  // 일정 삭제
   void removeTask(String day, int taskIndex) {
     final index = state.indexWhere((element) => element.day == day);
     if (index != -1) {
       final updated = state[index];
       updated.tasks.removeAt(taskIndex);
+      updated.save();
+      state = [...state];
+    }
+  }
+
+  // 일정 수정 기능 추가
+  void editTask(String day, int taskIndex, WeeklyTask updatedTask) {
+    final index = state.indexWhere((element) => element.day == day);
+    if (index != -1) {
+      final updated = state[index];
+      updated.tasks[taskIndex] = updatedTask;
       updated.save();
       state = [...state];
     }
@@ -63,6 +74,24 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
       updated.save();
       state = [...state];
     }
+  }
+
+  // 순서 변경 함수
+  void reorderTask(String day, int oldIndex, int newIndex) {
+    final index = state.indexWhere((element) => element.day == day);
+    if (index == -1) return;
+
+    final updated = state[index];
+    final currentTasks = [...updated.tasks];
+
+    if (oldIndex < newIndex) newIndex -= 1;
+
+    final item = currentTasks.removeAt(oldIndex);
+    currentTasks.insert(newIndex, item);
+
+    updated.tasks = currentTasks;
+    updated.save();
+    state = [...state];
   }
 
   // 테마 설정
