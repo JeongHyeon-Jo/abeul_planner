@@ -33,4 +33,7 @@ class AppColors {
 
   /// 중요도 낮음 표시용 하늘색
   static const Color lowPriority = Color(0xFF81D4FA);
+
+  /// 행동 텍스트용 강조 색상 (부드러운 검정 회색)
+  static const Color actionText = Color.fromARGB(255, 54, 54, 54);
 }
