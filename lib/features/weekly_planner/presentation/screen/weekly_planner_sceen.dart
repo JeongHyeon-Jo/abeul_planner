@@ -47,6 +47,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
 
   /// 일정 추가 다이얼로그
   void _showAddTaskDialog(BuildContext context) {
+    final currentDay = days[_tabController.index];
     showDialog(
       context: context,
       builder: (context) => WeeklyTaskDialog(
@@ -56,6 +57,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
             _tabController.index = days.indexOf(selectedDay);
           });
         },
+        editingDay: currentDay,
       ),
     );
   }
