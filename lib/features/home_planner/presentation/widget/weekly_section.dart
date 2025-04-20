@@ -20,8 +20,6 @@ class WeeklySection extends StatelessWidget {
       children: todayWeekly.map((t) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('테마: ${t.theme}', style: AppTextStyles.body),
-          SizedBox(height: 8.h),
           ...t.tasks.map(
             (task) => Card(
               child: ListTile(

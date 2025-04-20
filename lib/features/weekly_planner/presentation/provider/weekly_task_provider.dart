@@ -32,7 +32,7 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
       updated.save();
       state = [...state];
     } else {
-      final newTask = WeeklyTaskModel(day: day, theme: '', tasks: [task]);
+      final newTask = WeeklyTaskModel(day: day, tasks: [task]);
       box.add(newTask);
       state = [...box.values];
     }
@@ -92,17 +92,6 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
     updated.tasks = currentTasks;
     updated.save();
     state = [...state];
-  }
-
-  // 테마 설정
-  void setTheme(String day, String theme) {
-    final index = state.indexWhere((element) => element.day == day);
-    if (index != -1) {
-      final updated = state[index];
-      updated.theme = theme;
-      updated.save();
-      state = [...state];
-    }
   }
 
   // 전체 삭제 (디버깅 용도 등)
