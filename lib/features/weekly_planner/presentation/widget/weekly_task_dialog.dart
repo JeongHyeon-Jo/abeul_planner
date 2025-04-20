@@ -1,4 +1,5 @@
 // weekly_task_dialog.dart
+import 'package:abeul_planner/core/widgets/priority_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -84,12 +85,18 @@ class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
           // 중요도 선택
           DropdownButtonFormField<String>(
             value: _priority,
-            items: _priorityKeys
-                .map((level) => DropdownMenuItem(
-                      value: level,
-                      child: Text(level, style: AppTextStyles.body),
-                    ))
-                .toList(),
+            items: _priorityKeys.map((level) {
+              return DropdownMenuItem(
+                value: level,
+                child: Row(
+                  children: [
+                    getPriorityIcon(level), // 중요도 아이콘 추가
+                    SizedBox(width: 8.w),
+                    Text(level, style: AppTextStyles.body),
+                  ],
+                ),
+              );
+            }).toList(),
             onChanged: (value) {
               if (value != null) setState(() => _priority = value);
             },
