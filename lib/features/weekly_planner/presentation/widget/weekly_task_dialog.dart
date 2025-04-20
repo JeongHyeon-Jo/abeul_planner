@@ -6,6 +6,7 @@ import 'package:abeul_planner/core/text_styles.dart';
 import 'package:abeul_planner/core/color.dart';
 import 'package:abeul_planner/features/weekly_planner/data/model/weekly_task_model.dart';
 import 'package:abeul_planner/features/weekly_planner/presentation/provider/weekly_task_provider.dart';
+import 'package:abeul_planner/features/weekly_planner/presentation/widget/weekly_delete_dialog.dart';
 
 /// 주간 일정 추가 및 수정 다이얼로그 위젯
 class WeeklyTaskDialog extends ConsumerStatefulWidget {
@@ -94,6 +95,23 @@ class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
             },
             decoration: const InputDecoration(labelText: '중요도'),
           ),
+
+          if (isEditMode)
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (_) => WeeklyDeleteDialog(
+                      day: widget.editingDay!,
+                      index: widget.editingIndex!,
+                    ),
+                  );
+                },
+                child: Text('일정 제거', style: AppTextStyles.caption.copyWith(color: Colors.red)),
+              ),
+            ),
         ],
       ),
       actions: [
