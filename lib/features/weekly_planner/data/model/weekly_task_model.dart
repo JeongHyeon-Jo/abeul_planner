@@ -27,14 +27,10 @@ class WeeklyTaskModel extends HiveObject {
   final String day; // 요일
 
   @HiveField(1)
-  String theme; // 오늘의 테마 ("집중의 날" 등)
-
-  @HiveField(2)
   List<WeeklyTask> tasks; // 할 일 리스트
 
   WeeklyTaskModel({
     required this.day,
-    required this.theme,
     required this.tasks,
   });
 }

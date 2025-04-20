@@ -1,4 +1,7 @@
 // weekly_task_list.dart
+// 주간 일정 리스트 표시 위젯
+
+import 'package:abeul_planner/core/widgets/priority_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,13 +11,21 @@ import 'package:abeul_planner/features/weekly_planner/data/model/weekly_task_mod
 import 'package:abeul_planner/features/weekly_planner/presentation/provider/weekly_task_provider.dart';
 import 'package:abeul_planner/features/weekly_planner/presentation/widget/weekly_task_dialog.dart';
 
-/// 주간 일정 리스트 표시 위젯
 class WeeklyTaskList extends ConsumerWidget {
   final String day; // 해당 요일
   final List<WeeklyTask> tasks; // 일정 리스트
   final bool isEditing; // 편집 모드 여부
+  final bool shrinkWrap; // 내부 스크롤 제어 여부
+  final ScrollPhysics? physics; // 스크롤 설정
 
-  const WeeklyTaskList({super.key, required this.day, required this.tasks, required this.isEditing});
+  const WeeklyTaskList({
+    super.key,
+    required this.day,
+    required this.tasks,
+    required this.isEditing,
+    this.shrinkWrap = false,
+    this.physics,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,6 +34,8 @@ class WeeklyTaskList extends ConsumerWidget {
     }
 
     return ReorderableListView.builder(
+      shrinkWrap: shrinkWrap, // 상위에서 제어
+      physics: physics, // 상위에서 제어
       buildDefaultDragHandles: false, // 커스텀 드래그 핸들 사용
       itemCount: tasks.length,
       onReorder: (oldIndex, newIndex) {
@@ -45,19 +58,7 @@ class WeeklyTaskList extends ConsumerWidget {
           child: Row(
             children: [
               // 중요도 아이콘
-              Icon(
-                task.priority == '중요'
-                    ? Icons.priority_high
-                    : task.priority == '보통'
-                        ? Icons.circle
-                        : Icons.arrow_downward,
-                color: task.priority == '중요'
-                    ? Colors.red
-                    : task.priority == '보통'
-                        ? Colors.orange
-                        : Colors.grey,
-                size: 20.sp,
-              ),
+              getPriorityIcon(task.priority),
               SizedBox(width: 12.w),
 
               // 일정 내용 텍스트
