@@ -94,6 +94,30 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
     state = [...state];
   }
 
+  // 요일 변경 포함한 수정
+  void moveAndEditTask({
+    required String fromDay,
+    required String toDay,
+    required int taskIndex,
+    required WeeklyTask newTask,
+  }) {
+    if (fromDay == toDay) {
+      editTask(toDay, taskIndex, newTask);
+      return;
+    }
+
+    // 기존 요일에서 제거
+    final fromIndex = state.indexWhere((element) => element.day == fromDay);
+    if (fromIndex != -1) {
+      final fromTaskModel = state[fromIndex];
+      fromTaskModel.tasks.removeAt(taskIndex);
+      fromTaskModel.save();
+    }
+
+    // 새 요일에 추가
+    addTask(toDay, newTask);
+  }
+
   // 전체 삭제 (디버깅 용도 등)
   void clearAll() {
     WeeklyTaskBox.box.clear();

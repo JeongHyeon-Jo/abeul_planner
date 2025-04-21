@@ -36,6 +36,11 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
     final weekday = now.weekday;
     final todayIndex = (weekday - 1).clamp(0, 6); // 월(1) ~ 일(7) → 0~6 인덱스로 변환
     _tabController = TabController(length: days.length, vsync: this, initialIndex: todayIndex);
+
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) return;
+      setState(() {});
+    });
   }
 
   @override
@@ -155,23 +160,33 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
                 child: TabBar(
                   controller: _tabController,
                   isScrollable: false,
-                  indicator: UnderlineTabIndicator(
-                    borderSide: BorderSide(width: 3.h, color: AppColors.highlight),
-                    insets: EdgeInsets.symmetric(horizontal: 8.w),
-                  ),
-                  indicatorSize: TabBarIndicatorSize.label,
-                  labelColor: AppColors.text,
-                  unselectedLabelColor: AppColors.subText,
-                  labelStyle: AppTextStyles.body,
-                  tabs: days.map((day) {
-                    return Center(
-                      child: Text(day, style: AppTextStyles.body),
-                    );
-                  }).toList(),
+                  indicator: BoxDecoration(),
                   dividerColor: Colors.transparent,
-                  indicatorPadding: EdgeInsets.zero,
-                  padding: EdgeInsets.zero,
-                  labelPadding: EdgeInsets.symmetric(vertical: 12.h),
+                  labelPadding: EdgeInsets.zero,
+                  tabs: List.generate(days.length, (index) {
+                    final isSelected = _tabController.index == index;
+
+                    return Container(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          right: index < days.length - 1
+                              ? BorderSide(color: AppColors.highlight, width: 1.w)
+                              : BorderSide.none,
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
+                        child: Text(
+                          days[index],
+                          style: AppTextStyles.body.copyWith(
+                            color: isSelected ? AppColors.highlight : AppColors.text,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
                 ),
               ),
               SizedBox(height: 12.h),
@@ -191,8 +206,8 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
                     ],
                     border: Border.all(color: AppColors.primary, width: 1.w),
                   ),
-                  child: TabBarView(
-                    controller: _tabController,
+                  child: IndexedStack(
+                    index: _tabController.index,
                     children: days.map((day) {
                       final weekTask = ref.watch(weeklyTaskProvider).firstWhere(
                           (t) => t.day == day,

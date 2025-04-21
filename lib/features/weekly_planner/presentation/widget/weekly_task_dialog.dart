@@ -137,18 +137,14 @@ class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
             final newTask = WeeklyTask(content: content, priority: _priority);
 
             if (isEditMode && widget.editingIndex != null && widget.editingDay != null) {
-              // 수정 모드 처리
-              ref.read(weeklyTaskProvider.notifier).editTask(
-                    widget.editingDay!,
-                    widget.editingIndex!,
-                    newTask,
-                  );
+              ref.read(weeklyTaskProvider.notifier).moveAndEditTask(
+                fromDay: widget.editingDay!,
+                toDay: _selectedDay,
+                taskIndex: widget.editingIndex!,
+                newTask: newTask,
+              );
             } else {
-              // 추가 모드 처리
-              ref.read(weeklyTaskProvider.notifier).addTask(
-                    _selectedDay,
-                    newTask,
-                  );
+              ref.read(weeklyTaskProvider.notifier).addTask(_selectedDay, newTask);
               widget.onTaskAdded(_selectedDay);
             }
 
