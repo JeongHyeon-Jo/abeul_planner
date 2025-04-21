@@ -214,10 +214,17 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
                           orElse: () => WeeklyTaskModel(day: day, tasks: []));
 
                       final filteredTasks = _filterPriority == '전체'
-                          ? weekTask.tasks
-                          : weekTask.tasks
-                              .where((task) => task.priority == _filterPriority)
-                              .toList();
+                        ? weekTask.tasks
+                        : weekTask.tasks
+                            .where((task) => task.priority == _filterPriority)
+                            .toList();
+
+                      final displayTasks = _isEditing
+                          ? filteredTasks
+                          : [
+                              ...filteredTasks.where((task) => !task.isCompleted),
+                              ...filteredTasks.where((task) => task.isCompleted),
+                            ];
 
                       return SingleChildScrollView(
                         child: Padding(
@@ -227,7 +234,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
                             children: [
                               WeeklyTaskList(
                                 day: day,
-                                tasks: filteredTasks,
+                                tasks: displayTasks,
                                 isEditing: _isEditing,
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
