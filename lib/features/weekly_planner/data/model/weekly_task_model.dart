@@ -12,12 +12,16 @@ class WeeklyTask {
   final String priority; // 중요도
 
   @HiveField(2)
-  final bool isCompleted; // 수행 여부
+  bool isCompleted; // 수행 여부
+
+  @HiveField(3)
+  DateTime? lastCheckedWeek;  // 마지막 체크 주
 
   WeeklyTask({
     required this.content,
     this.priority = '보통',
     this.isCompleted = false,
+    this.lastCheckedWeek,
   });
 }
 
