@@ -1,8 +1,7 @@
-// weekly_task_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../../data/datasource/weekly_task_box.dart';
-import '../../data/model/weekly_task_model.dart';
+import 'package:abeul_planner/features/weekly_planner/data/datasource/weekly_task_box.dart';
+import 'package:abeul_planner/features/weekly_planner/data/model/weekly_task_model.dart';
 
 // 상태 관리를 위한 Provider
 final weeklyTaskProvider =
@@ -13,12 +12,32 @@ final weeklyTaskProvider =
 // 요일 플래너 상태 관리 클래스
 class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
   WeeklyTaskNotifier() : super([]) {
-    _loadTasks();
+    _init();
   }
 
-  // 초기 데이터 로드
-  void _loadTasks() {
+  /// 초기화: 박스를 불러오고, 매주 월요일마다 완료 여부 초기화
+  void _init() {
     final box = WeeklyTaskBox.box;
+    final now = DateTime.now();
+    final currentWeekStart = now.subtract(Duration(days: now.weekday - 1)); // 이번 주 월요일
+
+    for (final model in box.values) {
+      for (final task in model.tasks) {
+        final lastChecked = task.lastCheckedWeek;
+
+        final isNewWeek = lastChecked == null ||
+            lastChecked.year != currentWeekStart.year ||
+            lastChecked.month != currentWeekStart.month ||
+            lastChecked.day != currentWeekStart.day;
+
+        if (isNewWeek) {
+          task.isCompleted = false;
+          task.lastCheckedWeek = currentWeekStart;
+        }
+      }
+      model.save();
+    }
+
     state = box.values.toList();
   }
 
@@ -70,6 +89,9 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
         content: old.content,
         priority: old.priority,
         isCompleted: !old.isCompleted,
+        lastCheckedWeek: DateTime.now().subtract(
+          Duration(days: DateTime.now().weekday - 1),
+        ), // 현재 주 월요일로 기록
       );
       updated.save();
       state = [...state];
