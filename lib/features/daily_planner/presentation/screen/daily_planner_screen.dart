@@ -181,10 +181,13 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
         ),
       ),
       // 일정 추가 버튼
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showTaskDialog(),
-        backgroundColor: AppColors.accent,
-        child: const Icon(Icons.add),
+      floatingActionButton: Transform.translate(
+        offset: Offset(-6.w, -6.h),
+        child: FloatingActionButton(
+          onPressed: () => _showTaskDialog(),
+          backgroundColor: AppColors.accent,
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }

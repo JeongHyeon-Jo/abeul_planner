@@ -1,18 +1,20 @@
 // calendar_task_list.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:abeul_planner/core/color.dart';
 import 'package:abeul_planner/core/text_styles.dart';
 import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
+import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
+import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_task_dialog.dart'; // ✅ 추가 필요!
 
-/// 선택된 날짜의 일정 목록을 보여주는 위젯
-class CalendarTaskList extends StatelessWidget {
+class CalendarTaskList extends ConsumerWidget {
   final List<CalendarTaskModel> tasks;
 
   const CalendarTaskList({super.key, required this.tasks});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Container(
@@ -43,17 +45,57 @@ class CalendarTaskList extends StatelessWidget {
                     itemCount: tasks.length,
                     itemBuilder: (context, index) {
                       final task = tasks[index];
+
                       return ListTile(
                         leading: Icon(Icons.event_note, size: 20.sp),
                         title: Text(
-                          '${task.time} - ${task.memo}',
+                          task.memo,
                           style: AppTextStyles.body,
                         ),
+                        // 클릭 시 수정 다이얼로그 열기
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (_) => CalendarTaskDialog(
+                              existingTask: task,
+                              selectedDate: task.date,
+                            ),
+                          );
+                        },
+                        // 길게 누르면 삭제 다이얼로그
+                        onLongPress: () {
+                          _showDeleteDialog(context, ref, task);
+                        },
                       );
                     },
                   ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// 삭제 확인 다이얼로그
+  void _showDeleteDialog(BuildContext context, WidgetRef ref, CalendarTaskModel task) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('일정 삭제', style: AppTextStyles.title),
+        content: Text('정말 이 일정을 삭제하시겠습니까?', style: AppTextStyles.body),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('취소', style: AppTextStyles.body.copyWith(color: AppColors.subText)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final provider = ref.read(calendarTaskProvider.notifier);
+              provider.deleteSpecificTask(task);
+              Navigator.of(context).pop();
+            },
+            child: Text('삭제', style: AppTextStyles.button),
+          ),
+        ],
       ),
     );
   }

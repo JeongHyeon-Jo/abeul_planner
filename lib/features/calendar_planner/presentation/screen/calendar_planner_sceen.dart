@@ -49,19 +49,31 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
     // 선택된 날짜에 해당하는 일정 가져오기
     final tasksForSelectedDay = ref.watch(calendarTaskProvider.notifier)
         .getTasksForDate(_selectedDay!);
+    final currentYear = _focusedDay.year;
 
     return Scaffold(
       appBar: CustomAppBar(
         title: Text(
-          '캘린더 플래너',
+          '${_focusedDay.year}년',
           style: AppTextStyles.title.copyWith(color: AppColors.text),
         ),
         isTransparent: true,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search, color: AppColors.text, size: 27.sp),
+            onPressed: () {
+              // 검색 기능은 나중에
+            },
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _openAddTaskDialog, // 일정 추가 버튼
-        backgroundColor: AppColors.accent,
-        child: const Icon(Icons.add),
+      floatingActionButton: Transform.translate(
+        offset: Offset(-6.w, -6.h),
+        child: FloatingActionButton(
+          onPressed: _openAddTaskDialog, // 일정 추가 버튼
+          backgroundColor: AppColors.accent,
+          child: const Icon(Icons.add),
+        ),
       ),
       body: Column(
         children: [

@@ -25,10 +25,11 @@ class CalendarTaskNotifier extends StateNotifier<List<CalendarTaskModel>> {
 
   /// 특정 날짜에 해당하는 일정 필터링
   List<CalendarTaskModel> getTasksForDate(DateTime date) {
-    return state.where((task) =>
-      task.date.year == date.year &&
-      task.date.month == date.month &&
-      task.date.day == date.day).toList();
+    return state.where((task) {
+      return task.date.year == date.year &&
+             task.date.month == date.month &&
+             task.date.day == date.day;
+    }).toList();
   }
 
   /// 새로운 일정 추가
@@ -37,9 +38,29 @@ class CalendarTaskNotifier extends StateNotifier<List<CalendarTaskModel>> {
     state = _box.values.toList();
   }
 
-  /// 일정 삭제
+  /// 일정 삭제 (기본은 하나만 삭제, 반복 삭제는 이후 추가)
   void deleteTask(int index) {
     _box.deleteAt(index);
+    state = _box.values.toList();
+  }
+
+  /// 특정 task를 직접 삭제 (index 대신 task 기반)
+  void deleteSpecificTask(CalendarTaskModel task) {
+    final index = state.indexOf(task);
+    if (index != -1) {
+      deleteTask(index);
+    }
+  }
+
+  /// 메모 내용 기준으로 반복되는 전체 일정 삭제 (반복 삭제용, 추후 구현할 거야)
+  void deleteAllTasksWithMemo(String memo) {
+    final tasksToDelete = state.where((task) => task.memo == memo).toList();
+    for (var task in tasksToDelete) {
+      final index = state.indexOf(task);
+      if (index != -1) {
+        _box.deleteAt(index);
+      }
+    }
     state = _box.values.toList();
   }
 }

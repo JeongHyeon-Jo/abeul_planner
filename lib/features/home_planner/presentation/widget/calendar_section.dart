@@ -15,21 +15,22 @@ class CalendarSection extends StatelessWidget {
       (task) => task.date.year == now.year &&
                 task.date.month == now.month &&
                 task.date.day == now.day,
-    );
+    ).toList(); // toList()로 변환
 
     if (todayTasks.isEmpty) {
       return Text('오늘 일정이 없습니다.', style: AppTextStyles.body);
     }
 
     return Column(
-      children: todayTasks
-          .map((task) => Card(
-                child: ListTile(
-                  title: Text(task.memo, style: AppTextStyles.body),
-                  subtitle: Text(task.time, style: AppTextStyles.caption),
-                ),
-              ))
-          .toList(),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: todayTasks.map((task) {
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 4), // 카드 간격 추가
+          child: ListTile(
+            title: Text(task.memo, style: AppTextStyles.body),
+          ),
+        );
+      }).toList(),
     );
   }
 }
