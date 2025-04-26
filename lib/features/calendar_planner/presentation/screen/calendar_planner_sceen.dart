@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
-import 'package:abeul_planner/core/color.dart';
+import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_task_dialog.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_widget.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_task_list.dart';
-import 'package:abeul_planner/core/text_styles.dart';
+import 'package:abeul_planner/core/styles/text_styles.dart';
 
 /// 캘린더 플래너 메인 화면
 class CalendarPlannerScreen extends ConsumerStatefulWidget {

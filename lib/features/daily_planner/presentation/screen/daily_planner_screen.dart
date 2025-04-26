@@ -7,9 +7,9 @@ import 'package:abeul_planner/features/daily_planner/data/model/daily_task_model
 import 'package:abeul_planner/features/daily_planner/presentation/provider/daily_task_provider.dart';
 // core
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
-import 'package:abeul_planner/core/widgets/priority_icon.dart';
-import 'package:abeul_planner/core/color.dart';
-import 'package:abeul_planner/core/text_styles.dart';
+import 'package:abeul_planner/core/utils/priority_icon.dart';
+import 'package:abeul_planner/core/styles/color.dart';
+import 'package:abeul_planner/core/styles/text_styles.dart';
 // widget
 import 'package:abeul_planner/features/daily_planner/presentation/widget/daily_task_tile.dart';
 import 'package:abeul_planner/features/daily_planner/presentation/widget/daily_task_dialog.dart';

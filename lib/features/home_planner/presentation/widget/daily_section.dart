@@ -1,29 +1,74 @@
 // daily_section.dart
 import 'package:flutter/material.dart';
-import 'package:abeul_planner/core/text_styles.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:abeul_planner/core/styles/color.dart';
+import 'package:abeul_planner/core/styles/text_styles.dart';
+import 'package:abeul_planner/core/utils/priority_utils.dart';
+import 'package:abeul_planner/core/utils/priority_icon.dart';
 import 'package:abeul_planner/features/daily_planner/data/model/daily_task_model.dart';
+import 'package:abeul_planner/features/daily_planner/presentation/provider/daily_task_provider.dart';
 
-class DailySection extends StatelessWidget {
+class DailySection extends ConsumerWidget {
   final List<DailyTaskModel> dailyTasks;
 
   const DailySection({super.key, required this.dailyTasks});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (dailyTasks.isEmpty) {
-      return Text('일상 기록이 없습니다.', style: AppTextStyles.body);
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        child: Text('일상 기록이 없습니다.', style: AppTextStyles.body),
+      );
     }
 
+    // 완료 여부 + 중요도 기준 정렬
+    final sortedTasks = [...dailyTasks];
+    sortedTasks.sort((a, b) {
+      if (a.isCompleted != b.isCompleted) {
+        return a.isCompleted ? 1 : -1;
+      }
+      return priorityValue(a.priority).compareTo(priorityValue(b.priority));
+    });
+
+    final displayTasks = sortedTasks.take(5).toList(); // 최대 5개만
+
     return Column(
-      children: dailyTasks
-          .map((t) => Card(
-                child: ListTile(
-                  leading: const Icon(Icons.check),
-                  title: Text(t.situation, style: AppTextStyles.body),
-                  subtitle: Text(t.action, style: AppTextStyles.caption),
-                ),
-              ))
-          .toList(),
+      children: displayTasks.asMap().entries.map((entry) {
+        final index = entry.key;
+        final task = entry.value;
+
+        return Card(
+          margin: EdgeInsets.symmetric(vertical: 6.h),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            side: BorderSide(color: AppColors.primary, width: 1.w),
+          ),
+          child: ListTile(
+            leading: getPriorityIcon(task.priority),
+            title: Text(
+              task.situation,
+              style: AppTextStyles.body,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: Text(
+              task.action,
+              style: AppTextStyles.caption,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: Checkbox(
+              value: task.isCompleted,
+              onChanged: (_) {
+                ref.read(dailyTaskProvider.notifier).toggleTask(index);
+              },
+            ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+          ),
+        );
+      }).toList(),
     );
   }
 }

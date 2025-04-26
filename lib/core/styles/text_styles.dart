@@ -1,7 +1,7 @@
 // text_styles.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:abeul_planner/core/color.dart';
+import 'package:abeul_planner/core/styles/color.dart';
 
 /// 앱 전체에서 사용할 텍스트 스타일 모음
 class AppTextStyles {

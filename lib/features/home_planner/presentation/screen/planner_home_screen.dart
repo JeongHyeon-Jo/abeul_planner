@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 // core
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
-import 'package:abeul_planner/core/text_styles.dart';
-import 'package:abeul_planner/core/color.dart';
+import 'package:abeul_planner/core/styles/text_styles.dart';
+import 'package:abeul_planner/core/styles/color.dart';
 // provider
 import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
 import 'package:abeul_planner/features/weekly_planner/presentation/provider/weekly_task_provider.dart';
@@ -16,7 +17,6 @@ import 'package:abeul_planner/features/home_planner/presentation/widget/calendar
 import 'package:abeul_planner/features/home_planner/presentation/widget/weekly_section.dart';
 import 'package:abeul_planner/features/home_planner/presentation/widget/daily_section.dart';
 
-/// 종합 플래너 화면 (홈 플래너)
 class PlannerHomeScreen extends ConsumerWidget {
   const PlannerHomeScreen({super.key});
 
@@ -27,65 +27,114 @@ class PlannerHomeScreen extends ConsumerWidget {
     final dailyTasks = ref.watch(dailyTaskProvider);
 
     final now = DateTime.now();
-    final dateText = DateFormat('M월 d일 (E)', 'ko_KR').format(now);
+    final appBarTitle = DateFormat('yyyy년 M월 d일 (E)', 'ko_KR').format(now);
     final weekday = DateFormat('E', 'ko_KR').format(now);
 
     return Scaffold(
       appBar: CustomAppBar(
         title: Text(
-          '',
+          appBarTitle,
           style: AppTextStyles.title.copyWith(color: AppColors.text),
         ),
         isTransparent: true,
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0.w),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: AppColors.primary, width: 1.w),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 4.r,
-                offset: Offset(0, 2.h),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // 달력 플래너
+              SizedBox(
+                height: 240.h,
+                child: _buildSectionContainer(
+                  context,
+                  title: '달력 플래너',
+                  route: '/calendar',
+                  child: SingleChildScrollView(
+                    child: CalendarSection(now: now, calendarTasks: calendarTasks),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.h),
+
+              // 주간 플래너
+              SizedBox(
+                height: 240.h,
+                child: _buildSectionContainer(
+                  context,
+                  title: '주간 플래너',
+                  route: '/weekly',
+                  child: SingleChildScrollView(
+                    child: WeeklySection(weekday: weekday, weeklyTasks: weeklyTasks),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.h),
+
+              // 일상 플래너
+              SizedBox(
+                height: 360.h,
+                child: _buildSectionContainer(
+                  context,
+                  title: '일상 플래너',
+                  route: '/daily',
+                  child: SingleChildScrollView(
+                    child: DailySection(dailyTasks: dailyTasks),
+                  ),
+                ),
               ),
             ],
           ),
-          child: Padding(
-            padding: EdgeInsets.all(16.0.w),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(dateText, style: AppTextStyles.title),
-                  SizedBox(height: 20.h),
-
-                  // 📅 달력 플래너
-                  Text('달력 플래너', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
-                  Divider(color: AppColors.primary),
-                  CalendarSection(now: now, calendarTasks: calendarTasks),
-
-                  Divider(color: AppColors.primary),
-
-                  // 📆 주간 플래너
-                  Text('주간 플래너 ($weekday요일)', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
-                  Divider(color: AppColors.primary),
-                  WeeklySection(weekday: weekday, weeklyTasks: weeklyTasks),
-
-                  Divider(color: AppColors.primary),
-
-                  // 📝 일상 플래너
-                  Text('일상 플래너', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
-                  Divider(color: AppColors.primary),
-                  DailySection(dailyTasks: dailyTasks),
-                ],
-              ),
-            ),
-          ),
         ),
       ),
+    );
+  }
+
+  /// 공통 섹션 컨테이너 위젯
+  Widget _buildSectionContainer(BuildContext context, {
+    required String title,
+    required String route,
+    required Widget child,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(16.0.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: AppColors.primary, width: 1.w),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 4.r,
+            offset: Offset(0, 2.h),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle(context, title, route),
+          SizedBox(height: 8.h),
+          child,
+        ],
+      ),
+    );
+  }
+
+  /// 공통 섹션 타이틀 위젯
+  Widget _buildSectionTitle(BuildContext context, String title, String route) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(title, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+        IconButton(
+          icon: const Icon(Icons.chevron_right),
+          color: AppColors.subText,
+          onPressed: () {
+            context.go(route);
+          },
+        ),
+      ],
     );
   }
 }

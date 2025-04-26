@@ -1,6 +1,6 @@
 // theme.dart
 import 'package:flutter/material.dart';
-import 'package:abeul_planner/core/color.dart';
+import 'package:abeul_planner/core/styles/color.dart';
 
 /// 앱 전역에서 사용하는 라이트 테마 정의
 final ThemeData appLightTheme = ThemeData(

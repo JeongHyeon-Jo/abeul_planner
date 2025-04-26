@@ -1,33 +1,70 @@
 // calendar_section.dart
 import 'package:flutter/material.dart';
-import 'package:abeul_planner/core/text_styles.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:abeul_planner/core/styles/color.dart';
+import 'package:abeul_planner/core/styles/text_styles.dart';
+import 'package:abeul_planner/core/utils/priority_utils.dart';
+import 'package:abeul_planner/core/utils/priority_icon.dart';
 import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
+import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
 
-class CalendarSection extends StatelessWidget {
+class CalendarSection extends ConsumerWidget {
   final DateTime now;
   final List<CalendarTaskModel> calendarTasks;
 
   const CalendarSection({super.key, required this.now, required this.calendarTasks});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final todayTasks = calendarTasks.where(
       (task) => task.date.year == now.year &&
                 task.date.month == now.month &&
                 task.date.day == now.day,
-    ).toList(); // toList()로 변환
+    ).toList();
 
     if (todayTasks.isEmpty) {
-      return Text('오늘 일정이 없습니다.', style: AppTextStyles.body);
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        child: Text('오늘 일정이 없습니다.', style: AppTextStyles.body),
+      );
     }
 
+    // 중요도 + 완료 여부 정렬
+    todayTasks.sort((a, b) {
+      if (a.isCompleted != b.isCompleted) {
+        return a.isCompleted ? 1 : -1; // 완료 안된 게 먼저
+      }
+      return priorityValue(a.repeat).compareTo(priorityValue(b.repeat));
+    });
+
+    final displayTasks = todayTasks.take(3).toList(); // 최대 3개만 표시
+
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: todayTasks.map((task) {
+      children: displayTasks.map((task) {
         return Card(
-          margin: const EdgeInsets.symmetric(vertical: 4), // 카드 간격 추가
+          margin: EdgeInsets.symmetric(vertical: 6.h),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            side: BorderSide(color: AppColors.primary, width: 1.w),
+          ),
           child: ListTile(
-            title: Text(task.memo, style: AppTextStyles.body),
+            leading: getPriorityIcon(task.repeat),
+            title: Text(
+              task.memo,
+              style: AppTextStyles.body,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: Checkbox(
+              value: task.isCompleted,
+              onChanged: (value) {
+                if (value != null) {
+                  ref.read(calendarTaskProvider.notifier).toggleTask(task);
+                }
+              },
+            ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
           ),
         );
       }).toList(),
