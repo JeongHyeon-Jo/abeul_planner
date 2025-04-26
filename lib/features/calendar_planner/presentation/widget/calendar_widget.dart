@@ -57,6 +57,7 @@ class CalendarWidget extends StatelessWidget {
                 bottom: BorderSide(color: AppColors.primary),
               ),
             ),
+            titleTextFormatter: (date, locale) => '${date.month}월',
           ),
           daysOfWeekStyle: DaysOfWeekStyle(
             weekdayStyle: AppTextStyles.body.copyWith(fontSize: 14.sp),

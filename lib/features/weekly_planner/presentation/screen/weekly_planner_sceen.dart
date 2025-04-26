@@ -133,10 +133,13 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
         ),
 
         // 추가 버튼
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => _showAddTaskDialog(context),
-          backgroundColor: AppColors.accent,
-          child: Icon(Icons.add, size: 24.sp),
+        floatingActionButton: Transform.translate(
+          offset: Offset(-6.w, -6.h),
+          child: FloatingActionButton(
+            onPressed: () => _showAddTaskDialog(context),
+            backgroundColor: AppColors.accent,
+            child: Icon(Icons.add, size: 24.sp),
+          ),
         ),
 
         body: Padding(

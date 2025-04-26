@@ -3,21 +3,21 @@ import 'package:hive/hive.dart';
 
 part 'calendar_task_model.g.dart'; // build_runner로 생성될 어댑터 파일
 
-/// 날짜별 메모를 위한 모델 클래스
-@HiveType(typeId: 1) // typeId는 고유값이어야 하며 다른 모델과 중복되면 안 됨
+/// 날짜별 메모를 위한 모델 클래스 (리팩토링 버전)
+@HiveType(typeId: 1)
 class CalendarTaskModel {
-  @HiveField(0) // 메모 내용
-  final String memo;
+  @HiveField(0) 
+  final String memo; // 메모 내용
 
-  @HiveField(1) // 선택한 시간 (HH:mm 형식의 문자열)
-  final String time;
+  @HiveField(1) 
+  final DateTime date; // 저장된 날짜 (yyyy-MM-dd)
 
-  @HiveField(2) // 저장된 날짜 (yyyy-MM-dd 형식의 문자열)
-  final DateTime date;
+  @HiveField(2)
+  final String repeat; // 반복 설정 (없음, 매일, 매주, 매월, 매년)
 
   CalendarTaskModel({
     required this.memo,
-    required this.time,
     required this.date,
+    required this.repeat,
   });
 }
