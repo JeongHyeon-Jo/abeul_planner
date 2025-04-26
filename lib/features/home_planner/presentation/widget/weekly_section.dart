@@ -1,39 +1,79 @@
 // weekly_section.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:abeul_planner/core/color.dart';
-import 'package:abeul_planner/core/text_styles.dart';
+import 'package:abeul_planner/core/styles/color.dart';
+import 'package:abeul_planner/core/styles/text_styles.dart';
+import 'package:abeul_planner/core/utils/priority_utils.dart';
+import 'package:abeul_planner/core/utils/priority_icon.dart';
 import 'package:abeul_planner/features/weekly_planner/data/model/weekly_task_model.dart';
+import 'package:abeul_planner/features/weekly_planner/presentation/provider/weekly_task_provider.dart';
 
-class WeeklySection extends StatelessWidget {
+class WeeklySection extends ConsumerWidget {
   final String weekday;
   final List<WeeklyTaskModel> weeklyTasks;
 
   const WeeklySection({super.key, required this.weekday, required this.weeklyTasks});
 
   @override
-  Widget build(BuildContext context) {
-    final todayWeekly = weeklyTasks.where((t) => t.day == weekday);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final todayWeekly = weeklyTasks.where((t) => t.day == weekday).toList();
+
+    if (todayWeekly.isEmpty) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        child: Text('오늘 주간 일정이 없습니다.', style: AppTextStyles.body),
+      );
+    }
+
+    // 모든 할 일(flatten) 리스트로 변환
+    final allTasks = todayWeekly.expand((t) => t.tasks.map((task) => (t.day, task))).toList();
+
+    // 완료 여부 + 중요도 기준 정렬
+    allTasks.sort((a, b) {
+      final aTask = a.$2;
+      final bTask = b.$2;
+
+      if (aTask.isCompleted != bTask.isCompleted) {
+        return aTask.isCompleted ? 1 : -1;
+      }
+      return priorityValue(aTask.priority).compareTo(priorityValue(bTask.priority));
+    });
+
+    final displayTasks = allTasks.take(3).toList(); // 최대 3개만 표시
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: todayWeekly.map((t) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ...t.tasks.map(
-            (task) => Card(
-              child: ListTile(
-                leading: Icon(
-                  task.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-                  color: task.isCompleted ? AppColors.success : AppColors.subText,
-                ),
-                title: Text(task.content, style: AppTextStyles.body),
-                subtitle: Text('중요도: ${task.priority}', style: AppTextStyles.caption),
-              ),
+      children: displayTasks.map((entry) {
+        final (day, task) = entry;
+        return Card(
+          margin: EdgeInsets.symmetric(vertical: 6.h),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            side: BorderSide(color: AppColors.primary, width: 1.w),
+          ),
+          child: ListTile(
+            leading: getPriorityIcon(task.priority),
+            title: Text(
+              task.content,
+              style: AppTextStyles.body,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-          )
-        ],
-      )).toList(),
+            trailing: Checkbox(
+              value: task.isCompleted,
+              onChanged: (_) {
+                final notifier = ref.read(weeklyTaskProvider.notifier);
+                final todayModel = notifier.state.firstWhere((model) => model.day == day);
+                final taskIndex = todayModel.tasks.indexOf(task);
+                if (taskIndex != -1) {
+                  notifier.toggleTask(day, taskIndex);
+                }
+              },
+            ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+          ),
+        );
+      }).toList(),
     );
   }
 }

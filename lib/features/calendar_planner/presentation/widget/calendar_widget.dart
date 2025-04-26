@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:abeul_planner/core/color.dart';
-import 'package:abeul_planner/core/text_styles.dart';
+import 'package:abeul_planner/core/styles/color.dart';
+import 'package:abeul_planner/core/styles/text_styles.dart';
 
 /// 캘린더 위젯 박스 (둥근 테두리 + 그림자 포함)
 class CalendarWidget extends StatelessWidget {

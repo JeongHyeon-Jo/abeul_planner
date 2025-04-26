@@ -2,9 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:abeul_planner/features/daily_planner/data/model/daily_task_model.dart';
-import 'package:abeul_planner/core/color.dart';
-import 'package:abeul_planner/core/text_styles.dart';
-import 'package:abeul_planner/core/widgets/priority_icon.dart';
+import 'package:abeul_planner/core/styles/color.dart';
+import 'package:abeul_planner/core/styles/text_styles.dart';
+import 'package:abeul_planner/core/utils/priority_icon.dart';
 
 /// 개별 할 일 항목 위젯
 class DailyTaskTile extends StatelessWidget {

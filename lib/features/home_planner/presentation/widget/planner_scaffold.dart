@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:abeul_planner/core/color.dart';
+import 'package:abeul_planner/core/styles/color.dart';
 
 /// 🧭 아블 플래너의 공통 레이아웃 (하단 네비 + 플로팅 버튼)
 class PlannerScaffold extends StatefulWidget {

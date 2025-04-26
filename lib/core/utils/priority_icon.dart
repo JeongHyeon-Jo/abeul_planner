@@ -1,7 +1,7 @@
 // lib/core/widgets/priority_icon.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:abeul_planner/core/color.dart';
+import 'package:abeul_planner/core/styles/color.dart';
 
 /// 중요도에 따라 아이콘을 반환하는 위젯 함수
 Widget getPriorityIcon(String priority) {

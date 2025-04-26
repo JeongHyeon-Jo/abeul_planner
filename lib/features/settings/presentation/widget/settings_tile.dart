@@ -1,7 +1,7 @@
 // settings_tile.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:abeul_planner/core/text_styles.dart';
+import 'package:abeul_planner/core/styles/text_styles.dart';
 
 /// 설정 항목 개별 타일 위젯
 class SettingsTile extends StatelessWidget {

@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
-import 'package:abeul_planner/core/text_styles.dart';
-import 'package:abeul_planner/core/color.dart';
+import 'package:abeul_planner/core/styles/text_styles.dart';
+import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/features/settings/presentation/widget/settings_tile.dart';
 
 class SettingsScreen extends StatelessWidget {

@@ -63,4 +63,14 @@ class CalendarTaskNotifier extends StateNotifier<List<CalendarTaskModel>> {
     }
     state = _box.values.toList();
   }
+
+  /// 완료 여부 토글
+  void toggleTask(CalendarTaskModel task) {
+    final index = state.indexOf(task);
+    if (index != -1) {
+      task.isCompleted = !task.isCompleted;
+      _box.putAt(index, task);
+      state = List.from(state);
+    }
+  }
 }
