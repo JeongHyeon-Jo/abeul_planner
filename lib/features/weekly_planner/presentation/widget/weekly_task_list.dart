@@ -92,7 +92,10 @@ class WeeklyTaskList extends ConsumerWidget {
                 Checkbox(
                   value: task.isCompleted,
                   onChanged: (_) {
-                    ref.read(weeklyTaskProvider.notifier).toggleTask(day, index);
+                    final realIndex = ref.read(weeklyTaskProvider).firstWhere((model) => model.day == day)
+                        .tasks
+                        .indexOf(task);
+                    ref.read(weeklyTaskProvider.notifier).toggleTask(day, realIndex);
                   },
                 ),
             ],
