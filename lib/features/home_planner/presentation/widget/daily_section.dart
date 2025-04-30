@@ -19,7 +19,7 @@ class DailySection extends ConsumerWidget {
     if (dailyTasks.isEmpty) {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 12.h),
-        child: Text('일상 기록이 없습니다.', style: AppTextStyles.body),
+        child: Text('일상 일정이 없습니다.', style: AppTextStyles.body),
       );
     }
 
