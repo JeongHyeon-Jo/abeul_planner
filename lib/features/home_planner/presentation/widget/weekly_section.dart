@@ -1,5 +1,6 @@
 // weekly_section.dart
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:abeul_planner/core/styles/color.dart';
@@ -19,13 +20,6 @@ class WeeklySection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final todayWeekly = weeklyTasks.where((t) => t.day == weekday).toList();
 
-    if (todayWeekly.isEmpty) {
-      return Padding(
-        padding: EdgeInsets.symmetric(vertical: 12.h),
-        child: Text('오늘 주간 일정이 없습니다.', style: AppTextStyles.body),
-      );
-    }
-
     // 모든 할 일(flatten) 리스트로 변환
     final allTasks = todayWeekly.expand((t) => t.tasks.map((task) => (t.day, task))).toList();
 
@@ -41,6 +35,36 @@ class WeeklySection extends ConsumerWidget {
     });
 
     final displayTasks = allTasks.take(3).toList(); // 최대 3개만 표시
+
+    // 할 일이 없는 경우: 텍스트 + 버튼 표시
+    if (displayTasks.isEmpty) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text('$weekday요일 일정이 없습니다.', style: AppTextStyles.body),
+            SizedBox(height: 12.h),
+            ElevatedButton.icon(
+              onPressed: () {
+                // 탭 전환 방식으로 이동
+                context.go('/weekly');
+              },
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: const Text('추가하러 가기', style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return Column(
       children: displayTasks.map((entry) {

@@ -45,7 +45,6 @@ class PlannerHomeScreen extends ConsumerWidget {
             children: [
               // 달력 플래너
               SizedBox(
-                height: 240.h,
                 child: _buildSectionContainer(
                   context,
                   title: '달력 플래너',
@@ -59,7 +58,6 @@ class PlannerHomeScreen extends ConsumerWidget {
 
               // 주간 플래너
               SizedBox(
-                height: 240.h,
                 child: _buildSectionContainer(
                   context,
                   title: '주간 플래너',
@@ -73,7 +71,6 @@ class PlannerHomeScreen extends ConsumerWidget {
 
               // 일상 플래너
               SizedBox(
-                height: 360.h,
                 child: _buildSectionContainer(
                   context,
                   title: '일상 플래너',
