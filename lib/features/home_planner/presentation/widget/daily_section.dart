@@ -1,5 +1,6 @@
 // daily_section.dart
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:abeul_planner/core/styles/color.dart';
@@ -19,7 +20,28 @@ class DailySection extends ConsumerWidget {
     if (dailyTasks.isEmpty) {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 12.h),
-        child: Text('일상 일정이 없습니다.', style: AppTextStyles.body),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text('일상 일정이 없습니다.', style: AppTextStyles.body),
+            SizedBox(height: 12.h),
+            ElevatedButton.icon(
+              onPressed: () {
+                context.go('/daily');
+              },
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: const Text('추가하러 가기', style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+              ),
+            ),
+          ],
+        ),
       );
     }
 
