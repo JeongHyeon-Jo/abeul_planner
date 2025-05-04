@@ -8,7 +8,7 @@ class AppColors {
   static const Color primary = Color(0xFFFF7F7F);
 
   /// 연한 버튼 배경용 코랄
-  static const Color lightPrimary = Color(0xFFFFF0EF);
+  static const Color lightPrimary = Color.fromARGB(255, 255, 250, 250);
 
   /// 배경 색상 (연한 크림 톤)
   static const Color background = Color(0xFFFFFFFF);

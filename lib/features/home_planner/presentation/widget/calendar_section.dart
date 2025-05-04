@@ -37,8 +37,8 @@ class CalendarSection extends ConsumerWidget {
                 onPressed: () {
                   context.go('/calendar');
                 },
-                icon: const Icon(Icons.add, color: AppColors.buttonText),
-                label: const Text('추가하러 가기', style: TextStyle(color: AppColors.buttonText)),
+                icon: const Icon(Icons.add, color: AppColors.text),
+                label: const Text('일정 추가', style: TextStyle(color: AppColors.text)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.lightPrimary,
                   padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
@@ -67,6 +67,7 @@ class CalendarSection extends ConsumerWidget {
     return Column(
       children: displayTasks.map((task) {
         return Card(
+          color: Colors.white,
           margin: EdgeInsets.symmetric(vertical: 6.h),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),

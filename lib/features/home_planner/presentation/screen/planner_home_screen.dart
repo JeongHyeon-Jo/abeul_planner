@@ -88,15 +88,15 @@ class PlannerHomeScreen extends ConsumerWidget {
   }
 
   /// 공통 섹션 컨테이너 위젯
-  Widget _buildSectionContainer(BuildContext context, {
+  Widget _buildSectionContainer(
+    BuildContext context, {
     required String title,
     required String route,
     required Widget child,
   }) {
     return Container(
-      padding: EdgeInsets.all(16.0.w),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: AppColors.primary, width: 1.w),
         boxShadow: [
@@ -110,9 +110,19 @@ class PlannerHomeScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle(context, title, route),
-          SizedBox(height: 8.h),
-          child,
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+            child: _buildSectionTitle(context, title, route),
+          ),
+          const Divider(
+            color: AppColors.primary,
+            height: 0,
+            thickness: 1,
+          ),
+          Padding(
+            padding: EdgeInsets.all(16.0.w),
+            child: child,
+          ),
         ],
       ),
     );
