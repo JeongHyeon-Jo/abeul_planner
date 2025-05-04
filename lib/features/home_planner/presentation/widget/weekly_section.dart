@@ -38,30 +38,31 @@ class WeeklySection extends ConsumerWidget {
 
     // 할 일이 없는 경우: 텍스트 + 버튼 표시
     if (displayTasks.isEmpty) {
-      return Padding(
-        padding: EdgeInsets.symmetric(vertical: 12.h),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text('$weekday요일 일정이 없습니다.', style: AppTextStyles.body),
-            SizedBox(height: 12.h),
-            ElevatedButton.icon(
-              onPressed: () {
-                // 탭 전환 방식으로 이동
-                context.go('/weekly');
-              },
-              icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text('추가하러 가기', style: TextStyle(color: Colors.white)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+      return SizedBox(
+        height: 100.h,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('오늘 일정이 없습니다.', style: AppTextStyles.body),
+              SizedBox(height: 12.h),
+              ElevatedButton.icon(
+                onPressed: () {
+                  context.go('/weekly');
+                },
+                icon: const Icon(Icons.add, color: AppColors.buttonText),
+                label: const Text('추가하러 가기', style: TextStyle(color: AppColors.buttonText)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.lightPrimary,
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                    side: BorderSide(color: AppColors.primary, width: 1.2.w),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }

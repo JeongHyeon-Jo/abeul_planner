@@ -18,29 +18,31 @@ class DailySection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (dailyTasks.isEmpty) {
-      return Padding(
-        padding: EdgeInsets.symmetric(vertical: 12.h),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text('일상 일정이 없습니다.', style: AppTextStyles.body),
-            SizedBox(height: 12.h),
-            ElevatedButton.icon(
-              onPressed: () {
-                context.go('/daily');
-              },
-              icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text('추가하러 가기', style: TextStyle(color: Colors.white)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+      return SizedBox(
+        height: 100.h,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('오늘 일정이 없습니다.', style: AppTextStyles.body),
+              SizedBox(height: 12.h),
+              ElevatedButton.icon(
+                onPressed: () {
+                  context.go('/daily');
+                },
+                icon: const Icon(Icons.add, color: AppColors.buttonText),
+                label: const Text('추가하러 가기', style: TextStyle(color: AppColors.buttonText)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.lightPrimary,
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                    side: BorderSide(color: AppColors.primary, width: 1.2.w),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }

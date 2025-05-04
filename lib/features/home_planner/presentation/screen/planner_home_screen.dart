@@ -96,7 +96,7 @@ class PlannerHomeScreen extends ConsumerWidget {
     return Container(
       padding: EdgeInsets.all(16.0.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: AppColors.primary, width: 1.w),
         boxShadow: [

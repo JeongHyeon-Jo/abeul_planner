@@ -7,6 +7,9 @@ class AppColors {
   /// 🌸 시그니처 메인 색상 (코랄 핑크)
   static const Color primary = Color(0xFFFF7F7F);
 
+  /// 연한 버튼 배경용 코랄
+  static const Color lightPrimary = Color(0xFFFFF0EF);
+
   /// 배경 색상 (연한 크림 톤)
   static const Color background = Color(0xFFFFFFFF);
 
@@ -36,4 +39,10 @@ class AppColors {
 
   /// 행동 텍스트용 강조 색상 (부드러운 검정 회색)
   static const Color actionText = Color.fromARGB(255, 54, 54, 54);
+
+  /// 섹션 카드용 진한 배경 (명도 차 확보용)
+  static const Color cardBackground = Color(0xFFFFFBFA);
+
+  /// 버튼 텍스트 대비용 어두운 코랄색
+  static const Color buttonText = Color(0xFF912F28);
 }
