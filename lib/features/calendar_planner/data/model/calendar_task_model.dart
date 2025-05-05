@@ -16,12 +16,16 @@ class CalendarTaskModel {
   final String repeat; // 반복 설정 (없음, 매일, 매주, 매월, 매년)
 
   @HiveField(3)
-  bool isCompleted; // 완료 여부 추가
+  bool isCompleted; // 완료 여부
+
+  @HiveField(4)
+  final String priority; // 중요도
 
   CalendarTaskModel({
     required this.memo,
     required this.date,
     required this.repeat,
     this.isCompleted = false,
+    this.priority = '보통',
   });
 }

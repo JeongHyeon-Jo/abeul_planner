@@ -1,14 +1,17 @@
 // calendar_widget.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
+import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
+import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
 
-/// 캘린더 위젯 박스 (둥근 테두리 + 그림자 포함)
-class CalendarWidget extends StatelessWidget {
-  final DateTime focusedDay;
-  final DateTime? selectedDay;
+/// 캘린더 위젯 박스 (둥근 테두리 + 그림자 + 일정 마커 및 요약 표시 포함)
+class CalendarWidget extends ConsumerWidget {
+  final DateTime focusedDay; // 현재 포커스된 날짜
+  final DateTime? selectedDay; // 선택된 날짜
   final void Function(DateTime selectedDay, DateTime focusedDay) onDaySelected;
 
   const CalendarWidget({
@@ -18,8 +21,21 @@ class CalendarWidget extends StatelessWidget {
     required this.onDaySelected,
   });
 
+  /// 특정 날짜에 해당하는 일정 리스트 반환
+  List<CalendarTaskModel> _getEventsForDay(
+    List<CalendarTaskModel> allTasks,
+    DateTime day,
+  ) {
+    return allTasks.where((task) =>
+        task.date.year == day.year &&
+        task.date.month == day.month &&
+        task.date.day == day.day).toList();
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final allTasks = ref.watch(calendarTaskProvider);
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       child: Container(
@@ -35,17 +51,19 @@ class CalendarWidget extends StatelessWidget {
           ],
           border: Border.all(color: AppColors.primary, width: 1.w),
         ),
-        child: TableCalendar(
+        child: TableCalendar<CalendarTaskModel>(
           locale: 'ko_KR',
           firstDay: DateTime.utc(2020, 1, 1),
           lastDay: DateTime.utc(2030, 12, 31),
           focusedDay: focusedDay,
           selectedDayPredicate: (day) => isSameDay(selectedDay, day),
           onDaySelected: onDaySelected,
+          eventLoader: (day) => _getEventsForDay(allTasks, day),
           availableCalendarFormats: const {
             CalendarFormat.month: '월간',
           },
           daysOfWeekHeight: 35.h,
+          rowHeight: 64.h, // ✅ 셀 간 간격 확보
           headerStyle: HeaderStyle(
             formatButtonVisible: false,
             titleCentered: true,
@@ -79,6 +97,25 @@ class CalendarWidget extends StatelessWidget {
             ),
             defaultTextStyle: AppTextStyles.body,
             weekendTextStyle: AppTextStyles.body,
+            markerDecoration: BoxDecoration(
+              color: Colors.red,
+              shape: BoxShape.circle,
+            ),
+            markersMaxCount: 3,
+          ),
+          calendarBuilders: CalendarBuilders(
+            markerBuilder: (context, day, events) {
+              if (events.isEmpty) return const SizedBox.shrink();
+              final task = events.first as CalendarTaskModel;
+              return Padding(
+                padding: const EdgeInsets.only(top: 28), // 날짜 아래 위치
+                child: Text(
+                  '· ${task.memo.length > 6 ? '${task.memo.substring(0, 6)}…' : task.memo}',
+                  style: AppTextStyles.caption.copyWith(fontSize: 11.sp),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              );
+            },
           ),
         ),
       ),
