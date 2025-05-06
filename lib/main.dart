@@ -30,6 +30,7 @@ void main() async {
   // CalendarTask 어댑터 등록 및 박스 열기
   await CalendarTaskBox.registerAdapters();
   await CalendarTaskBox.openBox();
+  
 
   // WeeklyTask 어댑터 등록 및 박스 열기
   await WeeklyTaskBox.registerAdapters();
