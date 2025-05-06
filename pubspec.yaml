@@ -1,5 +1,5 @@
 name: abeul_planner
-description: "A new Flutter project."
+description: "아블 플래너"
 
 publish_to: 'none'
 
@@ -17,7 +17,6 @@ dependencies:
   table_calendar: ^3.2.0
   intl: ^0.20.2
   flutter_screenutil: ^5.9.3
-  flutter_launcher_icons: ^0.14.3
 
   ## NoSQL DB
   hive: ^2.2.3
@@ -26,6 +25,10 @@ dependencies:
   ## 상태관리
   flutter_riverpod: ^2.6.1
   path_provider: ^2.1.5
+
+  ## 앱 아이콘 / 스플래쉬
+  flutter_launcher_icons: ^0.14.3
+  flutter_native_splash: ^2.4.6
 
 dev_dependencies:
   flutter_test:
@@ -47,6 +50,12 @@ flutter_launcher_icons:
   ios: true
   image_path: "assets/icon/Abeul_Planner_Logo.png"
   remove_alpha_ios: true
-  background_color: "#FFF1DBDB" # 코랄 핑크
-  adaptive_icon_background: "#FFF1DBDB"
+  background_color: "#F1DBDB" # 코랄 핑크
+  adaptive_icon_background: "#F1DBDB"
   adaptive_icon_foreground: "assets/icon/Abeul_Planner_Logo.png"
+
+flutter_native_splash:
+  color: "#F1DBDB"
+  image: assets/icon/Abeul_Planner_Logo.png
+  android: true
+  ios: true
