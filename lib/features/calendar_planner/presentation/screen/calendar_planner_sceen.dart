@@ -53,7 +53,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
         ),
         isTransparent: true,
         leading: IconButton(
-          icon: const Icon(Icons.add),
+          icon: const Icon(Icons.add, color: AppColors.text),
           onPressed: _openAddTaskDialog,
         ),
         actions: [
