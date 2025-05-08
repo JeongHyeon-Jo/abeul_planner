@@ -45,6 +45,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: CustomAppBar(
         // 앱바 타이틀 (년도 표시)
         title: Text(
@@ -65,10 +66,12 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
           ),
         ],
       ),
-      body: CalendarWidget(
-        focusedDay: _focusedDay,
-        selectedDay: _selectedDay,
-        onDaySelected: _onDaySelected,
+      body: SafeArea(
+        child: CalendarWidget(
+          focusedDay: _focusedDay,
+          selectedDay: _selectedDay,
+          onDaySelected: _onDaySelected,
+        ),
       ),
     );
   }
