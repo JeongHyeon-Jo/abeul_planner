@@ -37,7 +37,7 @@ class CalendarWidget extends ConsumerWidget {
     final allTasks = ref.watch(calendarTaskProvider);
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -63,7 +63,7 @@ class CalendarWidget extends ConsumerWidget {
             CalendarFormat.month: '월간',
           },
           daysOfWeekHeight: 35.h,
-          rowHeight: 64.h, // ✅ 셀 간 간격 확보
+          rowHeight: 100.h,
           headerStyle: HeaderStyle(
             formatButtonVisible: false,
             titleCentered: true,
@@ -108,7 +108,7 @@ class CalendarWidget extends ConsumerWidget {
               if (events.isEmpty) return const SizedBox.shrink();
               final task = events.first as CalendarTaskModel;
               return Padding(
-                padding: const EdgeInsets.only(top: 28), // 날짜 아래 위치
+                padding: EdgeInsets.only(top: 20.h), // 날짜 아래 위치
                 child: Text(
                   '· ${task.memo.length > 6 ? '${task.memo.substring(0, 6)}…' : task.memo}',
                   style: AppTextStyles.caption.copyWith(fontSize: 11.sp),
