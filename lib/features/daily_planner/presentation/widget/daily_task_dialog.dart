@@ -1,4 +1,3 @@
-// task_dialog.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -43,90 +42,113 @@ class _DailyTaskDialogState extends ConsumerState<DailyTaskDialog> {
   @override
   Widget build(BuildContext context) {
     final priorityKeys = ['낮음', '보통', '중요'];
+    final isEditMode = widget.task != null;
 
-    return AlertDialog(
-      title: Text(widget.task == null ? '새 일정 추가' : '일정 수정', style: AppTextStyles.title),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: widget.situationController,
-              decoration: const InputDecoration(labelText: '상황 (예: 출근하면)'),
-            ),
-            SizedBox(height: 8.h),
-            TextField(
-              controller: widget.actionController,
-              decoration: const InputDecoration(labelText: '행동 (예: 스트레칭하기)'),
-            ),
-            SizedBox(height: 8.h),
-            DropdownButtonFormField<String>(
-              value: _localPriority,
-              items: priorityKeys.map((level) => DropdownMenuItem(
-                value: level,
-                child: Row(
-                  children: [
-                    getPriorityIcon(level),
-                    SizedBox(width: 8.w),
-                    Text(level, style: AppTextStyles.body),
-                  ],
-                ),
-              )).toList(),
-              onChanged: (value) {
-                if (value != null) setState(() => _localPriority = value);
-              },
-              decoration: const InputDecoration(labelText: '중요도'),
-            ),
-            if (widget.task != null)
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    widget.onDelete(widget.index!);
-                  },
-                  child: Text('일정 제거', style: AppTextStyles.caption.copyWith(color: Colors.red)),
-                ),
+    return Dialog(
+      insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(20.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(isEditMode ? '일정 수정' : '새 일정 추가', style: AppTextStyles.title),
+              SizedBox(height: 16.h),
+
+              TextField(
+                controller: widget.situationController,
+                decoration: const InputDecoration(labelText: '상황 (예: 출근하면)'),
               ),
-          ],
+              SizedBox(height: 12.h),
+
+              TextField(
+                controller: widget.actionController,
+                decoration: const InputDecoration(labelText: '행동 (예: 스트레칭하기)'),
+              ),
+              SizedBox(height: 12.h),
+
+              DropdownButtonFormField<String>(
+                value: _localPriority,
+                items: priorityKeys.map((level) => DropdownMenuItem(
+                  value: level,
+                  child: Row(
+                    children: [
+                      getPriorityIcon(level),
+                      SizedBox(width: 8.w),
+                      Text(level, style: AppTextStyles.body),
+                    ],
+                  ),
+                )).toList(),
+                onChanged: (value) {
+                  if (value != null) setState(() => _localPriority = value);
+                },
+                decoration: const InputDecoration(labelText: '중요도'),
+              ),
+
+              if (isEditMode)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      widget.onDelete(widget.index!);
+                    },
+                    child: Text('일정 제거',
+                        style: AppTextStyles.caption.copyWith(color: Colors.red)),
+                  ),
+                ),
+
+              SizedBox(height: 16.h),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      widget.situationController.clear();
+                      widget.actionController.clear();
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('취소', style: AppTextStyles.body.copyWith(color: AppColors.subText)),
+                  ),
+                  SizedBox(width: 8.w),
+                  ElevatedButton(
+                    onPressed: () {
+                      final situation = widget.situationController.text.trim();
+                      final action = widget.actionController.text.trim();
+
+                      if (situation.isEmpty || action.isEmpty) return;
+
+                      final newTask = DailyTaskModel(
+                        situation: situation,
+                        action: action,
+                        isCompleted: widget.task?.isCompleted ?? false,
+                        priority: _localPriority,
+                      );
+
+                      if (widget.task == null) {
+                        ref.read(dailyTaskProvider.notifier).addTask(newTask);
+                      } else {
+                        ref.read(dailyTaskProvider.notifier).editTask(widget.index!, newTask);
+                      }
+
+                      widget.situationController.clear();
+                      widget.actionController.clear();
+                      Navigator.of(context).pop();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accent,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: Text('저장', style: AppTextStyles.button),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            widget.situationController.clear();
-            widget.actionController.clear();
-            Navigator.of(context).pop();
-          },
-          child: Text('취소', style: AppTextStyles.body.copyWith(color: AppColors.subText)),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            final situation = widget.situationController.text.trim();
-            final action = widget.actionController.text.trim();
-
-            if (situation.isEmpty || action.isEmpty) return;
-
-            final newTask = DailyTaskModel(
-              situation: situation,
-              action: action,
-              isCompleted: widget.task?.isCompleted ?? false,
-              priority: _localPriority,
-            );
-
-            if (widget.task == null) {
-              ref.read(dailyTaskProvider.notifier).addTask(newTask);
-            } else {
-              ref.read(dailyTaskProvider.notifier).editTask(widget.index!, newTask);
-            }
-
-            widget.situationController.clear();
-            widget.actionController.clear();
-            Navigator.of(context).pop();
-          },
-          child: Text('저장', style: AppTextStyles.button),
-        ),
-      ],
     );
   }
 }
