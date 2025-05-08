@@ -108,10 +108,10 @@ class CalendarWidget extends ConsumerWidget {
               if (events.isEmpty) return const SizedBox.shrink();
               final task = events.first as CalendarTaskModel;
               return Padding(
-                padding: EdgeInsets.only(top: 20.h), // 날짜 아래 위치
+                padding: EdgeInsets.only(top: 16.h), // 날짜 아래 위치
                 child: Text(
                   '· ${task.memo.length > 6 ? '${task.memo.substring(0, 6)}…' : task.memo}',
-                  style: AppTextStyles.caption.copyWith(fontSize: 11.sp),
+                  style: AppTextStyles.caption.copyWith(fontSize: 13.sp),
                   overflow: TextOverflow.ellipsis,
                 ),
               );
