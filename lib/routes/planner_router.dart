@@ -35,6 +35,15 @@ final GoRouter router = GoRouter(
           path: '/settings',
           builder: (context, state) => const SettingsScreen(),
         ),
+        GoRoute(
+          path: '/records/:type',
+          name: 'records',
+          builder: (context, state) {
+            final typeStr = state.pathParameters['type']!;
+            final type = PlannerType.values.firstWhere((e) => e.name == typeStr);
+            return PlannerRecordScreen(type: type);
+          },
+        ),
       ],
     ),
   ],
