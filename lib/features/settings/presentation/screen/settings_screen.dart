@@ -1,6 +1,7 @@
 // settings_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/core/styles/color.dart';
@@ -49,6 +50,24 @@ class SettingsScreen extends StatelessWidget {
               const SettingsTile(
                 icon: Icons.info,
                 title: '앱 정보',
+              ),
+              Divider(height: 1.h, color: AppColors.primary),
+              SettingsTile(
+                icon: Icons.today,
+                title: '일상 플래너 기록',
+                onTap: () => context.push('/records/daily'),
+              ),
+              Divider(height: 1.h, color: AppColors.primary),
+              SettingsTile(
+                icon: Icons.view_week,
+                title: '주간 플래너 기록',
+                onTap: () => context.push('/records/weekly'),
+              ),
+              Divider(height: 1.h, color: AppColors.primary),
+              SettingsTile(
+                icon: Icons.calendar_month,
+                title: '달력 플래너 기록',
+                onTap: () => context.push('/records/calendar'),
               ),
               Divider(height: 1.h, color: AppColors.primary),
             ],
