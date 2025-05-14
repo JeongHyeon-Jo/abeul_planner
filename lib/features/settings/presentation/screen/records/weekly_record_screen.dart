@@ -20,7 +20,10 @@ class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
   @override
   Widget build(BuildContext context) {
     final weeklyMap = ref.watch(weeklyTaskProvider);
-    final allTasks = weeklyMap.entries.expand((e) => e.value.map((t) => (e.key, t))).toList();
+
+    final allTasks = weeklyMap
+        .expand((model) => model.tasks.map((task) => (model.day, task)))
+        .toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -65,7 +68,7 @@ class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
                         ? IconButton(
                             icon: const Icon(Icons.close, color: Colors.red),
                             onPressed: () {
-                              final list = weeklyMap[day]!;
+                              final list = weeklyMap.firstWhere((model) => model.day == day).tasks;
                               final idx = list.indexOf(task);
                               if (idx != -1) {
                                 ref.read(weeklyTaskProvider.notifier).deleteTask(day, idx);

@@ -98,4 +98,18 @@ class DailyTaskNotifier extends StateNotifier<List<DailyTaskModel>> {
 
     state = [...currentTasks];
   }
+
+  // 전체 삭제
+  void deleteAll() {
+    _box.clear();
+    state = [];
+  }
+
+  // 특정 인덱스 삭제
+  void deleteAt(int index) {
+    if (index >= 0 && index < _box.length) {
+      _box.deleteAt(index);
+      state = _box.values.toList();
+    }
+  }
 }

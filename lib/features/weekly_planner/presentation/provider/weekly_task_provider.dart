@@ -15,7 +15,7 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
     _init();
   }
 
-  /// 초기화: 박스를 불러오고, 매주 월요일마다 완료 여부 초기화
+  // 초기화: 박스를 불러오고, 매주 월요일마다 완료 여부 초기화
   void _init() {
     final box = WeeklyTaskBox.box;
     final now = DateTime.now();
@@ -140,9 +140,20 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
     addTask(toDay, newTask);
   }
 
-  // 전체 삭제 (디버깅 용도 등)
-  void clearAll() {
+  // 전체 삭제
+  void deleteAll() {
     WeeklyTaskBox.box.clear();
     state = [];
+  }
+
+  // 특정 요일의 인덱스 삭제
+  void deleteTask(String day, int index) {
+    final dayIndex = state.indexWhere((e) => e.day == day);
+    if (dayIndex != -1 && index >= 0 && index < state[dayIndex].tasks.length) {
+      final updated = state[dayIndex];
+      updated.tasks.removeAt(index);
+      updated.save();
+      state = [...state];
+    }
   }
 }
