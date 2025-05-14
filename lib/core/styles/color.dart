@@ -45,4 +45,7 @@ class AppColors {
 
   /// 버튼 텍스트 대비용 어두운 코랄색
   static const Color buttonText = Color(0xFF912F28);
+
+  // 테두리 색상
+  static const Color borderColor = divider;
 }
