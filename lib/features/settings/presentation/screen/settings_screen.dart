@@ -42,16 +42,6 @@ class SettingsScreen extends StatelessWidget {
                 title: '알림 설정',
               ),
               Divider(height: 1.h, color: AppColors.primary),
-              const SettingsTile(
-                icon: Icons.color_lens,
-                title: '테마 설정',
-              ),
-              Divider(height: 1.h, color: AppColors.primary),
-              const SettingsTile(
-                icon: Icons.info,
-                title: '앱 정보',
-              ),
-              Divider(height: 1.h, color: AppColors.primary),
               SettingsTile(
                 icon: Icons.today,
                 title: '일상 플래너 기록',
@@ -68,6 +58,11 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.calendar_month,
                 title: '달력 플래너 기록',
                 onTap: () => context.push('/records/calendar'),
+              ),
+              Divider(height: 1.h, color: AppColors.primary),
+              const SettingsTile(
+                icon: Icons.info,
+                title: '앱 정보',
               ),
               Divider(height: 1.h, color: AppColors.primary),
             ],
