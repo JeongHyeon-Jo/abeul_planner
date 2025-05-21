@@ -77,12 +77,13 @@ class CalendarTaskList extends ConsumerWidget {
                       child: Container(
                         padding: EdgeInsets.all(12.w),
                         decoration: BoxDecoration(
-                          color: AppColors.cardBackground,
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(12.r),
                           border: Border.all(color: AppColors.primary),
                         ),
                         child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             // 중요도 아이콘
                             getPriorityIcon(task.priority),
@@ -93,12 +94,12 @@ class CalendarTaskList extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    '상황: ${DateFormat('yyyy년 MM월 dd일').format(task.date)}',
+                                    DateFormat('yyyy년 MM월 dd일').format(task.date),
                                     style: AppTextStyles.caption,
                                   ),
                                   SizedBox(height: 4.h),
                                   Text(
-                                    '행동: ${task.memo}',
+                                    task.memo,
                                     style: AppTextStyles.body.copyWith(
                                       decoration: task.isCompleted
                                           ? TextDecoration.lineThrough
