@@ -14,9 +14,9 @@ import 'features/daily_planner/data/datasource/daily_task_box.dart';
 import 'features/calendar_planner/data/datasource/calendar_task_box.dart';
 import 'features/weekly_planner/data/datasource/weekly_task_box.dart';
 // record
-import 'package:abeul_planner/features/settings/data/datasource/daily_record_box.dart';
-import 'package:abeul_planner/features/settings/data/datasource/weekly_record_box.dart';
-import 'package:abeul_planner/features/settings/data/datasource/calendar_record_box.dart';
+import 'package:abeul_planner/features/settings/data/datasource/record/daily_record_box.dart';
+import 'package:abeul_planner/features/settings/data/datasource/record/weekly_record_box.dart';
+import 'package:abeul_planner/features/settings/data/datasource/record/calendar_record_box.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
