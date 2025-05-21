@@ -5,7 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
-import 'package:abeul_planner/features/settings/data/datasource/daily_record_box.dart';
+import 'package:abeul_planner/features/settings/data/datasource/record/daily_record_box.dart';
 
 class DailyRecordScreen extends ConsumerStatefulWidget {
   const DailyRecordScreen({super.key});

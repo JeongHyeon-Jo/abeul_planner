@@ -1,6 +1,6 @@
 // calendar_record_box.dart
 import 'package:hive/hive.dart';
-import 'package:abeul_planner/features/settings/data/model/calendar_record_group.dart';
+import 'package:abeul_planner/features/settings/data/model/record/calendar_record_group.dart';
 
 class CalendarRecordBox {
   static const String boxName = 'calendarRecordBox';

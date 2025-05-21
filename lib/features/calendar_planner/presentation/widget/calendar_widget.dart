@@ -8,10 +8,9 @@ import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
 
-/// 캘린더 위젯 박스 (둥근 테두리 + 그림자 + 일정 마커 및 요약 표시 포함)
 class CalendarWidget extends ConsumerWidget {
-  final DateTime focusedDay; // 현재 포커스된 날짜
-  final DateTime? selectedDay; // 선택된 날짜
+  final DateTime focusedDay;
+  final DateTime? selectedDay;
   final void Function(DateTime selectedDay, DateTime focusedDay) onDaySelected;
 
   const CalendarWidget({
@@ -21,15 +20,12 @@ class CalendarWidget extends ConsumerWidget {
     required this.onDaySelected,
   });
 
-  /// 특정 날짜에 해당하는 일정 리스트 반환
-  List<CalendarTaskModel> _getEventsForDay(
-    List<CalendarTaskModel> allTasks,
-    DateTime day,
-  ) {
+  List<CalendarTaskModel> _getEventsForDay(List<CalendarTaskModel> allTasks, DateTime day) {
     return allTasks.where((task) =>
-        task.date.year == day.year &&
-        task.date.month == day.month &&
-        task.date.day == day.day).toList();
+      task.date.year == day.year &&
+      task.date.month == day.month &&
+      task.date.day == day.day
+    ).toList();
   }
 
   @override
@@ -98,7 +94,7 @@ class CalendarWidget extends ConsumerWidget {
             defaultTextStyle: AppTextStyles.body,
             weekendTextStyle: AppTextStyles.body,
             markerDecoration: BoxDecoration(
-              color: Colors.red,
+              color: AppColors.accent,
               shape: BoxShape.circle,
             ),
             markersMaxCount: 3,
@@ -106,13 +102,27 @@ class CalendarWidget extends ConsumerWidget {
           calendarBuilders: CalendarBuilders(
             markerBuilder: (context, day, events) {
               if (events.isEmpty) return const SizedBox.shrink();
-              final task = events.first as CalendarTaskModel;
+              final tasks = events.cast<CalendarTaskModel>();
               return Padding(
-                padding: EdgeInsets.only(top: 16.h), // 날짜 아래 위치
-                child: Text(
-                  '· ${task.memo.length > 6 ? '${task.memo.substring(0, 6)}…' : task.memo}',
-                  style: AppTextStyles.caption.copyWith(fontSize: 13.sp),
-                  overflow: TextOverflow.ellipsis,
+                padding: EdgeInsets.only(top: 14.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (var task in tasks.take(2))
+                      Text(
+                        '· ${task.memo.length > 6 ? '${task.memo.substring(0, 6)}…' : task.memo}',
+                        style: AppTextStyles.caption.copyWith(fontSize: 12.sp),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    if (tasks.length > 2)
+                      Text(
+                        '+${tasks.length - 2}',
+                        style: AppTextStyles.caption.copyWith(
+                          fontSize: 12.sp,
+                          color: AppColors.subText,
+                        ),
+                      ),
+                  ],
                 ),
               );
             },
