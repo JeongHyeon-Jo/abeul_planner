@@ -13,7 +13,7 @@ class WeeklyRecordGroup {
   final String day;
 
   @HiveField(2)
-  final List<WeeklyTaskModel> tasks;
+  final List<WeeklyTask> tasks;
 
   WeeklyRecordGroup({
     required this.date,
