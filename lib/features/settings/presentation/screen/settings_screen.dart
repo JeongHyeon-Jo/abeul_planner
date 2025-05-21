@@ -37,11 +37,6 @@ class SettingsScreen extends StatelessWidget {
           ),
           child: Column(
             children: [
-              const SettingsTile(
-                icon: Icons.notifications,
-                title: '알림 설정',
-              ),
-              Divider(height: 1.h, color: AppColors.primary),
               SettingsTile(
                 icon: Icons.today,
                 title: '일상 플래너 기록',
