@@ -13,6 +13,10 @@ import 'package:abeul_planner/routes/planner_router.dart';
 import 'features/daily_planner/data/datasource/daily_task_box.dart';
 import 'features/calendar_planner/data/datasource/calendar_task_box.dart';
 import 'features/weekly_planner/data/datasource/weekly_task_box.dart';
+// record
+import 'package:abeul_planner/features/settings/data/datasource/daily_record_box.dart';
+import 'package:abeul_planner/features/settings/data/datasource/weekly_record_box.dart';
+import 'package:abeul_planner/features/settings/data/datasource/calendar_record_box.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,6 +39,16 @@ void main() async {
   // WeeklyTask 어댑터 등록 및 박스 열기
   await WeeklyTaskBox.registerAdapters();
   await WeeklyTaskBox.openBox();
+
+  // Record 관련 박스
+  await DailyRecordBox.registerAdapters();
+  await DailyRecordBox.openBox();
+
+  await CalendarRecordBox.registerAdapters();
+  await CalendarRecordBox.openBox();
+
+  await WeeklyRecordBox.registerAdapters();
+  await WeeklyRecordBox.openBox();
 
   runApp(
     const ProviderScope(
