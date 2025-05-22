@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
+import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
 import 'package:abeul_planner/features/settings/data/datasource/record/weekly_record_box.dart';
 import 'package:abeul_planner/features/weekly_planner/data/model/weekly_task_model.dart';
 
@@ -26,11 +27,13 @@ class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
       ..sort((a, b) => b.date.compareTo(a.date)); // 최신 날짜가 위로
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: CustomAppBar(
         title: Text('주간 플래너 기록', style: AppTextStyles.title.copyWith(color: AppColors.text)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
+        isTransparent: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.text),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         actions: [
           IconButton(
             icon: Icon(isEditing ? Icons.check : Icons.edit, color: AppColors.text),
@@ -42,7 +45,7 @@ class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
               WeeklyRecordBox.box.clear();
               setState(() {});
             },
-          )
+          ),
         ],
       ),
       body: Padding(
@@ -116,7 +119,7 @@ class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
                               ],
                             ),
                           ),
-                        )).toList(), // ✅ .toList() 꼭 필요함
+                        )).toList(),
                     ],
                   );
                 },
