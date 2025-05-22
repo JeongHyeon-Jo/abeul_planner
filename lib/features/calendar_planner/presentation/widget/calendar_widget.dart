@@ -179,8 +179,9 @@ class CalendarWidget extends ConsumerWidget {
               final isToday = isSameDay(day, DateTime.now());
               final isSunday = day.weekday == DateTime.sunday;
               final isSaturday = day.weekday == DateTime.saturday;
+              final isCurrentMonth = day.month == focusedDay.month;
               final weekInMonth = _getWeekNumberInMonth(day);
-              final showDivider = weekInMonth > 1;
+              final showDivider = isCurrentMonth && weekInMonth > 1;
 
               return SizedBox(
                 height: 85.h,
