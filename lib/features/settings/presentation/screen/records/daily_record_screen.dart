@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:abeul_planner/features/settings/data/datasource/record/daily_record_box.dart';
+// core
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
-import 'package:abeul_planner/features/settings/data/datasource/record/daily_record_box.dart';
+import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
 
 class DailyRecordScreen extends ConsumerStatefulWidget {
   const DailyRecordScreen({super.key});
@@ -25,11 +27,13 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
       ..sort((a, b) => b.date.compareTo(a.date));
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: CustomAppBar(
         title: Text('일상 플래너 기록', style: AppTextStyles.title.copyWith(color: AppColors.text)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
+        isTransparent: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.text),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         actions: [
           IconButton(
             icon: Icon(isEditing ? Icons.check : Icons.edit, color: AppColors.text),
@@ -41,7 +45,7 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
               DailyRecordBox.box.clear();
               setState(() {});
             },
-          )
+          ),
         ],
       ),
       body: Padding(

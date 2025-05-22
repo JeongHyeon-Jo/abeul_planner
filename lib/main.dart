@@ -7,6 +7,7 @@ import 'package:intl/date_symbol_data_local.dart';
 // core
 import 'package:abeul_planner/core/utils/screen_util.dart';
 import 'package:abeul_planner/core/styles/theme.dart';
+import 'package:abeul_planner/core/utils/record_saver.dart';
 // routes
 import 'package:abeul_planner/routes/planner_router.dart';
 // features
@@ -27,20 +28,20 @@ void main() async {
   // Hive 초기화
   await Hive.initFlutter();
 
-  // DailyTask 어댑터 등록 및 박스 열기
+  // DailyTask
   await DailyTaskBox.registerAdapters();
   await DailyTaskBox.openBox();
 
-  // CalendarTask 어댑터 등록 및 박스 열기
+  // CalendarTask
   await CalendarTaskBox.registerAdapters();
   await CalendarTaskBox.openBox();
   
 
-  // WeeklyTask 어댑터 등록 및 박스 열기
+  // WeeklyTask
   await WeeklyTaskBox.registerAdapters();
   await WeeklyTaskBox.openBox();
 
-  // Record 관련 박스
+  // Record
   await DailyRecordBox.registerAdapters();
   await DailyRecordBox.openBox();
 
@@ -57,8 +58,24 @@ void main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+// 앱 루트 위젯
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
+
+  @override
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+
+    // 하루가 바뀌었으면 기록 저장 (daily / weekly / calendar)
+    Future.microtask(() async {
+      await RecordSaver.saveAllIfNeeded(ref);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
