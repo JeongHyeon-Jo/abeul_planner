@@ -1,4 +1,5 @@
 // core/utils/record_saver.dart
+import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,6 +31,7 @@ class RecordSaver {
     }
   }
 
+  // 일상 플래너 기록 저장
   static Future<void> _saveDaily(WidgetRef ref) async {
     final tasks = ref.read(dailyTaskProvider);
     if (tasks.isNotEmpty) {
@@ -38,6 +40,7 @@ class RecordSaver {
     }
   }
 
+  // 주간 플래너 기록 저장
   static Future<void> _saveWeekly(WidgetRef ref) async {
     final weeklyMap = ref.read(weeklyTaskProvider);
     final now = DateTime.now();
@@ -54,10 +57,22 @@ class RecordSaver {
     }
   }
 
+  // 달력 플래너 기록 저장
   static Future<void> _saveCalendar(WidgetRef ref) async {
     final tasks = ref.read(calendarTaskProvider);
-    if (tasks.isNotEmpty) {
-      final record = CalendarRecordGroup(date: DateTime.now(), tasks: List.from(tasks));
+    if (tasks.isEmpty) return;
+
+    // 날짜별로 task 분류
+    final Map<String, List<CalendarTaskModel>> grouped = {};
+    for (final task in tasks) {
+      final key = DateFormat('yyyy-MM-dd').format(task.date);
+      grouped.putIfAbsent(key, () => []).add(task);
+    }
+
+    // 날짜 기준으로 각각 RecordGroup 생성 및 저장
+    for (final entry in grouped.entries) {
+      final date = DateFormat('yyyy-MM-dd').parse(entry.key);
+      final record = CalendarRecordGroup(date: date, tasks: List.from(entry.value));
       await CalendarRecordBox.box.add(record);
     }
   }
