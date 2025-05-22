@@ -1,4 +1,4 @@
-// calendar_widget.dart
+// calendar_widget_refactor.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,6 +26,12 @@ class CalendarWidget extends ConsumerWidget {
       task.date.month == day.month &&
       task.date.day == day.day
     ).toList();
+  }
+
+  int _getWeekNumberInMonth(DateTime date) {
+    final firstDayOfMonth = DateTime(date.year, date.month, 1);
+    final firstWeekday = firstDayOfMonth.weekday % 7;
+    return ((date.day + firstWeekday - 1) / 7).floor() + 1;
   }
 
   @override
@@ -58,8 +64,8 @@ class CalendarWidget extends ConsumerWidget {
           availableCalendarFormats: const {
             CalendarFormat.month: '월간',
           },
-          daysOfWeekHeight: 35.h,
-          rowHeight: 100.h,
+          daysOfWeekHeight: 30.h,
+          rowHeight: 85.h,
           headerStyle: HeaderStyle(
             formatButtonVisible: false,
             titleCentered: true,
@@ -74,6 +80,7 @@ class CalendarWidget extends ConsumerWidget {
             titleTextFormatter: (date, locale) => '${date.month}월',
           ),
           daysOfWeekStyle: DaysOfWeekStyle(
+            dowTextFormatter: (date, locale) => ['일', '월', '화', '수', '목', '금', '토'][date.weekday % 7],
             weekdayStyle: AppTextStyles.body.copyWith(fontSize: 14.sp),
             weekendStyle: AppTextStyles.body.copyWith(fontSize: 14.sp),
             decoration: const BoxDecoration(
@@ -98,19 +105,134 @@ class CalendarWidget extends ConsumerWidget {
               shape: BoxShape.circle,
             ),
             markersMaxCount: 3,
+            outsideTextStyle: AppTextStyles.caption.copyWith(color: AppColors.subText),
           ),
           calendarBuilders: CalendarBuilders(
+            dowBuilder: (context, day) {
+              final weekday = day.weekday;
+              final isSunday = weekday == DateTime.sunday;
+              final isSaturday = weekday == DateTime.saturday;
+              return Center(
+                child: Text(
+                  ['일', '월', '화', '수', '목', '금', '토'][weekday % 7],
+                  style: AppTextStyles.body.copyWith(
+                    color: isSunday
+                        ? Colors.red
+                        : isSaturday
+                            ? Colors.blue
+                            : AppColors.text,
+                  ),
+                ),
+              );
+            },
+            defaultBuilder: (context, day, focused) {
+              final isToday = isSameDay(day, DateTime.now());
+              final isSunday = day.weekday == DateTime.sunday;
+              final isSaturday = day.weekday == DateTime.saturday;
+              final isOutside = day.month != focusedDay.month;
+              final weekInMonth = _getWeekNumberInMonth(day);
+              final showDivider = weekInMonth > 1;
+
+              return SizedBox(
+                height: 85.h,
+                child: Stack(
+                  children: [
+                    if (showDivider)
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(height: 1.2, color: AppColors.primary),
+                      ),
+                    Align(
+                      alignment: Alignment.topCenter,
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 6.h),
+                        child: Container(
+                          decoration: isToday
+                              ? BoxDecoration(
+                                  color: AppColors.highlight,
+                                  shape: BoxShape.circle,
+                                )
+                              : null,
+                          padding: EdgeInsets.all(6.r),
+                          child: Text(
+                            '${day.day}',
+                            style: AppTextStyles.body.copyWith(
+                              color: isOutside
+                                  ? AppColors.subText
+                                  : isSunday
+                                      ? Colors.red
+                                      : isSaturday
+                                          ? Colors.blue
+                                          : AppColors.text,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+            outsideBuilder: (context, day, focused) {
+              final isToday = isSameDay(day, DateTime.now());
+              final isSunday = day.weekday == DateTime.sunday;
+              final isSaturday = day.weekday == DateTime.saturday;
+              final weekInMonth = _getWeekNumberInMonth(day);
+              final showDivider = weekInMonth > 1;
+
+              return SizedBox(
+                height: 85.h,
+                child: Stack(
+                  children: [
+                    if (showDivider)
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(height: 1.2, color: AppColors.primary),
+                      ),
+                    Align(
+                      alignment: Alignment.topCenter,
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 6.h),
+                        child: Container(
+                          decoration: isToday
+                              ? BoxDecoration(
+                                  color: AppColors.highlight,
+                                  shape: BoxShape.circle,
+                                )
+                              : null,
+                          padding: EdgeInsets.all(6.r),
+                          child: Text(
+                            '${day.day}',
+                            style: AppTextStyles.caption.copyWith(
+                              color: isSunday
+                                  ? Colors.red.shade200
+                                  : isSaturday
+                                      ? Colors.blue.shade200
+                                      : AppColors.subText,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
             markerBuilder: (context, day, events) {
               if (events.isEmpty) return const SizedBox.shrink();
               final tasks = events.cast<CalendarTaskModel>();
               return Padding(
-                padding: EdgeInsets.only(top: 14.h),
+                padding: EdgeInsets.only(top: 32.h),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     for (var task in tasks.take(2))
                       Text(
-                        '· ${task.memo.length > 6 ? '${task.memo.substring(0, 6)}…' : task.memo}',
+                        task.memo.length > 6 ? '${task.memo.substring(0, 6)}…' : task.memo,
                         style: AppTextStyles.caption.copyWith(fontSize: 12.sp),
                         overflow: TextOverflow.ellipsis,
                       ),
