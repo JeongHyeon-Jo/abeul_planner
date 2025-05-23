@@ -73,7 +73,7 @@ class _CalendarRecordScreenState extends ConsumerState<CalendarRecordScreen> {
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12.r),
-                            border: Border.all(color: AppColors.borderColor),
+                            border: Border.all(color: AppColors.primary),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -96,6 +96,7 @@ class _CalendarRecordScreenState extends ConsumerState<CalendarRecordScreen> {
                               decoration: BoxDecoration(
                                 color: AppColors.cardBackground,
                                 borderRadius: BorderRadius.circular(10.r),
+                                border: Border.all(color: AppColors.primary, width: 1.1.w),
                               ),
                               child: Row(
                                 children: [

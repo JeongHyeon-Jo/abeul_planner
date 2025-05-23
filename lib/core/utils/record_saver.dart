@@ -35,8 +35,14 @@ class RecordSaver {
   static Future<void> _saveDaily(WidgetRef ref) async {
     final tasks = ref.read(dailyTaskProvider);
     if (tasks.isNotEmpty) {
-      final record = DailyRecordGroup(date: DateTime.now(), tasks: List.from(tasks));
-      await DailyRecordBox.box.add(record);
+      final date = DateTime.now();
+      final exists = DailyRecordBox.box.values.any((record) =>
+          DateFormat('yyyy-MM-dd').format(record.date) ==
+          DateFormat('yyyy-MM-dd').format(date));
+      if (!exists) {
+        final record = DailyRecordGroup(date: date, tasks: List.from(tasks));
+        await DailyRecordBox.box.add(record);
+      }
     }
   }
 
@@ -44,15 +50,21 @@ class RecordSaver {
   static Future<void> _saveWeekly(WidgetRef ref) async {
     final weeklyMap = ref.read(weeklyTaskProvider);
     final now = DateTime.now();
+    final todayString = DateFormat('yyyy-MM-dd').format(now);
 
     for (final model in weeklyMap) {
       if (model.tasks.isNotEmpty) {
-        final record = WeeklyRecordGroup(
-          date: now,
-          day: model.day,
-          tasks: List.from(model.tasks),
-        );
-        await WeeklyRecordBox.box.add(record);
+        final exists = WeeklyRecordBox.box.values.any((record) =>
+            DateFormat('yyyy-MM-dd').format(record.date) == todayString &&
+            record.day == model.day);
+        if (!exists) {
+          final record = WeeklyRecordGroup(
+            date: now,
+            day: model.day,
+            tasks: List.from(model.tasks),
+          );
+          await WeeklyRecordBox.box.add(record);
+        }
       }
     }
   }
@@ -72,8 +84,13 @@ class RecordSaver {
     // 날짜 기준으로 각각 RecordGroup 생성 및 저장
     for (final entry in grouped.entries) {
       final date = DateFormat('yyyy-MM-dd').parse(entry.key);
-      final record = CalendarRecordGroup(date: date, tasks: List.from(entry.value));
-      await CalendarRecordBox.box.add(record);
+      final exists = CalendarRecordBox.box.values.any((record) =>
+          DateFormat('yyyy-MM-dd').format(record.date) ==
+          DateFormat('yyyy-MM-dd').format(date));
+      if (!exists) {
+        final record = CalendarRecordGroup(date: date, tasks: List.from(entry.value));
+        await CalendarRecordBox.box.add(record);
+      }
     }
   }
 }
