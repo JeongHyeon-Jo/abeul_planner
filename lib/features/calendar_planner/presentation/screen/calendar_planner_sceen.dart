@@ -1,4 +1,5 @@
 // calendar_planner_screen.dart
+import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_task_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,6 +9,8 @@ import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
 import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
+import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_task_dialog.dart';
+import 'package:abeul_planner/features/calendar_planner/presentation/screen/calendar_all_task_screen.dart';
 
 class CalendarPlannerScreen extends ConsumerStatefulWidget {
   const CalendarPlannerScreen({super.key});
@@ -54,7 +57,11 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
         isTransparent: true,
         leading: IconButton(
           icon: const Icon(Icons.menu, color: AppColors.text),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const CalendarAllTaskScreen()),
+            );
+          },
         ),
         actions: [
           IconButton(
@@ -83,7 +90,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                         alignment: Alignment.center,
                         child: Text(
                           weekDays[i],
-                          style: AppTextStyles.body.copyWith(color: color),
+                          style: AppTextStyles.body.copyWith(color: color, fontSize: 13.sp),
                         ),
                       ),
                     );
@@ -92,37 +99,12 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                 SizedBox(height: 4.h),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4.w),
-                  child: Divider(color: AppColors.primary, thickness: 1.2),
+                  child: Divider(color: AppColors.primary, thickness: 1.2.w),
                 ),
               ],
             ),
           ),
           Expanded(child: _buildCalendarGrid(groupedTasks)),
-          Padding(
-            padding: EdgeInsets.all(16.w),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 16.w),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(24.r),
-                      color: AppColors.cardBackground,
-                    ),
-                    child: Text(
-                      '${DateFormat('M월 d일').format(_selectedDay)}에 일정 추가',
-                      style: AppTextStyles.body,
-                    ),
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                CircleAvatar(
-                  backgroundColor: AppColors.accent,
-                  child: Icon(Icons.add, color: Colors.white),
-                ),
-              ],
-            ),
-          )
         ],
       ),
     );
@@ -159,14 +141,28 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                   return Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        setState(() {
-                          _selectedDay = day;
-                        });
+                        if (_selectedDay == day) {
+                          if (events.isEmpty) {
+                            showDialog(
+                              context: context,
+                              builder: (_) => CalendarTaskDialog(selectedDate: day),
+                            );
+                          } else {
+                            showDialog(
+                              context: context,
+                              builder: (_) => CalendarTaskList(selectedDate: day),
+                            );
+                          }
+                        } else {
+                          setState(() {
+                            _selectedDay = day;
+                          });
+                        }
                       },
                       child: Container(
                         margin: EdgeInsets.symmetric(horizontal: 2.w),
-                        padding: EdgeInsets.only(top: 6.h, left: 6.w, right: 6.w, bottom: 6.h),
-                        constraints: BoxConstraints(minHeight: 80.h),
+                        padding: EdgeInsets.only(top: 6.h, left: 4.w, right: 4.w, bottom: 6.h),
+                        constraints: BoxConstraints(minHeight: 90.h),
                         decoration: BoxDecoration(
                           color: isToday ? AppColors.highlight.withOpacity(0.2) : null,
                           border: Border.all(color: isSelected ? AppColors.accent : Colors.transparent, width: 1.5.w),
@@ -178,6 +174,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                             Text(
                               '${day.day}',
                               style: AppTextStyles.body.copyWith(
+                                fontSize: 14.sp,
                                 color: isCurrentMonth
                                     ? (day.weekday == DateTime.sunday
                                         ? Colors.red
@@ -188,24 +185,24 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                                 fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                               ),
                             ),
-                            SizedBox(height: 6.h),
+                            SizedBox(height: 4.h),
                             ...events.take(3).map((e) => Padding(
                                   padding: EdgeInsets.only(bottom: 2.h),
                                   child: Container(
                                     padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
                                     decoration: BoxDecoration(
-                                      color: AppColors.accent.withOpacity(0.2),
+                                      color: AppColors.accent.withOpacity(0.15),
                                       borderRadius: BorderRadius.circular(4.r),
                                     ),
                                     child: Text(
                                       e.memo.length > 6 ? '${e.memo.substring(0, 6)}…' : e.memo,
-                                      style: AppTextStyles.caption,
+                                      style: AppTextStyles.caption.copyWith(fontSize: 11.sp),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 )),
                             if (events.length > 3)
-                              Text('+${events.length - 3}', style: AppTextStyles.caption)
+                              Text('+${events.length - 3}', style: AppTextStyles.caption.copyWith(fontSize: 11.sp))
                           ],
                         ),
                       ),
@@ -215,8 +212,8 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
               ),
               if (weekIndex < (paddedDays.length / 7).ceil() - 1)
                 Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.h),
-                  child: Divider(color: AppColors.primary, thickness: 1),
+                  padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
+                  child: Divider(color: AppColors.primary, thickness: 1.2.w),
                 )
             ],
           ),

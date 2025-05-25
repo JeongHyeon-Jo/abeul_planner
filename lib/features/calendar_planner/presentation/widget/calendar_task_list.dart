@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/utils/priority_icon.dart';
-import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_task_dialog.dart';
 
@@ -24,48 +23,44 @@ class CalendarTaskList extends ConsumerWidget {
         .toList();
 
     return Dialog(
-      insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h), // 좌우 넓게
+      insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
-      child: Padding(
-        padding: EdgeInsets.all(20.w),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 상단 타이틀 + 일정 추가 버튼
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(DateFormat('yyyy년 MM월 dd일').format(selectedDate), style: AppTextStyles.title),
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: () {
-                    // 새 일정 추가 다이얼로그
-                    showDialog(
-                      context: context,
-                      builder: (_) => CalendarTaskDialog(selectedDate: selectedDate),
-                    );
-                  },
-                ),
-              ],
-            ),
-            SizedBox(height: 12.h),
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(20.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 상단 타이틀 + 일정 추가 버튼
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(DateFormat('yyyy년 MM월 dd일').format(selectedDate), style: AppTextStyles.title),
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => CalendarTaskDialog(selectedDate: selectedDate),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              SizedBox(height: 12.h),
 
-            // 일정이 없을 때
-            if (tasks.isEmpty)
-              Text('등록된 일정이 없습니다.', style: AppTextStyles.body)
-            else
-              // 일정 리스트 출력
-              SizedBox(
-                height: 400.h,
-                child: ListView.separated(
+              if (tasks.isEmpty)
+                Text('등록된 일정이 없습니다.', style: AppTextStyles.body)
+              else
+                ListView.separated(
                   shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   itemCount: tasks.length,
                   separatorBuilder: (_, __) => SizedBox(height: 8.h),
                   itemBuilder: (context, index) {
                     final task = tasks[index];
                     return InkWell(
                       onTap: () {
-                        // 일정 수정 다이얼로그 열기
                         showDialog(
                           context: context,
                           builder: (_) => CalendarTaskDialog(
@@ -82,13 +77,9 @@ class CalendarTaskList extends ConsumerWidget {
                           border: Border.all(color: AppColors.primary),
                         ),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            // 중요도 아이콘
                             getPriorityIcon(task.priority),
                             SizedBox(width: 12.w),
-                            // 텍스트 내용
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -112,7 +103,6 @@ class CalendarTaskList extends ConsumerWidget {
                                 ],
                               ),
                             ),
-                            // 완료 체크박스
                             Checkbox(
                               value: task.isCompleted,
                               onChanged: (_) {
@@ -125,25 +115,23 @@ class CalendarTaskList extends ConsumerWidget {
                     );
                   },
                 ),
-              ),
 
-            SizedBox(height: 16.h),
+              SizedBox(height: 16.h),
 
-            // 닫기 버튼
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('닫기', style: AppTextStyles.body),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('닫기', style: AppTextStyles.body),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  /// 날짜 비교 함수
   bool isSameDay(DateTime d1, DateTime d2) {
     return d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;
   }
