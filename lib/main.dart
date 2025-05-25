@@ -80,12 +80,14 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   Widget build(BuildContext context) {
     return ResponsiveInitializer(
-      child: MaterialApp.router(
-        routerConfig: router,
-        title: 'Abeul Planner',
-        debugShowCheckedModeBanner: false,
-        theme: appLightTheme,
-      ),
+      builder: (context) {
+        return MaterialApp.router(
+          routerConfig: router,
+          title: 'Abeul Planner',
+          debugShowCheckedModeBanner: false,
+          theme: appLightTheme,
+        );
+      },
     );
   }
 }
