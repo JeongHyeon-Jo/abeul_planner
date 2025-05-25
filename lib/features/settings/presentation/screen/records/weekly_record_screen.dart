@@ -24,7 +24,7 @@ class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
   Widget build(BuildContext context) {
     final recordBox = WeeklyRecordBox.box;
     final records = recordBox.values.toList()
-      ..sort((a, b) => b.date.compareTo(a.date)); // 최신 날짜가 위로
+      ..sort((a, b) => b.date.compareTo(a.date));
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -62,7 +62,6 @@ class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 날짜 카드
                       GestureDetector(
                         onTap: () {
                           setState(() {
@@ -74,7 +73,7 @@ class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12.r),
-                            border: Border.all(color: AppColors.borderColor),
+                            border: Border.all(color: AppColors.primary),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -96,6 +95,7 @@ class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
                             decoration: BoxDecoration(
                               color: AppColors.cardBackground,
                               borderRadius: BorderRadius.circular(10.r),
+                              border: Border.all(color: AppColors.primary, width: 1.1.w),
                             ),
                             child: Row(
                               children: [
