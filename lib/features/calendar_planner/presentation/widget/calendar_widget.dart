@@ -1,4 +1,4 @@
-// calendar_widget_refactor.dart
+// calendar_widget.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -58,8 +58,8 @@ class CalendarWidget extends ConsumerWidget {
           firstDay: DateTime.utc(2020, 1, 1),
           lastDay: DateTime.utc(2030, 12, 31),
           focusedDay: focusedDay,
-          selectedDayPredicate: (day) => isSameDay(selectedDay, day),
-          onDaySelected: onDaySelected,
+          selectedDayPredicate: (_) => false, // ✅ 선택 비활성화
+          onDaySelected: (selectedDay, focusedDay) => onDaySelected(selectedDay, focusedDay),
           eventLoader: (day) => _getEventsForDay(allTasks, day),
           availableCalendarFormats: const {
             CalendarFormat.month: '월간',
@@ -90,14 +90,7 @@ class CalendarWidget extends ConsumerWidget {
             ),
           ),
           calendarStyle: CalendarStyle(
-            todayDecoration: BoxDecoration(
-              color: AppColors.highlight,
-              shape: BoxShape.circle,
-            ),
-            selectedDecoration: BoxDecoration(
-              color: AppColors.accent,
-              shape: BoxShape.circle,
-            ),
+            selectedDecoration: const BoxDecoration(), // ✅ 선택 배경 제거
             defaultTextStyle: AppTextStyles.body,
             weekendTextStyle: AppTextStyles.body,
             markerDecoration: BoxDecoration(
@@ -126,7 +119,6 @@ class CalendarWidget extends ConsumerWidget {
               );
             },
             defaultBuilder: (context, day, focused) {
-              final isToday = isSameDay(day, DateTime.now());
               final isSunday = day.weekday == DateTime.sunday;
               final isSaturday = day.weekday == DateTime.saturday;
               final isOutside = day.month != focusedDay.month;
@@ -148,13 +140,7 @@ class CalendarWidget extends ConsumerWidget {
                       alignment: Alignment.topCenter,
                       child: Padding(
                         padding: EdgeInsets.only(top: 6.h),
-                        child: Container(
-                          decoration: isToday
-                              ? BoxDecoration(
-                                  color: AppColors.highlight,
-                                  shape: BoxShape.circle,
-                                )
-                              : null,
+                        child: Padding(
                           padding: EdgeInsets.all(6.r),
                           child: Text(
                             '${day.day}',
@@ -176,7 +162,6 @@ class CalendarWidget extends ConsumerWidget {
               );
             },
             outsideBuilder: (context, day, focused) {
-              final isToday = isSameDay(day, DateTime.now());
               final isSunday = day.weekday == DateTime.sunday;
               final isSaturday = day.weekday == DateTime.saturday;
               final isCurrentMonth = day.month == focusedDay.month;
@@ -198,13 +183,7 @@ class CalendarWidget extends ConsumerWidget {
                       alignment: Alignment.topCenter,
                       child: Padding(
                         padding: EdgeInsets.only(top: 6.h),
-                        child: Container(
-                          decoration: isToday
-                              ? BoxDecoration(
-                                  color: AppColors.highlight,
-                                  shape: BoxShape.circle,
-                                )
-                              : null,
+                        child: Padding(
                           padding: EdgeInsets.all(6.r),
                           child: Text(
                             '${day.day}',
