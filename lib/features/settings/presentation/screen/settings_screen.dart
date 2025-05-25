@@ -55,9 +55,10 @@ class SettingsScreen extends StatelessWidget {
                 onTap: () => context.push('/records/calendar'),
               ),
               Divider(height: 1.h, color: AppColors.primary),
-              const SettingsTile(
+              SettingsTile(
                 icon: Icons.info,
                 title: '앱 정보',
+                onTap: () => context.push('/settings/app-info'),
               ),
               Divider(height: 1.h, color: AppColors.primary),
             ],
