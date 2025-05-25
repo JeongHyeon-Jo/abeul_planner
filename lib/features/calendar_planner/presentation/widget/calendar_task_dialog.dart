@@ -32,7 +32,7 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
   String _selectedRepeat = '반복 없음';
   String _selectedPriority = '보통';
 
-  final List<String> _repeatOptions = ['반복 없음', '매일', '매주', '매월', '매년'];
+  final List<String> _repeatOptions = ['반복 없음', '매년'];
   final List<String> _priorityOptions = ['낮음', '보통', '중요'];
 
   @override

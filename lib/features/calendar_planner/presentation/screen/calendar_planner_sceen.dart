@@ -104,7 +104,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                 SizedBox(height: 1.h),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4.w),
-                  child: Divider(color: AppColors.primary, thickness: 1.w),
+                  child: Divider(color: AppColors.primary, thickness: 1.2.w),
                 ),
               ],
             ),

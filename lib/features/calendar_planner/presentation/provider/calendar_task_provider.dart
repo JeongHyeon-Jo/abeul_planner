@@ -33,8 +33,22 @@ class CalendarTaskNotifier extends StateNotifier<List<CalendarTaskModel>> {
   }
 
   // 새로운 일정 추가
-  void addTask(CalendarTaskModel task) {
-    _box.add(task);
+    void addTask(CalendarTaskModel task) {
+    if (task.repeat == '매년') {
+      for (int i = 0; i < 10; i++) {
+        final repeatedDate = DateTime(task.date.year + i, task.date.month, task.date.day);
+        _box.add(CalendarTaskModel(
+          memo: task.memo,
+          date: repeatedDate,
+          repeat: task.repeat,
+          isCompleted: task.isCompleted,
+          priority: task.priority,
+        ));
+      }
+    } else {
+      _box.add(task);
+    }
+
     state = _box.values.toList();
   }
 

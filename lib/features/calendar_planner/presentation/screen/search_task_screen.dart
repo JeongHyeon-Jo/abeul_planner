@@ -1,8 +1,10 @@
+// search_task_screen.dart
 import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_task_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:characters/characters.dart'; // 추가
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
@@ -23,8 +25,15 @@ class _SearchTaskScreenState extends ConsumerState<SearchTaskScreen> {
     final allTasks = ref.watch(calendarTaskProvider);
     final now = DateTime.now();
 
+    final normalizedQuery = _query.characters.toString().replaceAll(' ', '').toLowerCase();
+
     final matched = allTasks
-        .where((task) => task.memo.contains(_query))
+        .where((task) => task.memo
+            .characters
+            .toString()
+            .replaceAll(' ', '')
+            .toLowerCase()
+            .contains(normalizedQuery))
         .toList()
       ..sort((a, b) => a.date.compareTo(b.date));
 
@@ -76,57 +85,57 @@ class _SearchTaskScreenState extends ConsumerState<SearchTaskScreen> {
           : ListView(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               children: [
-                if (before.isNotEmpty)
-                ...before.map(_buildItem),
+                if (before.isNotEmpty) ...before.map(_buildItem),
+                if (after.isNotEmpty) ...after.map(_buildItem),
               ],
             ),
     );
   }
 
   Widget _buildItem(CalendarTaskModel task) => InkWell(
-      onTap: () {
-        showDialog(
-          context: context,
-          builder: (_) => CalendarTaskDialog(
-            existingTask: task,
-            selectedDate: task.date,
+        onTap: () {
+          showDialog(
+            context: context,
+            builder: (_) => CalendarTaskDialog(
+              existingTask: task,
+              selectedDate: task.date,
+            ),
+          );
+        },
+        child: Container(
+          margin: EdgeInsets.symmetric(vertical: 6.h),
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: AppColors.primary),
+            borderRadius: BorderRadius.circular(12.r),
           ),
-        );
-      },
-      child: Container(
-        margin: EdgeInsets.symmetric(vertical: 6.h),
-        padding: EdgeInsets.all(12.w),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: AppColors.primary),
-          borderRadius: BorderRadius.circular(12.r),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    DateFormat('yyyy년 M월 d일 (E)', 'ko_KR').format(task.date),
-                    style: AppTextStyles.caption,
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(task.memo, style: AppTextStyles.body),
-                ],
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      DateFormat('yyyy년 M월 d일 (E)', 'ko_KR').format(task.date),
+                      style: AppTextStyles.caption,
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(task.memo, style: AppTextStyles.body),
+                  ],
+                ),
               ),
-            ),
-            SizedBox(
-              width: 24.w,
-              height: 24.w,
-              child: Checkbox(
-                value: task.isCompleted,
-                onChanged: null,
+              SizedBox(
+                width: 24.w,
+                height: 24.w,
+                child: Checkbox(
+                  value: task.isCompleted,
+                  onChanged: null,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
+      );
 }
