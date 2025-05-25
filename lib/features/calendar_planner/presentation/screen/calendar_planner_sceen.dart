@@ -1,4 +1,5 @@
 // calendar_planner_screen.dart
+import 'package:abeul_planner/features/calendar_planner/presentation/screen/search_task_screen.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_task_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -66,14 +67,18 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.search, color: AppColors.text),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SearchTaskScreen()),
+              );
+            },
           ),
         ],
       ),
       body: Column(
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8.w),
+            padding: EdgeInsets.symmetric(horizontal: 6.w),
             child: Column(
               children: [
                 Row(
@@ -96,10 +101,10 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                     );
                   }),
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: 1.h),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4.w),
-                  child: Divider(color: AppColors.primary, thickness: 1.2.w),
+                  child: Divider(color: AppColors.primary, thickness: 1.w),
                 ),
               ],
             ),
@@ -161,7 +166,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                       },
                       child: Container(
                         margin: EdgeInsets.symmetric(horizontal: 2.w),
-                        padding: EdgeInsets.only(top: 6.h, left: 4.w, right: 4.w, bottom: 6.h),
+                        padding: EdgeInsets.only(top: 4.h, left: 4.w, right: 4.w, bottom: 2.h),
                         constraints: BoxConstraints(minHeight: 90.h),
                         decoration: BoxDecoration(
                           color: isToday ? AppColors.highlight.withOpacity(0.2) : null,
@@ -185,23 +190,25 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                                 fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                               ),
                             ),
-                            SizedBox(height: 4.h),
-                            ...events.take(3).map((e) => Padding(
-                                  padding: EdgeInsets.only(bottom: 2.h),
+                            SizedBox(height: 1.h),
+                            ...events.take(events.length > 4 ? 3 : 4).map((e) => Padding(
+                                  padding: EdgeInsets.only(bottom: 1.h),
                                   child: Container(
-                                    padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+                                    padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.2.h),
                                     decoration: BoxDecoration(
                                       color: AppColors.accent.withOpacity(0.15),
                                       borderRadius: BorderRadius.circular(4.r),
                                     ),
                                     child: Text(
-                                      e.memo.length > 6 ? '${e.memo.substring(0, 6)}…' : e.memo,
-                                      style: AppTextStyles.caption.copyWith(fontSize: 11.sp),
-                                      overflow: TextOverflow.ellipsis,
+                                      e.memo,
+                                      style: AppTextStyles.caption.copyWith(fontSize: 10.sp),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.fade,
+                                      softWrap: false,
                                     ),
                                   ),
                                 )),
-                            if (events.length > 3)
+                            if (events.length > 4)
                               Text('+${events.length - 3}', style: AppTextStyles.caption.copyWith(fontSize: 11.sp))
                           ],
                         ),
@@ -212,7 +219,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
               ),
               if (weekIndex < (paddedDays.length / 7).ceil() - 1)
                 Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 2.w),
+                  padding: EdgeInsets.symmetric(vertical: 3.h, horizontal: 2.w),
                   child: Divider(color: AppColors.primary, thickness: 1.2.w),
                 )
             ],
