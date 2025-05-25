@@ -11,6 +11,7 @@ import 'package:abeul_planner/features/settings/presentation/screen/settings_scr
 import 'package:abeul_planner/features/settings/presentation/screen/records/daily_record_screen.dart';
 import 'package:abeul_planner/features/settings/presentation/screen/records/weekly_record_screen.dart';
 import 'package:abeul_planner/features/settings/presentation/screen/records/calendar_record_screen.dart';
+import 'package:abeul_planner/features/settings/presentation/screen/info/app_info_screen.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: '/home',
@@ -39,6 +40,10 @@ final GoRouter router = GoRouter(
         GoRoute(
           path: '/settings',
           builder: (context, state) => const SettingsScreen(),
+        ),
+        GoRoute(
+          path: '/settings/app-info',
+          builder: (context, state) => const AppInfoScreen(),
         ),
         // 일정 기록
         GoRoute(
