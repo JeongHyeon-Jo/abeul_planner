@@ -1,5 +1,4 @@
 // core/utils/record_saver.dart
-import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,15 +17,15 @@ import 'package:abeul_planner/features/settings/data/model/record/calendar_recor
 
 class RecordSaver {
   /// 하루에 한 번, 어제 날짜 기준으로 자동 기록 저장
-  static Future<void> saveAllIfNeeded(WidgetRef ref) async {
+  static Future<void> saveAllIfNeeded(ProviderContainer container) async {
     final prefs = await SharedPreferences.getInstance();
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     final last = prefs.getString('last_record_date');
 
     if (last != today) {
-      await _saveDaily(ref);
-      await _saveWeekly(ref);
-      await _saveCalendar(ref);
+      await _saveDaily(container);
+      await _saveWeekly(container);
+      await _saveCalendar(container);
       await prefs.setString('last_record_date', today);
     }
   }
@@ -38,8 +37,8 @@ class RecordSaver {
   }
 
   // 일상 플래너 기록 저장 (어제 기준)
-  static Future<void> _saveDaily(WidgetRef ref) async {
-    final tasks = ref.read(dailyTaskProvider);
+  static Future<void> _saveDaily(ProviderContainer container) async {
+    final tasks = container.read(dailyTaskProvider);
     if (tasks.isNotEmpty) {
       final date = _yesterday;
       final exists = DailyRecordBox.box.values.any(
@@ -54,8 +53,8 @@ class RecordSaver {
   }
 
   // 주간 플래너 기록 저장 (어제 기준 요일만 저장)
-  static Future<void> _saveWeekly(WidgetRef ref) async {
-    final weeklyMap = ref.read(weeklyTaskProvider);
+  static Future<void> _saveWeekly(ProviderContainer container) async {
+    final weeklyMap = container.read(weeklyTaskProvider);
     final date = _yesterday;
     final weekday = DateFormat('E', 'ko_KR').format(date); // 예: '월', '화', ...
 
@@ -78,8 +77,8 @@ class RecordSaver {
   }
 
   // 달력 플래너 기록 저장 (어제 날짜에 해당하는 task만 저장)
-  static Future<void> _saveCalendar(WidgetRef ref) async {
-    final tasks = ref.read(calendarTaskProvider);
+  static Future<void> _saveCalendar(ProviderContainer container) async {
+    final tasks = container.read(calendarTaskProvider);
     if (tasks.isEmpty) return;
 
     final yesterday = _yesterday;
