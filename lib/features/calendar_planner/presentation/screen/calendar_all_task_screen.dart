@@ -1,4 +1,5 @@
 // calendar_all_task_screen.dart
+import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_task_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -105,59 +106,70 @@ class _CalendarAllTaskScreenState extends ConsumerState<CalendarAllTaskScreen> w
     if (tasks.isEmpty) {
       return const Center(child: Text('등록된 일정이 없습니다.'));
     }
+
     return ListView.separated(
       itemCount: tasks.length,
       separatorBuilder: (_, __) => SizedBox(height: 12.h),
       itemBuilder: (context, index) {
         final task = tasks[index];
-        return Container(
-          padding: EdgeInsets.all(12.w),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: AppColors.primary, width: 1.w),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 4.r,
-                offset: Offset(0, 2.h),
-              )
-            ],
-          ),
-          child: Row(
-            children: [
-              getPriorityIcon(task.priority),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      DateFormat('yyyy.MM.dd').format(task.date),
-                      style: AppTextStyles.caption,
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      task.memo,
-                      style: AppTextStyles.body.copyWith(
-                        decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-                        color: task.isCompleted ? AppColors.subText : AppColors.text,
-                      ),
-                    ),
-                  ],
-                ),
+
+        return InkWell(
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (_) => CalendarTaskDialog(
+                existingTask: task,
+                selectedDate: task.date,
               ),
-              SizedBox(
-                width: 24.w,
-                height: 24.w,
-                child: Checkbox(
-                  value: task.isCompleted,
-                  onChanged: (_) {
-                    ref.read(calendarTaskProvider.notifier).toggleTask(task);
-                  },
+            );
+          },
+          child: Container(
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: AppColors.primary, width: 1.w),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 4.r,
+                  offset: Offset(0, 2.h),
+                )
+              ],
+            ),
+            child: Row(
+              children: [
+                getPriorityIcon(task.priority),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        DateFormat('yyyy.MM.dd').format(task.date),
+                        style: AppTextStyles.caption,
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        task.memo,
+                        style: AppTextStyles.body.copyWith(
+                          decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                          color: task.isCompleted ? AppColors.subText : AppColors.text,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              )
-            ],
+                SizedBox(
+                  width: 24.w,
+                  height: 24.w,
+                  child: Checkbox(
+                    value: task.isCompleted,
+                    onChanged: null,
+                  ),
+                )
+              ],
+            ),
           ),
         );
       },
