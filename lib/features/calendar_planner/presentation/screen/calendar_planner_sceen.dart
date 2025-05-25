@@ -67,29 +67,37 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
         children: [
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 8.w),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(7, (i) {
-                final weekDays = ['일', '월', '화', '수', '목', '금', '토'];
-                final color = i == 0
-                    ? Colors.red
-                    : i == 6
-                        ? Colors.blue
-                        : AppColors.text;
-                return Expanded(
-                  child: Center(
-                    child: Text(
-                      weekDays[i],
-                      style: AppTextStyles.body.copyWith(color: color),
-                    ),
-                  ),
-                );
-              }),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: List.generate(7, (i) {
+                    final weekDays = ['일', '월', '화', '수', '목', '금', '토'];
+                    final color = i == 0
+                        ? Colors.red
+                        : i == 6
+                            ? Colors.blue
+                            : AppColors.text;
+                    return Expanded(
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          weekDays[i],
+                          style: AppTextStyles.body.copyWith(color: color),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+                SizedBox(height: 4.h),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4.w),
+                  child: Divider(color: AppColors.primary, thickness: 1.2),
+                ),
+              ],
             ),
           ),
-          Divider(color: AppColors.primary),
-          _buildCalendarGrid(groupedTasks),
-          const Spacer(),
+          Expanded(child: _buildCalendarGrid(groupedTasks)),
           Padding(
             padding: EdgeInsets.all(16.w),
             child: Row(
@@ -129,80 +137,91 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
     final gridCount = (allDays.length / 7).ceil() * 7;
     final paddedDays = allDays + List.generate(gridCount - allDays.length, (i) => end.add(Duration(days: i + 1)));
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 8.w),
-      child: GridView.builder(
-        physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        itemCount: paddedDays.length,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 7,
-          mainAxisSpacing: 4.h,
-          crossAxisSpacing: 4.w,
-          childAspectRatio: 1,
-        ),
-        itemBuilder: (context, index) {
-          final day = paddedDays[index];
-          final isToday = DateTime.now().year == day.year && DateTime.now().month == day.month && DateTime.now().day == day.day;
-          final isSelected = _selectedDay.year == day.year && _selectedDay.month == day.month && _selectedDay.day == day.day;
-          final isCurrentMonth = day.month == _focusedDay.month;
-          final events = grouped[DateFormat('yyyy-MM-dd').format(day)] ?? [];
+    return ListView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      itemCount: (paddedDays.length / 7).ceil(),
+      itemBuilder: (context, weekIndex) {
+        final week = paddedDays.skip(weekIndex * 7).take(7).toList();
 
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedDay = day;
-              });
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                color: isToday ? AppColors.highlight.withOpacity(0.2) : null,
-                border: Border.all(color: isSelected ? AppColors.accent : Colors.transparent, width: 1.5),
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              padding: EdgeInsets.all(6.w),
-              child: Column(
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8.w),
+          child: Column(
+            children: [
+              Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${day.day}',
-                    style: AppTextStyles.body.copyWith(
-                      color: isCurrentMonth
-                          ? (day.weekday == DateTime.sunday
-                              ? Colors.red
-                              : day.weekday == DateTime.saturday
-                                  ? Colors.blue
-                                  : AppColors.text)
-                          : AppColors.subText,
-                      fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                    ),
-                  ),
-                  ...events.take(3).map((e) => Padding(
-                        padding: EdgeInsets.only(top: 2.h),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
-                          decoration: BoxDecoration(
-                            color: AppColors.accent.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(4.r),
-                          ),
-                          child: Text(
-                            e.memo.length > 5 ? '${e.memo.substring(0, 5)}…' : e.memo,
-                            style: AppTextStyles.caption,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                children: week.map((day) {
+                  final isToday = DateTime.now().year == day.year && DateTime.now().month == day.month && DateTime.now().day == day.day;
+                  final isSelected = _selectedDay.year == day.year && _selectedDay.month == day.month && _selectedDay.day == day.day;
+                  final isCurrentMonth = day.month == _focusedDay.month;
+                  final events = grouped[DateFormat('yyyy-MM-dd').format(day)] ?? [];
+
+                  return Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedDay = day;
+                        });
+                      },
+                      child: Container(
+                        margin: EdgeInsets.symmetric(horizontal: 2.w),
+                        padding: EdgeInsets.only(top: 6.h, left: 6.w, right: 6.w, bottom: 6.h),
+                        constraints: BoxConstraints(minHeight: 80.h),
+                        decoration: BoxDecoration(
+                          color: isToday ? AppColors.highlight.withOpacity(0.2) : null,
+                          border: Border.all(color: isSelected ? AppColors.accent : Colors.transparent, width: 1.5.w),
+                          borderRadius: BorderRadius.circular(8.r),
                         ),
-                      )),
-                  if (events.length > 3)
-                    Padding(
-                      padding: EdgeInsets.only(top: 2.h),
-                      child: Text('+${events.length - 3}', style: AppTextStyles.caption),
-                    )
-                ],
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${day.day}',
+                              style: AppTextStyles.body.copyWith(
+                                color: isCurrentMonth
+                                    ? (day.weekday == DateTime.sunday
+                                        ? Colors.red
+                                        : day.weekday == DateTime.saturday
+                                            ? Colors.blue
+                                            : AppColors.text)
+                                    : AppColors.subText,
+                                fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                              ),
+                            ),
+                            SizedBox(height: 6.h),
+                            ...events.take(3).map((e) => Padding(
+                                  padding: EdgeInsets.only(bottom: 2.h),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.accent.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(4.r),
+                                    ),
+                                    child: Text(
+                                      e.memo.length > 6 ? '${e.memo.substring(0, 6)}…' : e.memo,
+                                      style: AppTextStyles.caption,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                )),
+                            if (events.length > 3)
+                              Text('+${events.length - 3}', style: AppTextStyles.caption)
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
-            ),
-          );
-        },
-      ),
+              if (weekIndex < (paddedDays.length / 7).ceil() - 1)
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.h),
+                  child: Divider(color: AppColors.primary, thickness: 1),
+                )
+            ],
+          ),
+        );
+      },
     );
   }
 
