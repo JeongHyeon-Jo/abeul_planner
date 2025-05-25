@@ -35,7 +35,6 @@ void main() async {
   // CalendarTask
   await CalendarTaskBox.registerAdapters();
   await CalendarTaskBox.openBox();
-  
 
   // WeeklyTask
   await WeeklyTaskBox.registerAdapters();
@@ -51,9 +50,13 @@ void main() async {
   await WeeklyRecordBox.registerAdapters();
   await WeeklyRecordBox.openBox();
 
+  final container = ProviderContainer();
+  await RecordSaver.saveAllIfNeeded(container);
+
   runApp(
-    const ProviderScope(
-      child: MyApp(),
+    UncontrolledProviderScope(
+      container: container,
+      child: const MyApp(),
     ),
   );
 }
@@ -70,11 +73,9 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   void initState() {
     super.initState();
-
-    // 하루가 바뀌었으면 기록 저장 (daily / weekly / calendar)
-    Future.microtask(() async {
-      await RecordSaver.saveAllIfNeeded(ref);
-    });
+    // Future.microtask(() async {
+    //   await RecordSaver.saveAllIfNeeded(ref);
+    // });
   }
 
   @override
