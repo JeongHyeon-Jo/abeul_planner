@@ -79,7 +79,7 @@ class _CalendarAllTaskScreenState extends ConsumerState<CalendarAllTaskScreen> w
                     Tab(text: '지난 일정'),
                     Tab(text: '다가오는 일정'),
                   ],
-                  overlayColor: MaterialStateProperty.all(Colors.transparent),
+                  overlayColor: WidgetStateProperty.all(Colors.transparent),
                   dividerColor: Colors.transparent,
                 ),
               ),
