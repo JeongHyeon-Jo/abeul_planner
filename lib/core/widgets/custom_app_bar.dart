@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:abeul_planner/core/styles/color.dart';
-import 'package:abeul_planner/core/styles/text_styles.dart';
 
 /// 앱 전체에서 재사용 가능한 커스텀 앱바
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
