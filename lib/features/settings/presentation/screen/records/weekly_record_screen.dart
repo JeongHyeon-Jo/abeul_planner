@@ -171,7 +171,7 @@ class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
                               ],
                             ),
                           ),
-                        )).toList(),
+                        )),
                     ],
                   );
                 },

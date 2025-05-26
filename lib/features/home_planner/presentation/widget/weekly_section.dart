@@ -88,11 +88,10 @@ class WeeklySection extends ConsumerWidget {
             trailing: Checkbox(
               value: task.isCompleted,
               onChanged: (_) {
-                final notifier = ref.read(weeklyTaskProvider.notifier);
-                final todayModel = notifier.state.firstWhere((model) => model.day == day);
+                final todayModel = ref.watch(weeklyTaskProvider).firstWhere((model) => model.day == day);
                 final taskIndex = todayModel.tasks.indexOf(task);
                 if (taskIndex != -1) {
-                  notifier.toggleTask(day, taskIndex);
+                  ref.read(weeklyTaskProvider.notifier).toggleTask(day, taskIndex);
                 }
               },
             ),
