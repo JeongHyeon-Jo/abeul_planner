@@ -156,7 +156,13 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
                                       icon: const Icon(Icons.close, color: Colors.red),
                                       onPressed: () {
                                         record.tasks.remove(task);
-                                        DailyRecordBox.box.putAt(index, record);
+
+                                        if (record.tasks.isEmpty) {
+                                          DailyRecordBox.box.deleteAt(index);
+                                        } else {
+                                          DailyRecordBox.box.putAt(index, record);
+                                        }
+
                                         setState(() {});
                                       },
                                     ),
