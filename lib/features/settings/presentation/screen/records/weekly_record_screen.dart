@@ -8,6 +8,7 @@ import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
 import 'package:abeul_planner/features/settings/data/datasource/record/weekly_record_box.dart';
 import 'package:abeul_planner/features/weekly_planner/data/model/weekly_task_model.dart';
+import 'package:abeul_planner/core/utils/priority_icon.dart';
 
 class WeeklyRecordScreen extends ConsumerStatefulWidget {
   const WeeklyRecordScreen({super.key});
@@ -139,14 +140,21 @@ class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
                             ),
                             child: Row(
                               children: [
+                                // 중요도 아이콘 왼쪽
+                                getPriorityIcon(task.priority),
+                                SizedBox(width: 8.w),
+
+                                // 메모 본문 중앙
+                                Expanded(
+                                  child: Text(task.content, style: AppTextStyles.body),
+                                ),
+
+                                // 완료 여부 아이콘 오른쪽
                                 Icon(
                                   task.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
                                   color: AppColors.primary,
                                 ),
-                                SizedBox(width: 8.w),
-                                Expanded(
-                                  child: Text(task.content, style: AppTextStyles.body),
-                                ),
+
                                 if (isEditing)
                                   IconButton(
                                     icon: const Icon(Icons.close, color: Colors.red),
