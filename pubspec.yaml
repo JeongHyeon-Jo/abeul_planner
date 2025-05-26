@@ -29,7 +29,6 @@ dependencies:
   ## 상태관리
   flutter_riverpod: ^2.6.1
   path_provider: ^2.1.5
-  riverpod: ^2.6.1
 
   ## 앱 아이콘 / 스플래쉬
   flutter_launcher_icons: ^0.14.3

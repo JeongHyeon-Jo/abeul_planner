@@ -12,9 +12,6 @@ import 'package:abeul_planner/features/daily_planner/presentation/provider/daily
 // hive
 import 'package:hive/hive.dart';
 
-// Riverpod 상태관리 도구
-import 'package:riverpod/riverpod.dart';
-
 // Hive 테스트용 초기화 함수
 import '../../../test_helper.dart';
 
