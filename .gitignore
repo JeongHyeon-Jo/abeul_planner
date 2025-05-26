@@ -33,6 +33,7 @@ migrate_working_dir/
 
 # Hive 어댑터 자동 생성 파일 무시 (build_runner로 생성됨)
 *.g.dart
+!**/model/*.g.dart
 
 # 심볼리케이션 관련
 app.*.symbols
