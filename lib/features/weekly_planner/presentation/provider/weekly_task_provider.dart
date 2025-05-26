@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:abeul_planner/features/weekly_planner/data/datasource/weekly_task_box.dart';
 import 'package:abeul_planner/features/weekly_planner/data/model/weekly_task_model.dart';
 
