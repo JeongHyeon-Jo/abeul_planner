@@ -1,6 +1,4 @@
 // weekly_planner_screen.dart
-// 주간 플래너 화면: 요일별 할 일 목록과 테마를 관리하는 UI
-
 import 'package:flutter/material.dart';
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
@@ -93,10 +91,11 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
 
   @override
   Widget build(BuildContext context) {
+    final tabWidth = (MediaQuery.of(context).size.width - 32.w) / 7;
+
     return DefaultTabController(
       length: days.length,
       child: Scaffold(
-        // 커스텀 앱바 (필터 및 편집 모드 토글)
         appBar: CustomAppBar(
           title: _filterPriority == '전체'
               ? Text('', style: AppTextStyles.title)
@@ -132,7 +131,6 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
           ],
         ),
 
-        // 추가 버튼
         floatingActionButton: Transform.translate(
           offset: Offset(-6.w, -6.h),
           child: FloatingActionButton(
@@ -146,55 +144,60 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
           child: Column(
             children: [
-              // 요일 탭바 (body 최상단)
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 4.r,
-                      offset: Offset(0, 2.h),
-                    )
-                  ],
-                  border: Border.all(color: AppColors.primary, width: 1.w),
-                ),
-                child: TabBar(
-                  controller: _tabController,
-                  isScrollable: false,
-                  indicator: BoxDecoration(),
-                  dividerColor: Colors.transparent,
-                  labelPadding: EdgeInsets.zero,
-                  tabs: List.generate(days.length, (index) {
-                    final isSelected = _tabController.index == index;
-
-                    return Container(
+              // 요일 탭바 (Stack 구조로 구분선 끝까지)
+              SizedBox(
+                height: 48.h,
+                child: Stack(
+                  children: [
+                    Container(
                       decoration: BoxDecoration(
-                        border: Border(
-                          right: index < days.length - 1
-                              ? BorderSide(color: AppColors.highlight, width: 1.w)
-                              : BorderSide.none,
-                        ),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16.r),
+                        border: Border.all(color: AppColors.primary, width: 1.w),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 4.r,
+                            offset: Offset(0, 2.h),
+                          )
+                        ],
                       ),
-                      alignment: Alignment.center,
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 12.h),
-                        child: Text(
-                          days[index],
-                          style: AppTextStyles.body.copyWith(
-                            color: isSelected ? AppColors.highlight : AppColors.text,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                    ...List.generate(6, (i) {
+                      return Positioned(
+                        left: tabWidth * (i + 1),
+                        top: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: 1.w,
+                          color: AppColors.highlight,
+                        ),
+                      );
+                    }),
+                    TabBar(
+                      controller: _tabController,
+                      isScrollable: false,
+                      indicator: const BoxDecoration(),
+                      dividerColor: Colors.transparent,
+                      labelPadding: EdgeInsets.zero,
+                      tabs: List.generate(days.length, (index) {
+                        final isSelected = _tabController.index == index;
+                        return Center(
+                          child: Text(
+                            days[index],
+                            style: AppTextStyles.body.copyWith(
+                              color: isSelected ? AppColors.highlight : AppColors.text,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            ),
                           ),
-                        ),
-                      ),
-                    );
-                  }),
+                        );
+                      }),
+                    ),
+                  ],
                 ),
               ),
               SizedBox(height: 12.h),
 
-              // 요일별 탭 콘텐츠
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
@@ -217,10 +220,10 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
                           orElse: () => WeeklyTaskModel(day: day, tasks: []));
 
                       final filteredTasks = _filterPriority == '전체'
-                        ? weekTask.tasks
-                        : weekTask.tasks
-                            .where((task) => task.priority == _filterPriority)
-                            .toList();
+                          ? weekTask.tasks
+                          : weekTask.tasks
+                              .where((task) => task.priority == _filterPriority)
+                              .toList();
 
                       final displayTasks = _isEditing
                           ? filteredTasks
