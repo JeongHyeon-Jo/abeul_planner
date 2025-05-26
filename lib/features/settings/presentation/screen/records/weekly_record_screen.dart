@@ -20,6 +20,39 @@ class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
   bool isEditing = false;
   DateTime? expandedDate;
 
+  void _showDeleteConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('기록 삭제', style: AppTextStyles.title),
+        content: Text(
+          '정말로 모든 기록을 삭제하시겠습니까?',
+          style: AppTextStyles.body,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              '아니오',
+              style: AppTextStyles.body.copyWith(color: AppColors.text),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              WeeklyRecordBox.box.clear();
+              setState(() {});
+              Navigator.of(context).pop();
+            },
+            child: Text(
+              '예',
+              style: AppTextStyles.body.copyWith(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final recordBox = WeeklyRecordBox.box;
@@ -39,12 +72,19 @@ class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
             icon: Icon(isEditing ? Icons.check : Icons.edit, color: AppColors.text),
             onPressed: () => setState(() => isEditing = !isEditing),
           ),
-          IconButton(
-            icon: const Icon(Icons.delete_forever, color: Colors.red),
-            onPressed: () {
-              WeeklyRecordBox.box.clear();
-              setState(() {});
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: AppColors.text),
+            onSelected: (value) {
+              if (value == 'delete_all') {
+                _showDeleteConfirmationDialog();
+              }
             },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'delete_all',
+                child: Text('모든 기록 삭제'),
+              ),
+            ],
           ),
         ],
       ),
