@@ -152,7 +152,11 @@ class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
                                     icon: const Icon(Icons.close, color: Colors.red),
                                     onPressed: () {
                                       record.tasks.remove(task);
-                                      WeeklyRecordBox.box.putAt(index, record);
+                                      if (record.tasks.isEmpty) {
+                                        WeeklyRecordBox.box.deleteAt(index);
+                                      } else {
+                                        WeeklyRecordBox.box.putAt(index, record);
+                                      }
                                       setState(() {});
                                     },
                                   ),
