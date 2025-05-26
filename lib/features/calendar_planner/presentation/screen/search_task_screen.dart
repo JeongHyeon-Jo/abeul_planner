@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
-import 'package:characters/characters.dart'; // 추가
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
