@@ -182,7 +182,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                         padding: EdgeInsets.only(top: 4.h, left: 4.w, right: 4.w, bottom: 2.h),
                         constraints: BoxConstraints(minHeight: 90.h),
                         decoration: BoxDecoration(
-                          color: isToday ? AppColors.highlight.withOpacity(0.2) : null,
+                          color: isToday ? AppColors.highlight.withAlpha((0.2 * 255).toInt()) : null,
                           border: Border.all(color: isSelected ? AppColors.accent : Colors.transparent, width: 1.5.w),
                           borderRadius: BorderRadius.circular(8.r),
                         ),
@@ -209,7 +209,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                                   child: Container(
                                     padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.2.h),
                                     decoration: BoxDecoration(
-                                      color: AppColors.accent.withOpacity(0.15),
+                                      color: AppColors.accent.withAlpha((0.15 * 255).toInt()),
                                       borderRadius: BorderRadius.circular(4.r),
                                     ),
                                     child: Text(

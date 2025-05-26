@@ -13,9 +13,7 @@ final ThemeData appLightTheme = ThemeData(
     onPrimary: Colors.white, // 주요 색상 위에 올 텍스트 색상
     secondary: AppColors.accent, // 보조 색상 (포인트 요소)
     onSecondary: Colors.white, // 보조 색상 위 텍스트
-    background: AppColors.background, // 전체 배경색
-    onBackground: AppColors.text, // 배경 위 텍스트
-    surface: Colors.white, // 카드, 다이얼로그 등 표면 배경색
+    surface: AppColors.background, // 카드, 다이얼로그 등 표면 배경색
     onSurface: AppColors.text, // 표면 위 텍스트 색상
     error: Colors.red, // 오류 시 색상
     onError: Colors.white, // 오류 배경 위 텍스트 색상

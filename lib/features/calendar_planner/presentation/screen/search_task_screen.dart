@@ -65,7 +65,7 @@ class _SearchTaskScreenState extends ConsumerState<SearchTaskScreen> {
                       hintStyle: AppTextStyles.body.copyWith(color: AppColors.subText),
                       isDense: true,
                       enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: AppColors.primary.withOpacity(0.5)),
+                        borderSide: BorderSide(color: AppColors.primary.withAlpha((0.5 * 255).toInt())),
                       ),
                       focusedBorder: UnderlineInputBorder(
                         borderSide: BorderSide(color: AppColors.primary),
