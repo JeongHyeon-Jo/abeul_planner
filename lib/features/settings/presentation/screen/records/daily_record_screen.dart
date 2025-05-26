@@ -8,6 +8,7 @@ import 'package:abeul_planner/features/settings/data/datasource/record/daily_rec
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
+import 'package:abeul_planner/core/utils/priority_icon.dart';
 
 class DailyRecordScreen extends ConsumerStatefulWidget {
   const DailyRecordScreen({super.key});
@@ -140,16 +141,17 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  Icon(
-                                    task.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-                                    color: AppColors.primary,
-                                  ),
+                                  getPriorityIcon(task.priority),
                                   SizedBox(width: 8.w),
                                   Expanded(
                                     child: Text(
                                       '${task.situation} → ${task.action}',
                                       style: AppTextStyles.body,
                                     ),
+                                  ),
+                                  Icon(
+                                    task.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
+                                    color: AppColors.primary,
                                   ),
                                   if (isEditing)
                                     IconButton(

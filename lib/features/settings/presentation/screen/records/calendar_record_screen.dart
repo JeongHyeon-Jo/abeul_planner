@@ -8,6 +8,7 @@ import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
 import 'package:abeul_planner/features/settings/data/datasource/record/calendar_record_box.dart';
+import 'package:abeul_planner/core/utils/priority_icon.dart';
 
 class CalendarRecordScreen extends ConsumerStatefulWidget {
   const CalendarRecordScreen({super.key});
@@ -140,14 +141,22 @@ class _CalendarRecordScreenState extends ConsumerState<CalendarRecordScreen> {
                               ),
                               child: Row(
                                 children: [
+                                  // 중요도 아이콘 왼쪽
+                                  getPriorityIcon(task.priority),
+                                  SizedBox(width: 8.w),
+
+                                  // 메모 본문 중앙
+                                  Expanded(
+                                    child: Text(task.memo, style: AppTextStyles.body),
+                                  ),
+
+                                  // 완료 여부 아이콘 오른쪽
                                   Icon(
                                     task.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
                                     color: AppColors.primary,
                                   ),
-                                  SizedBox(width: 8.w),
-                                  Expanded(
-                                    child: Text(task.memo, style: AppTextStyles.body),
-                                  ),
+
+                                  // 편집 모드 삭제 버튼
                                   if (isEditing)
                                     IconButton(
                                       icon: const Icon(Icons.close, color: Colors.red),
