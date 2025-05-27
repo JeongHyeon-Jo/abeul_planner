@@ -1,4 +1,6 @@
-# Miscellaneous
+# ─────────────────────────────────────────────
+# 기본 무시 파일
+# ─────────────────────────────────────────────
 *.class
 *.log
 *.pyc
@@ -12,37 +14,48 @@
 .swiftpm/
 migrate_working_dir/
 
-# IntelliJ 관련 설정 파일 무시
+# ─────────────────────────────────────────────
+# IDE 설정 파일
+# ─────────────────────────────────────────────
 *.iml
 *.ipr
 *.iws
 .idea/
+.vscode/   # ← 사용 중이라면 주석 해제
 
-# VS Code 설정 (필요 시 주석 해제 가능)
-#.vscode/
-
-# Flutter / Dart / Pub 관련 파일 무시
-**/doc/api/
-**/ios/Flutter/.last_build_id
+# ─────────────────────────────────────────────
+# Flutter / Dart 관련
+# ─────────────────────────────────────────────
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
+**/doc/api/
+**/ios/Flutter/.last_build_id
+
+# ─────────────────────────────────────────────
+# 앱 빌드 산출물
+# ─────────────────────────────────────────────
 /build/
+/android/app/debug/
+/android/app/profile/
+/android/app/release/
 
-# Hive 어댑터 자동 생성 파일 무시 (build_runner로 생성됨)
-*.g.dart
-!**/model/*.g.dart
-!**/model/record/*.g.dart
+# ─────────────────────────────────────────────
+# 키 및 서명 관련 (절대 업로드 금지!)
+# ─────────────────────────────────────────────
+android/key.properties
+android/keystore.jks
 
-# 심볼리케이션 관련
+# ─────────────────────────────────────────────
+# Hive 어댑터 자동 생성 파일
+# build_runner로 생성되며, GitHub에 포함해도 OK
+# ─────────────────────────────────────────────
+!**/*.g.dart
+
+# ─────────────────────────────────────────────
+# 난독화 / 심볼
+# ─────────────────────────────────────────────
 app.*.symbols
-
-# 난독화 관련
 app.*.map.json
-
-# 안드로이드 빌드 산출물 무시
-/android/app/debug
-/android/app/profile
-/android/app/release
