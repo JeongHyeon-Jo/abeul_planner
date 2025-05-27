@@ -19,7 +19,7 @@ final ThemeData appLightTheme = ThemeData(
     onError: Colors.white, // 오류 배경 위 텍스트 색상
   ),
 
-  // 🪟 Scaffold 전체 배경색
+  // Scaffold 전체 배경색
   scaffoldBackgroundColor: AppColors.background,
 
   // 텍스트 테마
