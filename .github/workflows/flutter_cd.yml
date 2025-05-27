@@ -1,26 +1,32 @@
+# 워크플로우 이름
 name: Flutter CD
 
+# 트리거 조건: v로 시작하는 태그가 푸시될 때 실행
 on:
   push:
     tags:
-      - 'v*.*.*'  # 버전 태그가 push될 때 실행
+      - 'v*.*.*'
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # GitHub에서 제공하는 최신 Ubuntu 가상 환경에서 실행
 
     steps:
+      # 1. 저장소 코드 체크아웃
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # 2. Flutter 설치 (지정된 버전으로)
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0'
+          flutter-version: '3.19.6'
 
-      - name: Decode keystore from base64
+      # 3. GitHub Secrets에서 가져온 keystore 문자열을 디코딩해 파일로 저장
+      - name: Decode keystore
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/keystore.jks
 
+      # 4. 서명용 key.properties 파일을 생성 (APK 서명을 위한 정보)
       - name: Create key.properties
         run: |
           echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
@@ -28,15 +34,18 @@ jobs:
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=keystore.jks" >> android/key.properties
 
+      # 5. Flutter 의존성 설치
       - name: Install dependencies
         run: flutter pub get
 
+      # 6. 릴리즈용 APK 빌드 (서명 포함)
       - name: Build signed APK
         run: flutter build apk --release
 
+      # 7. 빌드된 APK를 GitHub Release에 업로드
       - name: Upload APK to GitHub Releases
         uses: softprops/action-gh-release@v1
         with:
-          files: build/app/outputs/flutter-apk/app-release.apk
+          files: build/app/outputs/flutter-apk/app-release.apk  # 업로드 대상 파일
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub 인증 토큰 (자동 제공)
