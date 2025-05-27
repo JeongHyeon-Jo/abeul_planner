@@ -20,7 +20,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.6'
+          flutter-version: '3.32.0'
 
       # 3. GitHub Secrets에서 가져온 keystore 문자열을 디코딩해 파일로 저장
       - name: Decode keystore
