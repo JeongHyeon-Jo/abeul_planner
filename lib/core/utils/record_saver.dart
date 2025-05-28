@@ -16,31 +16,39 @@ import 'package:abeul_planner/features/settings/data/model/record/weekly_record_
 import 'package:abeul_planner/features/settings/data/model/record/calendar_record_group.dart';
 
 class RecordSaver {
-  /// 하루에 한 번, 어제 날짜 기준으로 자동 기록 저장
+  /// 여러 날짜에 대해 누락된 기록을 모두 저장
   static Future<void> saveAllIfNeeded(ProviderContainer container) async {
     final prefs = await SharedPreferences.getInstance();
-    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    final last = prefs.getString('last_record_date');
+    final today = DateTime.now();
+    final lastSavedString = prefs.getString('last_record_date');
+    DateTime lastSavedDate;
 
-    if (last != today) {
-      await _saveDaily(container);
-      await _saveWeekly(container);
-      await _saveCalendar(container);
-      await prefs.setString('last_record_date', today);
+    if (lastSavedString == null) {
+      // 저장된 기록이 없으면 어제부터 저장
+      lastSavedDate = today.subtract(const Duration(days: 1));
+    } else {
+      lastSavedDate = DateFormat('yyyy-MM-dd').parse(lastSavedString);
     }
+
+    final yesterday = DateTime(today.year, today.month, today.day).subtract(const Duration(days: 1));
+
+    // 마지막 저장일 다음날부터 어제까지 반복
+    DateTime current = lastSavedDate.add(const Duration(days: 1));
+    while (!current.isAfter(yesterday)) {
+      await _saveDaily(container, current);
+      await _saveWeekly(container, current);
+      await _saveCalendar(container, current);
+      current = current.add(const Duration(days: 1));
+    }
+
+    // 마지막 저장일 갱신
+    await prefs.setString('last_record_date', DateFormat('yyyy-MM-dd').format(yesterday));
   }
 
-  /// 어제 날짜를 구하는 헬퍼 함수
-  static DateTime get _yesterday {
-    final now = DateTime.now();
-    return DateTime(now.year, now.month, now.day).subtract(const Duration(days: 1));
-  }
-
-  // 일상 플래너 기록 저장 (어제 기준)
-  static Future<void> _saveDaily(ProviderContainer container) async {
+  /// 일상 플래너 기록 저장 (지정 날짜 기준)
+  static Future<void> _saveDaily(ProviderContainer container, DateTime date) async {
     final tasks = container.read(dailyTaskProvider);
     if (tasks.isNotEmpty) {
-      final date = _yesterday;
       final exists = DailyRecordBox.box.values.any(
         (record) => DateFormat('yyyy-MM-dd').format(record.date) ==
                     DateFormat('yyyy-MM-dd').format(date),
@@ -52,11 +60,10 @@ class RecordSaver {
     }
   }
 
-  // 주간 플래너 기록 저장 (어제 기준 요일만 저장)
-  static Future<void> _saveWeekly(ProviderContainer container) async {
+  /// 주간 플래너 기록 저장 (지정 날짜 기준 요일만 저장)
+  static Future<void> _saveWeekly(ProviderContainer container, DateTime date) async {
     final weeklyMap = container.read(weeklyTaskProvider);
-    final date = _yesterday;
-    final weekday = DateFormat('E', 'ko_KR').format(date); // 예: '월', '화', ...
+    final weekday = DateFormat('E', 'ko_KR').format(date); // '월', '화' 등
 
     for (final model in weeklyMap) {
       if (model.day == weekday && model.tasks.isNotEmpty) {
@@ -76,13 +83,12 @@ class RecordSaver {
     }
   }
 
-  // 달력 플래너 기록 저장 (어제 날짜에 해당하는 task만 저장)
-  static Future<void> _saveCalendar(ProviderContainer container) async {
+  /// 달력 플래너 기록 저장 (지정 날짜 기준 task만 저장)
+  static Future<void> _saveCalendar(ProviderContainer container, DateTime date) async {
     final tasks = container.read(calendarTaskProvider);
     if (tasks.isEmpty) return;
 
-    final yesterday = _yesterday;
-    final key = DateFormat('yyyy-MM-dd').format(yesterday);
+    final key = DateFormat('yyyy-MM-dd').format(date);
     final filtered = tasks.where((task) =>
         DateFormat('yyyy-MM-dd').format(task.date) == key).toList();
 
@@ -91,7 +97,7 @@ class RecordSaver {
     final exists = CalendarRecordBox.box.values.any((record) =>
         DateFormat('yyyy-MM-dd').format(record.date) == key);
     if (!exists) {
-      final record = CalendarRecordGroup(date: yesterday, tasks: filtered);
+      final record = CalendarRecordGroup(date: date, tasks: filtered);
       await CalendarRecordBox.box.add(record);
     }
   }
