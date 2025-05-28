@@ -5,6 +5,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
 // core
 import 'package:abeul_planner/core/utils/screen_util.dart';
 import 'package:abeul_planner/core/styles/theme.dart';
@@ -88,6 +90,15 @@ class _MyAppState extends ConsumerState<MyApp> {
           title: 'Abeul Planner',
           debugShowCheckedModeBanner: false,
           theme: appLightTheme,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('ko', 'KR'),
+            Locale('en', 'US'),
+          ],
         );
       },
     );
