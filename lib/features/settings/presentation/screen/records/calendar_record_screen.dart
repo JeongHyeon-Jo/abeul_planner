@@ -1,5 +1,4 @@
 // calendar_record_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -20,6 +19,7 @@ class CalendarRecordScreen extends ConsumerStatefulWidget {
 class _CalendarRecordScreenState extends ConsumerState<CalendarRecordScreen> {
   bool isEditing = false;
   DateTime? expandedDate;
+  DateTime? selectedDate;
 
   void _showDeleteConfirmationDialog() {
     showDialog(
@@ -57,7 +57,11 @@ class _CalendarRecordScreenState extends ConsumerState<CalendarRecordScreen> {
   @override
   Widget build(BuildContext context) {
     final recordBox = CalendarRecordBox.box;
-    final records = recordBox.values.toList()
+    final records = recordBox.values
+        .where((record) => selectedDate == null ||
+            DateFormat('yyyy-MM-dd').format(record.date) ==
+                DateFormat('yyyy-MM-dd').format(selectedDate!))
+        .toList()
       ..sort((a, b) => b.date.compareTo(a.date));
 
     return Scaffold(
@@ -89,97 +93,137 @@ class _CalendarRecordScreenState extends ConsumerState<CalendarRecordScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16.w),
-        child: records.isEmpty
-            ? const Center(child: Text('기록이 없습니다'))
-            : ListView.separated(
-                itemCount: records.length,
-                separatorBuilder: (_, __) => SizedBox(height: 12.h),
-                itemBuilder: (context, index) {
-                  final record = records[index];
-                  final isExpanded = expandedDate == record.date;
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                  ),
+                  icon: const Icon(Icons.calendar_today),
+                  label: Text(selectedDate != null
+                      ? DateFormat('yyyy.MM.dd').format(selectedDate!)
+                      : '날짜 선택'),
+                  onPressed: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: selectedDate ?? DateTime.now(),
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime.now(),
+                      locale: const Locale('ko', 'KR'),
+                    );
+                    if (picked != null) {
+                      setState(() {
+                        selectedDate = picked;
+                        expandedDate = null;
+                      });
+                    }
+                  },
+                ),
+                if (selectedDate != null)
+                  IconButton(
+                    icon: const Icon(Icons.close, color: AppColors.text),
+                    onPressed: () {
+                      setState(() {
+                        selectedDate = null;
+                      });
+                    },
+                  )
+              ],
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(16.w),
+              child: records.isEmpty
+                  ? const Center(child: Text('기록이 없습니다'))
+                  : ListView.separated(
+                      itemCount: records.length,
+                      separatorBuilder: (_, __) => SizedBox(height: 12.h),
+                      itemBuilder: (context, index) {
+                        final record = records[index];
+                        final isExpanded = expandedDate == record.date;
 
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            expandedDate = isExpanded ? null : record.date;
-                          });
-                        },
-                        child: Container(
-                          padding: EdgeInsets.all(16.w),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12.r),
-                            border: Border.all(color: AppColors.primary),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                DateFormat('yyyy.MM.dd').format(record.date),
-                                style: AppTextStyles.title,
-                              ),
-                              Icon(isExpanded ? Icons.expand_less : Icons.expand_more),
-                            ],
-                          ),
-                        ),
-                      ),
-                      if (isExpanded)
-                        ...record.tasks.map(
-                          (task) => Padding(
-                            padding: EdgeInsets.only(left: 12.w, top: 8.h),
-                            child: Container(
-                              padding: EdgeInsets.all(12.w),
-                              decoration: BoxDecoration(
-                                color: AppColors.cardBackground,
-                                borderRadius: BorderRadius.circular(10.r),
-                                border: Border.all(color: AppColors.primary, width: 1.1.w),
-                              ),
-                              child: Row(
-                                children: [
-                                  // 중요도 아이콘 왼쪽
-                                  getPriorityIcon(task.priority),
-                                  SizedBox(width: 8.w),
-
-                                  // 메모 본문 중앙
-                                  Expanded(
-                                    child: Text(task.memo, style: AppTextStyles.body),
-                                  ),
-
-                                  // 완료 여부 아이콘 오른쪽
-                                  Icon(
-                                    task.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-                                    color: AppColors.primary,
-                                  ),
-
-                                  // 편집 모드 삭제 버튼
-                                  if (isEditing)
-                                    IconButton(
-                                      icon: const Icon(Icons.close, color: Colors.red),
-                                      onPressed: () {
-                                        record.tasks.remove(task);
-
-                                        if (record.tasks.isEmpty) {
-                                          CalendarRecordBox.box.deleteAt(index);
-                                        } else {
-                                          CalendarRecordBox.box.putAt(index, record);
-                                        }
-                                        setState(() {});
-                                      },
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  expandedDate = isExpanded ? null : record.date;
+                                });
+                              },
+                              child: Container(
+                                padding: EdgeInsets.all(16.w),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  border: Border.all(color: AppColors.primary),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      DateFormat('yyyy.MM.dd').format(record.date),
+                                      style: AppTextStyles.title,
                                     ),
-                                ],
+                                    Icon(isExpanded ? Icons.expand_less : Icons.expand_more),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                    ],
-                  );
-                },
-              ),
+                            if (isExpanded)
+                              ...record.tasks.map(
+                                (task) => Padding(
+                                  padding: EdgeInsets.only(left: 12.w, top: 8.h),
+                                  child: Container(
+                                    padding: EdgeInsets.all(12.w),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.cardBackground,
+                                      borderRadius: BorderRadius.circular(10.r),
+                                      border: Border.all(color: AppColors.primary, width: 1.1.w),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        getPriorityIcon(task.priority),
+                                        SizedBox(width: 8.w),
+                                        Expanded(
+                                          child: Text(task.memo, style: AppTextStyles.body),
+                                        ),
+                                        Icon(
+                                          task.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
+                                          color: AppColors.primary,
+                                        ),
+                                        if (isEditing)
+                                          IconButton(
+                                            icon: const Icon(Icons.close, color: Colors.red),
+                                            onPressed: () {
+                                              record.tasks.remove(task);
+                                              if (record.tasks.isEmpty) {
+                                                CalendarRecordBox.box.deleteAt(index);
+                                              } else {
+                                                CalendarRecordBox.box.putAt(index, record);
+                                              }
+                                              setState(() {});
+                                            },
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }
