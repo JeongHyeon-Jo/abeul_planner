@@ -154,14 +154,23 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: week.map((day) {
                   final dateKey = DateFormat('yyyy-MM-dd').format(day);
-                  final holidayNames = koreanHolidays[dateKey] ?? [];
-                  final isHoliday = holidayNames.isNotEmpty;
+                  final holidayNames = koreanHolidays[dateKey];
+                  final isHoliday = holidayNames != null && holidayNames.isNotEmpty;
                   final isToday = DateTime.now().year == day.year && DateTime.now().month == day.month && DateTime.now().day == day.day;
                   final isSelected = _selectedDay.year == day.year && _selectedDay.month == day.month && _selectedDay.day == day.day;
                   final isCurrentMonth = day.month == _focusedDay.month;
                   final events = grouped[dateKey] ?? [];
                   final maxItems = 4;
-                  final eventSpace = maxItems - holidayNames.length;
+
+                  final allItems = [
+                    if (holidayNames is List<String>) ...holidayNames.map((e) => {'type': 'holiday', 'name': e}),
+                    ...events.map((e) => {'type': 'event', 'name': e.memo}),
+                  ];
+
+                  final visibleItems = allItems.length > maxItems
+                      ? allItems.take(maxItems - 1).toList()
+                      : allItems;
+                  final overflowCount = allItems.length > maxItems ? allItems.length - (maxItems - 1) : 0;
 
                   return Expanded(
                     child: GestureDetector(
@@ -202,59 +211,38 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                                 fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                               ),
                             ),
-
                             SizedBox(height: 1.h),
-
-                            ...holidayNames
-                                .take(maxItems)
-                                .map(
-                                  (name) => Padding(
-                                    padding: EdgeInsets.only(bottom: 1.h),
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.2.h),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.warning.withAlpha((0.2 * 255).toInt()),
-                                        borderRadius: BorderRadius.circular(4.r),
-                                      ),
-                                      child: Text(
-                                        name,
-                                        style: AppTextStyles.caption.copyWith(
-                                          fontSize: 10.sp,
-                                          color: Colors.red,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.fade,
-                                        softWrap: false,
-                                      ),
+                            ...visibleItems.map((item) {
+                              final isHolidayItem = item['type'] == 'holiday';
+                              final name = item['name']?.toString() ?? '';
+                              return Padding(
+                                padding: EdgeInsets.only(bottom: 1.2.h),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.2.h),
+                                  decoration: BoxDecoration(
+                                    color: isHolidayItem
+                                        ? AppColors.warning.withAlpha((0.2 * 255).toInt())
+                                        : AppColors.accent.withAlpha((0.15 * 255).toInt()),
+                                    borderRadius: BorderRadius.circular(4.r),
+                                  ),
+                                  child: Text(
+                                    name,
+                                    style: AppTextStyles.caption.copyWith(
+                                      fontSize: 10.sp,
+                                      color: isHolidayItem ? Colors.red : AppColors.text,
                                     ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.fade,
+                                    softWrap: false,
                                   ),
                                 ),
-
-                            ...events
-                                .take(eventSpace > 0 ? eventSpace : 0)
-                                .map((e) => Padding(
-                                      padding: EdgeInsets.only(bottom: 1.h),
-                                      child: Container(
-                                        padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.2.h),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.accent.withAlpha((0.15 * 255).toInt()),
-                                          borderRadius: BorderRadius.circular(4.r),
-                                        ),
-                                        child: Text(
-                                          e.memo,
-                                          style: AppTextStyles.caption.copyWith(fontSize: 10.sp),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.fade,
-                                          softWrap: false,
-                                        ),
-                                      ),
-                                    )),
-
-                            if ((holidayNames.length + events.length) > maxItems)
+                              );
+                            }),
+                            if (overflowCount > 0)
                               Text(
-                                '+${(holidayNames.length + events.length - maxItems)}',
+                                '+$overflowCount',
                                 style: AppTextStyles.caption.copyWith(fontSize: 11.sp),
-                              )
+                              ),
                           ],
                         ),
                       ),
