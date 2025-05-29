@@ -20,7 +20,7 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
     super.initState();
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadFlutterAsset('assets/privacy_policy.html');
+      ..loadFlutterAsset('privacy_policy.html');
   }
 
   @override

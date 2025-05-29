@@ -154,7 +154,7 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
             children: [
               Expanded(
                 child: sortedTasks.isEmpty
-                    ? Center(child: Text('아직 등록된 약속이 없어요.', style: AppTextStyles.body))
+                    ? Center(child: Text('등록된 일정이 없습니다.', style: AppTextStyles.body))
                     : ReorderableListView.builder(
                         buildDefaultDragHandles: false,
                         itemCount: sortedTasks.length,

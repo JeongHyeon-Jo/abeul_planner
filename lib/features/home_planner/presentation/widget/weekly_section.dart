@@ -44,7 +44,7 @@ class WeeklySection extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('오늘 일정이 없습니다.', style: AppTextStyles.body),
+              Text('등록된 일정이 없습니다.', style: AppTextStyles.body),
               SizedBox(height: 12.h),
               ElevatedButton.icon(
                 onPressed: () {

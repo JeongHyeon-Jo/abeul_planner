@@ -49,21 +49,19 @@ class DailyTaskTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 상황 텍스트 (완료 시 회색 + 취소선)
+                // 상황 텍스트
                 Text(
                   task.situation,
                   style: AppTextStyles.body.copyWith(
-                    decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-                    color: task.isCompleted ? AppColors.subText : AppColors.text,
+                    color: AppColors.text,
                   ),
                 ),
                 SizedBox(height: 4.h),
-                // 행동 텍스트 (완료 시 회색 + 취소선)
+                // 행동 텍스트
                 Text(
                   task.action,
                   style: AppTextStyles.caption.copyWith(
-                    decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-                    color: task.isCompleted ? AppColors.subText : AppColors.actionText,
+                    color: AppColors.actionText,
                   ),
                 ),
               ],

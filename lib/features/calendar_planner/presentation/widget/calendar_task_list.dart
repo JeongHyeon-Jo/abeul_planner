@@ -92,12 +92,7 @@ class CalendarTaskList extends ConsumerWidget {
                                   Text(
                                     task.memo,
                                     style: AppTextStyles.body.copyWith(
-                                      decoration: task.isCompleted
-                                          ? TextDecoration.lineThrough
-                                          : TextDecoration.none,
-                                      color: task.isCompleted
-                                          ? AppColors.subText
-                                          : AppColors.text,
+                                      color: AppColors.text,
                                     ),
                                   ),
                                 ],

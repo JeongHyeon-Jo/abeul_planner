@@ -51,7 +51,7 @@ flutter:
 
   assets:
     - assets/icon/Abeul_Planner_Logo.png
-    - assets/privacy_policy.html
+    - privacy_policy.html
 
 flutter_launcher_icons:
   android: true

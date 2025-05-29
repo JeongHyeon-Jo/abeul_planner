@@ -59,13 +59,13 @@ class _DailyTaskDialogState extends ConsumerState<DailyTaskDialog> {
 
               TextField(
                 controller: widget.situationController,
-                decoration: const InputDecoration(labelText: '상황 or 횟수 (예: 출근하면, 주 3회 이상)'),
+                decoration: const InputDecoration(labelText: '상황 or 횟수'),
               ),
               SizedBox(height: 12.h),
 
               TextField(
                 controller: widget.actionController,
-                decoration: const InputDecoration(labelText: '행동 (예: 스트레칭하기)'),
+                decoration: const InputDecoration(labelText: '행동'),
               ),
               SizedBox(height: 12.h),
 
