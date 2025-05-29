@@ -5,12 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+// core
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
+import 'package:abeul_planner/core/utils/korean_holidays.dart';
+// feature
 import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
 import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
-import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_task_dialog.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/screen/calendar_all_task_screen.dart';
 
 class CalendarPlannerScreen extends ConsumerStatefulWidget {
@@ -151,31 +153,26 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: week.map((day) {
+                  final dateKey = DateFormat('yyyy-MM-dd').format(day);
+                  final holidayNames = koreanHolidays[dateKey] ?? [];
+                  final isHoliday = holidayNames.isNotEmpty;
                   final isToday = DateTime.now().year == day.year && DateTime.now().month == day.month && DateTime.now().day == day.day;
                   final isSelected = _selectedDay.year == day.year && _selectedDay.month == day.month && _selectedDay.day == day.day;
                   final isCurrentMonth = day.month == _focusedDay.month;
-                  final events = grouped[DateFormat('yyyy-MM-dd').format(day)] ?? [];
+                  final events = grouped[dateKey] ?? [];
+                  final maxItems = 4;
+                  final eventSpace = maxItems - holidayNames.length;
 
                   return Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        if (_selectedDay == day) {
-                          if (events.isEmpty) {
-                            showDialog(
-                              context: context,
-                              builder: (_) => CalendarTaskDialog(selectedDate: day),
-                            );
-                          } else {
-                            showDialog(
-                              context: context,
-                              builder: (_) => CalendarTaskList(selectedDate: day),
-                            );
-                          }
-                        } else {
-                          setState(() {
-                            _selectedDay = day;
-                          });
-                        }
+                        setState(() {
+                          _selectedDay = day;
+                        });
+                        showDialog(
+                          context: context,
+                          builder: (_) => CalendarTaskList(selectedDate: day),
+                        );
                       },
                       child: Container(
                         margin: EdgeInsets.symmetric(horizontal: 2.w),
@@ -193,36 +190,71 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                               '${day.day}',
                               style: AppTextStyles.body.copyWith(
                                 fontSize: 14.sp,
-                                color: isCurrentMonth
-                                    ? (day.weekday == DateTime.sunday
-                                        ? Colors.red
-                                        : day.weekday == DateTime.saturday
-                                            ? Colors.blue
-                                            : AppColors.text)
-                                    : AppColors.subText,
+                                color: isHoliday
+                                    ? Colors.red
+                                    : isCurrentMonth
+                                        ? (day.weekday == DateTime.sunday
+                                            ? Colors.red
+                                            : day.weekday == DateTime.saturday
+                                                ? Colors.blue
+                                                : AppColors.text)
+                                        : AppColors.subText,
                                 fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                               ),
                             ),
+
                             SizedBox(height: 1.h),
-                            ...events.take(events.length > 4 ? 3 : 4).map((e) => Padding(
-                                  padding: EdgeInsets.only(bottom: 1.h),
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.2.h),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.accent.withAlpha((0.15 * 255).toInt()),
-                                      borderRadius: BorderRadius.circular(4.r),
-                                    ),
-                                    child: Text(
-                                      e.memo,
-                                      style: AppTextStyles.caption.copyWith(fontSize: 10.sp),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.fade,
-                                      softWrap: false,
+
+                            ...holidayNames
+                                .take(maxItems)
+                                .map(
+                                  (name) => Padding(
+                                    padding: EdgeInsets.only(bottom: 1.h),
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.2.h),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.warning.withAlpha((0.2 * 255).toInt()),
+                                        borderRadius: BorderRadius.circular(4.r),
+                                      ),
+                                      child: Text(
+                                        name,
+                                        style: AppTextStyles.caption.copyWith(
+                                          fontSize: 10.sp,
+                                          color: Colors.red,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.fade,
+                                        softWrap: false,
+                                      ),
                                     ),
                                   ),
-                                )),
-                            if (events.length > 4)
-                              Text('+${events.length - 3}', style: AppTextStyles.caption.copyWith(fontSize: 11.sp))
+                                ),
+
+                            ...events
+                                .take(eventSpace > 0 ? eventSpace : 0)
+                                .map((e) => Padding(
+                                      padding: EdgeInsets.only(bottom: 1.h),
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.2.h),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.accent.withAlpha((0.15 * 255).toInt()),
+                                          borderRadius: BorderRadius.circular(4.r),
+                                        ),
+                                        child: Text(
+                                          e.memo,
+                                          style: AppTextStyles.caption.copyWith(fontSize: 10.sp),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.fade,
+                                          softWrap: false,
+                                        ),
+                                      ),
+                                    )),
+
+                            if ((holidayNames.length + events.length) > maxItems)
+                              Text(
+                                '+${(holidayNames.length + events.length - maxItems)}',
+                                style: AppTextStyles.caption.copyWith(fontSize: 11.sp),
+                              )
                           ],
                         ),
                       ),
@@ -275,7 +307,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                     onChanged: (value) {
                       if (value != null) {
                         selectedYear = value;
-                        (context as Element).markNeedsBuild(); // rebuild
+                        (context as Element).markNeedsBuild();
                       }
                     },
                   ),
@@ -291,7 +323,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                     onChanged: (value) {
                       if (value != null) {
                         selectedMonth = value;
-                        (context as Element).markNeedsBuild(); // rebuild
+                        (context as Element).markNeedsBuild();
                       }
                     },
                   ),

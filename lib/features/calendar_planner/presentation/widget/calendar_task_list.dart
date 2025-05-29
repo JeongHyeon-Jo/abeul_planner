@@ -8,6 +8,7 @@ import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/utils/priority_icon.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_task_dialog.dart';
+import 'package:abeul_planner/core/utils/korean_holidays.dart';
 
 /// 선택된 날짜의 일정을 보여주는 리스트 다이얼로그
 class CalendarTaskList extends ConsumerWidget {
@@ -21,6 +22,9 @@ class CalendarTaskList extends ConsumerWidget {
     final tasks = ref.watch(calendarTaskProvider)
         .where((task) => isSameDay(task.date, selectedDate))
         .toList();
+
+    final dateKey = DateFormat('yyyy-MM-dd').format(selectedDate);
+    final holidayNames = koreanHolidays[dateKey] ?? [];
 
     return Dialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
@@ -49,7 +53,25 @@ class CalendarTaskList extends ConsumerWidget {
               ),
               SizedBox(height: 12.h),
 
-              if (tasks.isEmpty)
+              if (holidayNames.isNotEmpty)
+                ...holidayNames.map((h) => Container(
+                      margin: EdgeInsets.only(bottom: 8.h),
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      decoration: BoxDecoration(
+                        color: AppColors.warning.withAlpha((0.2 * 255).toInt()),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: AppColors.warning),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(h, style: AppTextStyles.body.copyWith(color: Colors.red)),
+                          )
+                        ],
+                      ),
+                    )),
+
+              if (tasks.isEmpty && holidayNames.isEmpty)
                 Text('등록된 일정이 없습니다.', style: AppTextStyles.body)
               else
                 ListView.separated(
