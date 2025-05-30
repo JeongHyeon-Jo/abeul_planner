@@ -1,10 +1,10 @@
 // main.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 // package
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 // core
 import 'package:abeul_planner/core/utils/screen_util.dart';
@@ -54,6 +54,12 @@ void main() async {
 
   final container = ProviderContainer();
   await RecordSaver.saveAllIfNeeded(container);
+
+  // 앱 세로 고정
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   runApp(
     UncontrolledProviderScope(
