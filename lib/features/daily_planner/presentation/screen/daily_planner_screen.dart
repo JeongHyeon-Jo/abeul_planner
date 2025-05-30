@@ -186,7 +186,7 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
         child: FloatingActionButton(
           onPressed: () => _showTaskDialog(),
           backgroundColor: AppColors.accent,
-          child: const Icon(Icons.add),
+          child: Icon(Icons.add, size: 24.sp),
         ),
       ),
     );

@@ -125,7 +125,7 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                   value: _selectedRepeat,
                   items: _repeatOptions.map((e) => DropdownMenuItem(
                     value: e,
-                    child: Text(e, style: AppTextStyles.body),
+                    child: Text(e),
                   )).toList(),
                   onChanged: (val) => setState(() => _selectedRepeat = val!),
                   decoration: const InputDecoration(labelText: '반복 설정'),
@@ -141,7 +141,7 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                       children: [
                         getPriorityIcon(e),
                         SizedBox(width: 8.w),
-                        Text(e, style: AppTextStyles.body),
+                        Text(e),
                       ],
                     ),
                   )).toList(),

@@ -37,7 +37,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             IconButton(
-              icon: const Icon(Icons.chevron_left, color: AppColors.text),
+              icon: Icon(Icons.chevron_left, color: AppColors.text, size: 24.sp),
               onPressed: () {
                 setState(() {
                   _focusedDay = DateTime(_focusedDay.year, _focusedDay.month - 1);
@@ -61,7 +61,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
             ),
             SizedBox(width: 4.w),
             IconButton(
-              icon: const Icon(Icons.chevron_right, color: AppColors.text),
+              icon: Icon(Icons.chevron_right, color: AppColors.text, size: 24.sp),
               onPressed: () {
                 setState(() {
                   _focusedDay = DateTime(_focusedDay.year, _focusedDay.month + 1);
@@ -72,7 +72,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
         ),
         isTransparent: true,
         leading: IconButton(
-          icon: const Icon(Icons.menu, color: AppColors.text),
+          icon: Icon(Icons.menu, color: AppColors.text, size: 22.sp),
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const CalendarAllTaskScreen()),
@@ -81,7 +81,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search, color: AppColors.text),
+            icon: Icon(Icons.search, color: AppColors.text, size: 22.sp),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const SearchTaskScreen()),

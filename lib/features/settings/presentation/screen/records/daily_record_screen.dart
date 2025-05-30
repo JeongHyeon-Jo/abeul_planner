@@ -105,11 +105,16 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                    textStyle: AppTextStyles.body.copyWith(fontSize: 12.sp),
                   ),
-                  icon: const Icon(Icons.calendar_today),
-                  label: Text(selectedDate != null
-                      ? DateFormat('yyyy.MM.dd').format(selectedDate!)
-                      : '날짜 선택'),
+                  icon: Icon(Icons.calendar_today, size: 16.sp),
+                  label: Text(
+                    selectedDate != null
+                        ? DateFormat('yyyy.MM.dd').format(selectedDate!)
+                        : '날짜 선택',
+                    style: AppTextStyles.body.copyWith(fontSize: 12.sp),
+                  ),
                   onPressed: () async {
                     final picked = await showDatePicker(
                       context: context,

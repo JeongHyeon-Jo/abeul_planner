@@ -25,8 +25,8 @@ android {
         applicationId = "com.abeul_planner.abeul_planner"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 3
+        versionName = "1.0.2"
     }
 
     val keystoreProperties = Properties()

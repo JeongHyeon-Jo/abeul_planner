@@ -77,7 +77,7 @@ class _DailyTaskDialogState extends ConsumerState<DailyTaskDialog> {
                     children: [
                       getPriorityIcon(level),
                       SizedBox(width: 8.w),
-                      Text(level, style: AppTextStyles.body),
+                      Text(level),
                     ],
                   ),
                 )).toList(),

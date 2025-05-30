@@ -71,7 +71,7 @@ class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
                 items: widget.days
                     .map((day) => DropdownMenuItem(
                           value: day,
-                          child: Text(day, style: AppTextStyles.body),
+                          child: Text(day),
                         ))
                     .toList(),
                 onChanged: (value) {
@@ -96,7 +96,7 @@ class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
                       children: [
                         getPriorityIcon(level),
                         SizedBox(width: 8.w),
-                        Text(level, style: AppTextStyles.body),
+                        Text(level),
                       ],
                     ),
                   );
