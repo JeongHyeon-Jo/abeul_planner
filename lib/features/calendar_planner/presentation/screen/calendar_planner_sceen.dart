@@ -23,8 +23,21 @@ class CalendarPlannerScreen extends ConsumerStatefulWidget {
 }
 
 class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
-  DateTime _focusedDay = DateTime.now();
+  late PageController _pageController;
+  final int initialPage = 1000;
   DateTime _selectedDay = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: initialPage);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,42 +46,9 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            IconButton(
-              icon: Icon(Icons.chevron_left, color: AppColors.text, size: 24.sp),
-              onPressed: () {
-                setState(() {
-                  _focusedDay = DateTime(_focusedDay.year, _focusedDay.month - 1);
-                });
-              },
-            ),
-            SizedBox(width: 4.w),
-            GestureDetector(
-              onTap: () async {
-                final picked = await showMonthYearPickerDialog(context, _focusedDay);
-                if (picked != null) {
-                  setState(() {
-                    _focusedDay = picked;
-                  });
-                }
-              },
-              child: Text(
-                '${_focusedDay.year}년 ${_focusedDay.month}월',
-                style: AppTextStyles.title.copyWith(color: AppColors.text),
-              ),
-            ),
-            SizedBox(width: 4.w),
-            IconButton(
-              icon: Icon(Icons.chevron_right, color: AppColors.text, size: 24.sp),
-              onPressed: () {
-                setState(() {
-                  _focusedDay = DateTime(_focusedDay.year, _focusedDay.month + 1);
-                });
-              },
-            ),
-          ],
+        title: Text(
+          '달력 플래너',
+          style: AppTextStyles.title.copyWith(color: AppColors.text),
         ),
         isTransparent: true,
         leading: IconButton(
@@ -90,50 +70,71 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 6.w),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: List.generate(7, (i) {
-                    final weekDays = ['일', '월', '화', '수', '목', '금', '토'];
-                    final color = i == 0
-                        ? Colors.red
-                        : i == 6
-                            ? Colors.blue
-                            : AppColors.text;
-                    return Expanded(
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: Text(
-                          weekDays[i],
-                          style: AppTextStyles.body.copyWith(color: color, fontSize: 13.sp),
+      body: PageView.builder(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {});
+        },
+        itemBuilder: (context, index) {
+          final date = DateTime(DateTime.now().year, DateTime.now().month + (index - initialPage));
+          return Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 6.w),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '${date.year}년 ${date.month}월',
+                          style: AppTextStyles.title.copyWith(color: AppColors.text),
                         ),
-                      ),
-                    );
-                  }),
+                      ],
+                    ),
+                    SizedBox(height: 6.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: List.generate(7, (i) {
+                        final weekDays = ['일', '월', '화', '수', '목', '금', '토'];
+                        final color = i == 0
+                            ? Colors.red
+                            : i == 6
+                                ? Colors.blue
+                                : AppColors.text;
+                        return Expanded(
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: Text(
+                              weekDays[i],
+                              style: AppTextStyles.body.copyWith(color: color, fontSize: 13.sp),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                    SizedBox(height: 1.h),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4.w),
+                      child: Divider(color: AppColors.primary, thickness: 1.2.w),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 1.h),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4.w),
-                  child: Divider(color: AppColors.primary, thickness: 1.2.w),
-                ),
-              ],
-            ),
-          ),
-          Expanded(child: _buildCalendarGrid(groupedTasks)),
-        ],
+              ),
+              Expanded(
+                child: _buildCalendarGrid(groupedTasks, date),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildCalendarGrid(Map<String, List<CalendarTaskModel>> grouped) {
-    final start = DateTime(_focusedDay.year, _focusedDay.month, 1);
-    final end = DateTime(_focusedDay.year, _focusedDay.month + 1, 0);
-    final days = List.generate(end.day, (i) => DateTime(_focusedDay.year, _focusedDay.month, i + 1));
+  Widget _buildCalendarGrid(Map<String, List<CalendarTaskModel>> grouped, DateTime monthDate) {
+    final start = DateTime(monthDate.year, monthDate.month, 1);
+    final end = DateTime(monthDate.year, monthDate.month + 1, 0);
+    final days = List.generate(end.day, (i) => DateTime(monthDate.year, monthDate.month, i + 1));
     final weekOffset = start.weekday % 7;
     final allDays = List.generate(weekOffset, (i) => start.subtract(Duration(days: weekOffset - i))) + days;
     final gridCount = (allDays.length / 7).ceil() * 7;
@@ -158,7 +159,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                   final isHoliday = holidayNames != null && holidayNames.isNotEmpty;
                   final isToday = DateTime.now().year == day.year && DateTime.now().month == day.month && DateTime.now().day == day.day;
                   final isSelected = _selectedDay.year == day.year && _selectedDay.month == day.month && _selectedDay.day == day.day;
-                  final isCurrentMonth = day.month == _focusedDay.month;
+                  final isCurrentMonth = day.month == monthDate.month;
                   final events = grouped[dateKey] ?? [];
                   final maxItems = 4;
 
