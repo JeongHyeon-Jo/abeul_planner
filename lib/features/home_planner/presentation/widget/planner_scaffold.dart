@@ -16,7 +16,6 @@ class PlannerScaffold extends StatefulWidget {
 class _PlannerScaffoldState extends State<PlannerScaffold> {
   int _tabIndex = 2;
 
-  // 각 탭에 대응되는 라우트 경로
   final List<String> _routes = [
     '/daily',
     '/weekly',
@@ -25,7 +24,6 @@ class _PlannerScaffoldState extends State<PlannerScaffold> {
     '/settings',
   ];
 
-  // 탭 선택 시 호출
   void _onItemTapped(int tabIndex) {
     setState(() {
       _tabIndex = tabIndex;
@@ -35,55 +33,117 @@ class _PlannerScaffoldState extends State<PlannerScaffold> {
 
   @override
   Widget build(BuildContext context) {
-    // 태블릿 기준: shortestSide ≥ 600
     final isTablet = MediaQuery.of(context).size.shortestSide >= 600;
 
-    // 디바이스 종류에 따라 크기 조정
-    final bottomNavHeight = isTablet ? 90.0 : 70.h;
-    final fabOffsetY = isTablet ? 45.0 : 32.h;
-    final fabIconSize = isTablet ? 50.0 : 32.sp;
-    final fabSize = isTablet ? 70.0 : 56.0;
-    final navIconSize = isTablet ? 32.0 : 24.sp;
-    final navFontSize = isTablet ? 16.0 : 12.sp;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
 
-    return Scaffold(
-      body: widget.child,
+        if (_tabIndex != 2) {
+          _onItemTapped(2);
+        } else {
+          final shouldExit = await showDialog<bool>(
+                context: context,
+                builder: (context) => Dialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(24.w),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.exit_to_app, color: AppColors.primary, size: 40.sp),
+                        SizedBox(height: 16.h),
+                        Text('앱을 종료할까요?', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                        SizedBox(height: 12.h),
+                        Text(
+                          '정말로 앱을 종료하시겠습니까?',
+                          style: TextStyle(fontSize: 14.sp, color: AppColors.subText),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 20.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.lightPrimary,
+                                foregroundColor: AppColors.text,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                                child: Text('취소', style: TextStyle(fontSize: 14.sp)),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.redAccent,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                                child: Text('종료', style: TextStyle(fontSize: 14.sp)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ) ??
+              false;
 
-      // 가운데 플로팅 홈 버튼
-      floatingActionButton: Transform.translate(
-        offset: Offset(0, fabOffsetY),
-        child: SizedBox(
-          width: fabSize,
-          height: fabSize,
-          child: FloatingActionButton(
-            onPressed: () => _onItemTapped(2),
-            backgroundColor: AppColors.primary,
-            shape: const CircleBorder(),
-            child: Icon(Icons.home, size: fabIconSize),
+          if (shouldExit && context.mounted) {
+            Navigator.of(context).maybePop();
+          }
+        }
+      },
+      child: Scaffold(
+        body: widget.child,
+        floatingActionButton: Transform.translate(
+          offset: Offset(0, isTablet ? 45.0 : 32.h),
+          child: SizedBox(
+            width: isTablet ? 70.0 : 56.0,
+            height: isTablet ? 70.0 : 56.0,
+            child: FloatingActionButton(
+              onPressed: () => _onItemTapped(2),
+              backgroundColor: AppColors.primary,
+              shape: const CircleBorder(),
+              child: Icon(Icons.home, size: isTablet ? 50.0 : 32.sp),
+            ),
           ),
         ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-
-      // 하단 네비게이션 바
-      bottomNavigationBar: SizedBox(
-        height: bottomNavHeight,
-        child: BottomNavigationBar(
-          currentIndex: _tabIndex,
-          onTap: _onItemTapped,
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.subText,
-          showUnselectedLabels: true,
-          selectedLabelStyle: TextStyle(fontSize: navFontSize, fontWeight: FontWeight.bold),
-          unselectedLabelStyle: TextStyle(fontSize: navFontSize),
-          items: [
-            BottomNavigationBarItem(icon: Icon(Icons.check_circle, size: navIconSize), label: '일상'),
-            BottomNavigationBarItem(icon: Icon(Icons.view_week, size: navIconSize), label: '주간'),
-            BottomNavigationBarItem(icon: Icon(Icons.dashboard, size: navIconSize), label: '종합'),
-            BottomNavigationBarItem(icon: Icon(Icons.calendar_today, size: navIconSize), label: '달력'),
-            BottomNavigationBarItem(icon: Icon(Icons.settings, size: navIconSize), label: '설정'),
-          ],
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        bottomNavigationBar: SizedBox(
+          height: isTablet ? 90.0 : 70.h,
+          child: BottomNavigationBar(
+            currentIndex: _tabIndex,
+            onTap: _onItemTapped,
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: AppColors.primary,
+            unselectedItemColor: AppColors.subText,
+            showUnselectedLabels: true,
+            selectedLabelStyle: TextStyle(fontSize: isTablet ? 16.0 : 12.sp, fontWeight: FontWeight.bold),
+            unselectedLabelStyle: TextStyle(fontSize: isTablet ? 16.0 : 12.sp),
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.check_circle), label: '일상'),
+              BottomNavigationBarItem(icon: Icon(Icons.view_week), label: '주간'),
+              BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: '종합'),
+              BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: '달력'),
+              BottomNavigationBarItem(icon: Icon(Icons.settings), label: '설정'),
+            ],
+          ),
         ),
       ),
     );
