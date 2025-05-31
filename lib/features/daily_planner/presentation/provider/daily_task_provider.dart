@@ -20,25 +20,50 @@ class DailyTaskNotifier extends StateNotifier<List<DailyTaskModel>> {
     _init();
   }
 
-  // Hive 박스에서 데이터를 불러오고, 하루가 지났다면 완료 여부 초기화
+  // 하루가 지났다면 완료 여부 초기화 + 일상 플래너 기록 저장
   Future<void> _init() async {
-  _box = Hive.box<DailyTaskModel>(DailyTaskBox.boxName);
+    _box = Hive.box<DailyTaskModel>(DailyTaskBox.boxName);
     final today = DateTime.now();
     final yesterday = today.subtract(const Duration(days: 1));
 
     final prefs = await SharedPreferences.getInstance();
-    final lastSaved = prefs.getString('last_record_date');
-    final formattedYesterday = DateFormat('yyyy-MM-dd').format(yesterday);
+    final lastSavedStr = prefs.getString('last_record_date');
+    final lastSavedDate = lastSavedStr == null
+        ? yesterday.subtract(const Duration(days: 1))
+        : DateFormat('yyyy-MM-dd').parse(lastSavedStr);
 
-    // 어제 기록 저장
-    if (lastSaved != formattedYesterday) {
-      final oldTasks = _box.values.toList();
-      if (oldTasks.isNotEmpty) {
-        final record = DailyRecordGroup(date: yesterday, tasks: oldTasks);
-        await DailyRecordBox.box.add(record);
-        await prefs.setString('last_record_date', formattedYesterday);
+    DateTime current = lastSavedDate.add(const Duration(days: 1));
+
+    while (!current.isAfter(yesterday)) {
+      final dateStr = DateFormat('yyyy-MM-dd').format(current);
+      final alreadySaved = DailyRecordBox.box.values.any(
+        (record) => DateFormat('yyyy-MM-dd').format(record.date) == dateStr,
+      );
+
+      // 기존 기록이 없다면 저장
+      if (!alreadySaved) {
+        final shouldMarkIncomplete = current.isBefore(yesterday);
+        final oldTasks = _box.values.map((task) {
+          return DailyTaskModel(
+            situation: task.situation,
+            action: task.action,
+            isCompleted: shouldMarkIncomplete ? false : task.isCompleted,
+            priority: task.priority,
+            lastCheckedDate: task.lastCheckedDate,
+          );
+        }).toList();
+
+        if (oldTasks.isNotEmpty) {
+          final record = DailyRecordGroup(date: current, tasks: oldTasks);
+          await DailyRecordBox.box.add(record);
+        }
       }
+
+      current = current.add(const Duration(days: 1));
     }
+
+    // 기록 완료된 날짜 업데이트
+    await prefs.setString('last_record_date', DateFormat('yyyy-MM-dd').format(yesterday));
 
     // 오늘 날짜 기준으로 isCompleted 초기화
     final updatedTasks = _box.values.map((task) {
@@ -59,11 +84,8 @@ class DailyTaskNotifier extends StateNotifier<List<DailyTaskModel>> {
           : task;
     }).toList();
 
-    if (updatedTasks.isNotEmpty) {
-      await _box.clear();
-      await _box.addAll(updatedTasks);
-    }
-
+    await _box.clear();
+    await _box.addAll(updatedTasks);
     state = updatedTasks;
   }
 
