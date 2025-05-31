@@ -24,21 +24,16 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
 
   final List<String> days = ['월', '화', '수', '목', '금', '토', '일'];
   final List<String> _priorities = ['전체', '낮음', '보통', '중요'];
-  bool _isEditing = false; // 편집 모드 여부
-  String _filterPriority = '전체'; // 필터링할 중요도
+  bool _isEditing = false;
+  String _filterPriority = '전체';
 
   @override
   void initState() {
     super.initState();
     final now = DateTime.now();
     final weekday = now.weekday;
-    final todayIndex = (weekday - 1).clamp(0, 6); // 월(1) ~ 일(7) → 0~6 인덱스로 변환
+    final todayIndex = (weekday - 1).clamp(0, 6);
     _tabController = TabController(length: days.length, vsync: this, initialIndex: todayIndex);
-
-    _tabController.addListener(() {
-      if (_tabController.indexIsChanging) return;
-      setState(() {});
-    });
   }
 
   @override
@@ -47,7 +42,6 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
     super.dispose();
   }
 
-  /// 일정 추가 다이얼로그
   void _showAddTaskDialog(BuildContext context) {
     final currentDay = days[_tabController.index];
     showDialog(
@@ -64,7 +58,6 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
     );
   }
 
-  /// 중요도 필터 다이얼로그
   void _showPriorityFilterDialog() {
     showModalBottomSheet(
       context: context,
@@ -144,7 +137,6 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
           child: Column(
             children: [
-              // 요일 탭바 (Stack 구조로 구분선 끝까지)
               SizedBox(
                 height: 48.h,
                 child: Stack(
@@ -212,8 +204,8 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
                     ],
                     border: Border.all(color: AppColors.primary, width: 1.w),
                   ),
-                  child: IndexedStack(
-                    index: _tabController.index,
+                  child: TabBarView(
+                    controller: _tabController,
                     children: days.map((day) {
                       final weekTask = ref.watch(weeklyTaskProvider).firstWhere(
                           (t) => t.day == day,
