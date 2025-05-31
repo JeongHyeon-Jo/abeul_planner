@@ -26,6 +26,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
   final List<String> _priorities = ['전체', '낮음', '보통', '중요'];
   bool _isEditing = false;
   String _filterPriority = '전체';
+  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -33,7 +34,16 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
     final now = DateTime.now();
     final weekday = now.weekday;
     final todayIndex = (weekday - 1).clamp(0, 6);
+    _selectedIndex = todayIndex;
     _tabController = TabController(length: days.length, vsync: this, initialIndex: todayIndex);
+
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {
+          _selectedIndex = _tabController.index;
+        });
+      }
+    });
   }
 
   @override
@@ -168,12 +178,17 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
                     }),
                     TabBar(
                       controller: _tabController,
+                      onTap: (index) {
+                        setState(() {
+                          _selectedIndex = index;
+                        });
+                      },
                       isScrollable: false,
                       indicator: const BoxDecoration(),
                       dividerColor: Colors.transparent,
                       labelPadding: EdgeInsets.zero,
                       tabs: List.generate(days.length, (index) {
-                        final isSelected = _tabController.index == index;
+                        final isSelected = _selectedIndex == index;
                         return Center(
                           child: Text(
                             days[index],
