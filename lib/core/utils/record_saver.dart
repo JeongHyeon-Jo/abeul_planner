@@ -46,13 +46,23 @@ class RecordSaver {
   // 일상 플래너 기록 저장
   static Future<void> _saveDaily(ProviderContainer container, DateTime date, {bool markIncomplete = false}) async {
     final tasks = container.read(dailyTaskProvider);
-    if (tasks.isEmpty) return;
+    
+    // 로깅 추가
+    print('[SAVE DAILY] Target date: $date, tasks count: ${tasks.length}');
+    if (tasks.isEmpty) {
+      print('[SAVE DAILY] Skipped: No tasks');
+      return;
+    }
 
     final key = DateFormat('yyyy-MM-dd').format(date);
     final exists = DailyRecordBox.box.values.any(
       (record) => DateFormat('yyyy-MM-dd').format(record.date) == key,
     );
-    if (exists) return;
+
+    if (exists) {
+      print('[SAVE DAILY] Skipped: Already exists for $key');
+      return;
+    }
 
     final savedTasks = tasks.map((t) => DailyTaskModel(
       situation: t.situation,
@@ -64,6 +74,7 @@ class RecordSaver {
 
     final record = DailyRecordGroup(date: date, tasks: savedTasks);
     await DailyRecordBox.box.add(record);
+    print('[SAVE DAILY] Saved for $key');
   }
 
   // 주간 플래너 기록 저장
