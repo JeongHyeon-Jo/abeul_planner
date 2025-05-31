@@ -45,26 +45,61 @@ class _PlannerScaffoldState extends State<PlannerScaffold> {
         } else {
           final shouldExit = await showDialog<bool>(
                 context: context,
-                builder: (context) => AlertDialog(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-                  title: const Text('앱 종료'),
-                  content: const Text('정말로 앱을 종료하시겠습니까?'),
-                  actionsPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      child: const Text('아니오'),
+                builder: (context) => Dialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(24.w),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.exit_to_app, color: AppColors.primary, size: 70.sp),
+                        SizedBox(height: 16.h),
+                        Text('앱을 종료할까요?', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                        SizedBox(height: 12.h),
+                        Text(
+                          '정말로 앱을 종료하시겠습니까?',
+                          style: TextStyle(fontSize: 14.sp, color: AppColors.subText),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 20.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.lightPrimary,
+                                foregroundColor: AppColors.text,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                                child: Text('취소', style: TextStyle(fontSize: 14.sp)),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.redAccent,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                                child: Text('종료', style: TextStyle(fontSize: 14.sp)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    ElevatedButton(
-                      onPressed: () => Navigator.of(context).pop(true),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-                      ),
-                      child: const Text('예'),
-                    ),
-                  ],
+                  ),
                 ),
               ) ??
               false;

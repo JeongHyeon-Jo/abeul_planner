@@ -32,7 +32,7 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
   String _selectedRepeat = '반복 없음';
   String _selectedPriority = '보통';
 
-  final List<String> _repeatOptions = ['반복 없음', '매년'];
+  final List<String> _repeatOptions = ['반복 없음','매주', '매월','매년'];
   final List<String> _priorityOptions = ['낮음', '보통', '중요'];
 
   @override
@@ -160,13 +160,30 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                 if (isEditMode)
                   Align(
                     alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: _delete,
-                      child: Text('일정 삭제',
-                          style: AppTextStyles.caption.copyWith(color: Colors.red)),
+                    child: Wrap(
+                      spacing: 8.w,
+                      children: [
+                        // 개별 삭제 버튼
+                        TextButton(
+                          onPressed: _delete,
+                          child: Text('일정 삭제',
+                              style: AppTextStyles.caption.copyWith(color: Colors.red)),
+                        ),
+                        // 반복 일정 삭제 버튼 (매주, 매월, 매년 중 하나일 때만 표시)
+                        if (['매주', '매월', '매년'].contains(widget.existingTask?.repeat))
+                          TextButton(
+                            onPressed: () {
+                              ref
+                                  .read(calendarTaskProvider.notifier)
+                                  .deleteAllTasksWithRepeatId(widget.existingTask!.repeatId!);
+                              Navigator.of(context).pop();
+                            },
+                            child: Text('반복 일정 전체 삭제',
+                                style: AppTextStyles.caption.copyWith(color: Colors.red)),
+                          ),
+                      ],
                     ),
                   ),
-
                 SizedBox(height: 16.h),
 
                 Row(

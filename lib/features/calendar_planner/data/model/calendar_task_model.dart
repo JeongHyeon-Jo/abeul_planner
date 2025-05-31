@@ -13,7 +13,7 @@ class CalendarTaskModel {
   final DateTime date; // 저장된 날짜 (yyyy-MM-dd)
 
   @HiveField(2)
-  final String repeat; // 반복 설정 (없음, 매일, 매주, 매월, 매년)
+  final String repeat; // 반복 설정 (없음, 매주, 매월, 매년)
 
   @HiveField(3)
   bool isCompleted; // 완료 여부
@@ -21,11 +21,15 @@ class CalendarTaskModel {
   @HiveField(4)
   final String priority; // 중요도
 
+  @HiveField(5)
+  final String? repeatId;
+
   CalendarTaskModel({
     required this.memo,
     required this.date,
     required this.repeat,
     this.isCompleted = false,
     this.priority = '보통',
+    this.repeatId,
   });
 }
