@@ -46,9 +46,43 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: Text(
-          '달력 플래너',
-          style: AppTextStyles.title.copyWith(color: AppColors.text),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+              icon: Icon(Icons.chevron_left, color: AppColors.text, size: 24.sp),
+              onPressed: () {
+                _pageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.ease);
+              },
+            ),
+            SizedBox(width: 4.w),
+            GestureDetector(
+              onTap: () async {
+                final picked = await showMonthYearPickerDialog(context, DateTime.now());
+                if (picked != null) {
+                  final diff = (picked.year - DateTime.now().year) * 12 + picked.month - DateTime.now().month;
+                  _pageController.jumpToPage(initialPage + diff);
+                }
+              },
+              child: Consumer(
+                builder: (context, ref, _) {
+                  final index = _pageController.hasClients ? _pageController.page?.round() ?? initialPage : initialPage;
+                  final date = DateTime(DateTime.now().year, DateTime.now().month + (index - initialPage));
+                  return Text(
+                    '${date.year}년 ${date.month}월',
+                    style: AppTextStyles.title.copyWith(color: AppColors.text),
+                  );
+                },
+              ),
+            ),
+            SizedBox(width: 4.w),
+            IconButton(
+              icon: Icon(Icons.chevron_right, color: AppColors.text, size: 24.sp),
+              onPressed: () {
+                _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.ease);
+              },
+            ),
+          ],
         ),
         isTransparent: true,
         leading: IconButton(
@@ -83,16 +117,6 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 6.w),
                 child: Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '${date.year}년 ${date.month}월',
-                          style: AppTextStyles.title.copyWith(color: AppColors.text),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 6.h),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: List.generate(7, (i) {
