@@ -147,7 +147,7 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
             child: Padding(
               padding: EdgeInsets.all(16.w),
               child: records.isEmpty
-                  ? const Center(child: Text('기록이 없습니다'))
+                  ? Center(child: Text('기록이 없습니다', style: TextStyle(fontSize: 14.sp),),)
                   : ListView.separated(
                       itemCount: records.length,
                       separatorBuilder: (_, __) => SizedBox(height: 12.h),

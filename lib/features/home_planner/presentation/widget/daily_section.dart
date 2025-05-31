@@ -30,8 +30,8 @@ class DailySection extends ConsumerWidget {
                 onPressed: () {
                   context.go('/daily');
                 },
-                icon: const Icon(Icons.add, color: AppColors.text),
-                label: const Text('일정 추가', style: TextStyle(color: AppColors.text)),
+                icon: Icon(Icons.add, size: 18.sp, color: AppColors.text),
+                label: Text('일정 추가', style: AppTextStyles.body.copyWith(color: AppColors.text)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.lightPrimary,
                   padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
@@ -47,7 +47,6 @@ class DailySection extends ConsumerWidget {
       );
     }
 
-    // 완료 여부 + 중요도 기준 정렬
     final sortedTasks = [...dailyTasks];
     sortedTasks.sort((a, b) {
       if (a.isCompleted != b.isCompleted) {
@@ -56,13 +55,10 @@ class DailySection extends ConsumerWidget {
       return priorityValue(a.priority).compareTo(priorityValue(b.priority));
     });
 
-    final displayTasks = sortedTasks.take(5).toList(); // 최대 5개만
+    final displayTasks = sortedTasks.take(5).toList();
 
     return Column(
-      children: displayTasks.asMap().entries.map((entry) {
-        final index = entry.key;
-        final task = entry.value;
-
+      children: displayTasks.map((task) {
         return Card(
           color: Colors.white,
           margin: EdgeInsets.symmetric(vertical: 6.h),
@@ -87,7 +83,10 @@ class DailySection extends ConsumerWidget {
             trailing: Checkbox(
               value: task.isCompleted,
               onChanged: (_) {
-                ref.read(dailyTaskProvider.notifier).toggleTask(index);
+                final originalIndex = ref.read(dailyTaskProvider).indexOf(task);
+                if (originalIndex != -1) {
+                  ref.read(dailyTaskProvider.notifier).toggleTask(originalIndex);
+                }
               },
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),

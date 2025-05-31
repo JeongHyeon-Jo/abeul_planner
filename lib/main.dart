@@ -9,7 +9,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 // core
 import 'package:abeul_planner/core/utils/screen_util.dart';
 import 'package:abeul_planner/core/styles/theme.dart';
-import 'package:abeul_planner/core/utils/record_saver.dart';
 // routes
 import 'package:abeul_planner/routes/planner_router.dart';
 // features
@@ -17,6 +16,8 @@ import 'features/daily_planner/data/datasource/daily_task_box.dart';
 import 'features/calendar_planner/data/datasource/calendar_task_box.dart';
 import 'features/weekly_planner/data/datasource/weekly_task_box.dart';
 // record
+import 'package:abeul_planner/core/utils/record_saver.dart';
+import 'package:abeul_planner/core/utils/record_watcher.dart';
 import 'package:abeul_planner/features/settings/data/datasource/record/daily_record_box.dart';
 import 'package:abeul_planner/features/settings/data/datasource/record/weekly_record_box.dart';
 import 'package:abeul_planner/features/settings/data/datasource/record/calendar_record_box.dart';
@@ -54,6 +55,7 @@ void main() async {
 
   final container = ProviderContainer();
   await RecordSaver.saveAllIfNeeded(container);
+  RecordWatcher.start(container);
 
   // 앱 세로 고정
   await SystemChrome.setPreferredOrientations([

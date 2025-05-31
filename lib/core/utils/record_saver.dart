@@ -2,7 +2,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// 프로바이더
+// provider
 import 'package:abeul_planner/features/daily_planner/presentation/provider/daily_task_provider.dart';
 import 'package:abeul_planner/features/weekly_planner/presentation/provider/weekly_task_provider.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
@@ -21,23 +21,19 @@ class RecordSaver {
     final today = DateTime.now();
     final yesterday = DateTime(today.year, today.month, today.day).subtract(const Duration(days: 1));
 
-    // 기준 날짜: 마지막 완료 체크 날짜 중 가장 최신 값
-    final tasks = container.read(dailyTaskProvider);
-    final checkedDates = tasks
-        .where((t) => t.lastCheckedDate != null)
-        .map((t) => DateTime(t.lastCheckedDate!.year, t.lastCheckedDate!.month, t.lastCheckedDate!.day))
-        .toList();
-
-    final lastCheckedDate = checkedDates.isEmpty
+    final lastSavedDateStr = prefs.getString('last_record_date');
+    final lastSavedDate = lastSavedDateStr == null
         ? yesterday.subtract(const Duration(days: 1))
-        : checkedDates.reduce((a, b) => a.isAfter(b) ? a : b);
+        : DateFormat('yyyy-MM-dd').parse(lastSavedDateStr);
 
-    DateTime current = lastCheckedDate;
+    DateTime current = lastSavedDate.add(const Duration(days: 1));
 
     while (!current.isAfter(yesterday)) {
-      final useRealData = current == lastCheckedDate;
+      final isYesterday = current.year == yesterday.year &&
+                          current.month == yesterday.month &&
+                          current.day == yesterday.day;
 
-      await _saveDaily(container, current, useRealData: useRealData);
+      await _saveDaily(container, current, markIncomplete: !isYesterday);
       await _saveWeekly(container, current);
       await _saveCalendar(container, current);
 
@@ -47,8 +43,8 @@ class RecordSaver {
     await prefs.setString('last_record_date', DateFormat('yyyy-MM-dd').format(yesterday));
   }
 
-  /// 일상 플래너 기록 저장
-  static Future<void> _saveDaily(ProviderContainer container, DateTime date, {required bool useRealData}) async {
+  // 일상 플래너 기록 저장
+  static Future<void> _saveDaily(ProviderContainer container, DateTime date, {bool markIncomplete = false}) async {
     final tasks = container.read(dailyTaskProvider);
     if (tasks.isEmpty) return;
 
@@ -58,21 +54,19 @@ class RecordSaver {
     );
     if (exists) return;
 
-    final savedTasks = useRealData
-        ? List<DailyTaskModel>.from(tasks)
-        : tasks.map((t) => DailyTaskModel(
-              situation: t.situation,
-              action: t.action,
-              isCompleted: false,
-              priority: t.priority,
-              lastCheckedDate: null,
-            )).toList();
+    final savedTasks = tasks.map((t) => DailyTaskModel(
+      situation: t.situation,
+      action: t.action,
+      isCompleted: markIncomplete ? false : t.isCompleted,
+      priority: t.priority,
+      lastCheckedDate: t.lastCheckedDate,
+    )).toList();
 
     final record = DailyRecordGroup(date: date, tasks: savedTasks);
     await DailyRecordBox.box.add(record);
   }
 
-  /// 주간 플래너 기록 저장
+  // 주간 플래너 기록 저장
   static Future<void> _saveWeekly(ProviderContainer container, DateTime date) async {
     final weeklyMap = container.read(weeklyTaskProvider);
     final weekday = DateFormat('E', 'ko_KR').format(date);
@@ -94,7 +88,7 @@ class RecordSaver {
     }
   }
 
-  /// 달력 플래너 기록 저장
+  // 달력 플래너 기록 저장
   static Future<void> _saveCalendar(ProviderContainer container, DateTime date) async {
     final tasks = container.read(calendarTaskProvider);
     if (tasks.isEmpty) return;

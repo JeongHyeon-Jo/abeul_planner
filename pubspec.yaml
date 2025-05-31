@@ -36,6 +36,9 @@ dependencies:
   flutter_launcher_icons: ^0.14.3
   flutter_native_splash: ^2.4.6
 
+  ## 테스트
+  hive_test: ^1.0.1
+
 
 dev_dependencies:
   flutter_test:
