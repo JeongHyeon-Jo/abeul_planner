@@ -1,6 +1,7 @@
 // daily_planner_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:abeul_planner/features/daily_planner/data/model/daily_task_model.dart';
@@ -26,6 +27,7 @@ class DailyPlannerScreen extends ConsumerStatefulWidget {
 class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
   final TextEditingController _situationController = TextEditingController(); // 상황 입력
   final TextEditingController _actionController = TextEditingController(); // 행동 입력
+  final appBarTitle = DateFormat('yyyy년 M월 d일 (E)', 'ko_KR').format(DateTime.now());
   String _filterPriority = '전체'; // // 중요도 필터 값 ('전체', '낮음', '보통', '중요')
   bool _isEditing = false; // 편집 모드 여부
 
@@ -115,7 +117,10 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
     return Scaffold(
       appBar: CustomAppBar(
         title: _filterPriority == '전체'
-            ? Text('', style: AppTextStyles.title)
+            ? Text(
+                appBarTitle,
+                style: AppTextStyles.title.copyWith(color: AppColors.text),
+              )
             : Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [

@@ -10,6 +10,7 @@ import 'package:abeul_planner/features/weekly_planner/presentation/widget/weekly
 import 'package:abeul_planner/core/utils/priority_icon.dart';
 import 'package:abeul_planner/features/weekly_planner/data/model/weekly_task_model.dart';
 import 'package:abeul_planner/features/weekly_planner/presentation/provider/weekly_task_provider.dart';
+import 'package:intl/intl.dart';
 
 class WeeklyPlannerScreen extends ConsumerStatefulWidget {
   const WeeklyPlannerScreen({super.key});
@@ -21,9 +22,9 @@ class WeeklyPlannerScreen extends ConsumerStatefulWidget {
 class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
-
   final List<String> days = ['월', '화', '수', '목', '금', '토', '일'];
   final List<String> _priorities = ['전체', '낮음', '보통', '중요'];
+  final appBarTitle = DateFormat('yyyy년 M월 d일 (E)', 'ko_KR').format(DateTime.now());
   bool _isEditing = false;
   String _filterPriority = '전체';
   int _selectedIndex = 0;
@@ -101,7 +102,10 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
       child: Scaffold(
         appBar: CustomAppBar(
           title: _filterPriority == '전체'
-              ? Text('', style: AppTextStyles.title)
+              ? Text(
+                  appBarTitle,
+                  style: AppTextStyles.title.copyWith(color: AppColors.text),
+                )
               : Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
