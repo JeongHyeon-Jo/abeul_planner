@@ -1,5 +1,6 @@
 // planner_scaffold.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:abeul_planner/core/styles/color.dart';
@@ -82,7 +83,9 @@ class _PlannerScaffoldState extends State<PlannerScaffold> {
                               ),
                             ),
                             ElevatedButton(
-                              onPressed: () => Navigator.of(context).pop(true),
+                              onPressed: () {
+                                SystemNavigator.pop();
+                              },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.redAccent,
                                 foregroundColor: Colors.white,
