@@ -30,7 +30,12 @@ class WeeklyTaskList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (tasks.isEmpty) {
-      return Center(child: Text('등록된 일정이 없습니다.', style: AppTextStyles.body));
+      return SizedBox(
+        height: 500.h, // 또는 Expanded로 바꿀 수도 있음
+        child: Center(
+          child: Text('등록된 일정이 없습니다.', style: AppTextStyles.body),
+        ),
+      );
     }
 
     return ReorderableListView.builder(

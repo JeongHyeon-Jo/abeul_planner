@@ -34,13 +34,13 @@ class DailyTaskNotifier extends StateNotifier<List<DailyTaskModel>> {
 
     DateTime current = lastSavedDate.add(const Duration(days: 1));
 
+    // 1. 먼저 기록 저장 로직
     while (!current.isAfter(yesterday)) {
       final dateStr = DateFormat('yyyy-MM-dd').format(current);
       final alreadySaved = DailyRecordBox.box.values.any(
         (record) => DateFormat('yyyy-MM-dd').format(record.date) == dateStr,
       );
 
-      // 기존 기록이 없다면 저장
       if (!alreadySaved) {
         final shouldMarkIncomplete = current.isBefore(yesterday);
         final oldTasks = _box.values.map((task) {
@@ -62,10 +62,10 @@ class DailyTaskNotifier extends StateNotifier<List<DailyTaskModel>> {
       current = current.add(const Duration(days: 1));
     }
 
-    // 기록 완료된 날짜 업데이트
+    // 기록 완료된 날짜 저장
     await prefs.setString('last_record_date', DateFormat('yyyy-MM-dd').format(yesterday));
 
-    // 오늘 날짜 기준으로 isCompleted 초기화
+    // 2. 기록 저장이 완료된 후에만 isCompleted 초기화
     final updatedTasks = _box.values.map((task) {
       final lastChecked = task.lastCheckedDate;
       final isNewDay = lastChecked == null ||
