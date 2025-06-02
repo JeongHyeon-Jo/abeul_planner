@@ -3,7 +3,6 @@ import 'package:abeul_planner/core/utils/priority_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/features/weekly_planner/data/model/weekly_task_model.dart';
 import 'package:abeul_planner/features/weekly_planner/presentation/provider/weekly_task_provider.dart';
@@ -55,40 +54,44 @@ class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
     final isEditMode = widget.existingTask != null;
 
     return Dialog(
-      insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
-      child: SafeArea(
+      insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+      child: Padding(
+        padding: EdgeInsets.all(24.w),
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(20.w),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(isEditMode ? '일정 수정' : '일정 추가', style: AppTextStyles.title),
-              SizedBox(height: 16.h),
+              Center(
+                child: Text(
+                  isEditMode ? '일정 수정' : '일정 추가',
+                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+                ),
+              ),
+              SizedBox(height: 24.h),
 
               DropdownButtonFormField<String>(
                 value: _selectedDay,
-                items: widget.days
-                    .map((day) => DropdownMenuItem(
-                          value: day,
-                          child: Text(day),
-                        ))
-                    .toList(),
+                decoration: const InputDecoration(labelText: '요일 선택'),
+                items: widget.days.map((day) {
+                  return DropdownMenuItem(value: day, child: Text(day));
+                }).toList(),
                 onChanged: (value) {
                   if (value != null) setState(() => _selectedDay = value);
                 },
-                decoration: const InputDecoration(labelText: '요일 선택'),
               ),
-              SizedBox(height: 12.h),
+              SizedBox(height: 16.h),
 
               TextField(
                 controller: _contentController,
                 decoration: const InputDecoration(labelText: '일정 내용'),
               ),
-              SizedBox(height: 12.h),
+              SizedBox(height: 16.h),
 
               DropdownButtonFormField<String>(
                 value: _priority,
+                decoration: const InputDecoration(labelText: '중요도'),
                 items: _priorityKeys.map((level) {
                   return DropdownMenuItem(
                     value: level,
@@ -104,7 +107,6 @@ class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
                 onChanged: (value) {
                   if (value != null) setState(() => _priority = value);
                 },
-                decoration: const InputDecoration(labelText: '중요도'),
               ),
 
               if (isEditMode)
@@ -120,20 +122,29 @@ class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
                         ),
                       );
                     },
-                    child: Text('일정 제거', style: AppTextStyles.caption.copyWith(color: Colors.red)),
+                    child: Text('일정 제거', style: TextStyle(color: Colors.red, fontSize: 13.sp)),
                   ),
                 ),
 
-              SizedBox(height: 16.h),
+              SizedBox(height: 24.h),
 
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  TextButton(
+                  ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('취소', style: AppTextStyles.body.copyWith(color: AppColors.subText)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.lightPrimary,
+                      foregroundColor: AppColors.text,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      child: Text('취소', style: TextStyle(fontSize: 14.sp)),
+                    ),
                   ),
-                  SizedBox(width: 8.w),
                   ElevatedButton(
                     onPressed: () {
                       final content = _contentController.text.trim();
@@ -160,8 +171,14 @@ class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.accent,
                       foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
                     ),
-                    child: Text('저장', style: AppTextStyles.button),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      child: Text('저장', style: TextStyle(fontSize: 14.sp)),
+                    ),
                   ),
                 ],
               ),

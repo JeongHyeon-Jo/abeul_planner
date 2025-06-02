@@ -46,46 +46,55 @@ class _DailyTaskDialogState extends ConsumerState<DailyTaskDialog> {
     final isEditMode = widget.task != null;
 
     return Dialog(
-      insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
-      child: SafeArea(
+      insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+      child: Padding(
+        padding: EdgeInsets.all(24.w),
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(20.w),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(isEditMode ? '일정 수정' : '새 일정 추가', style: AppTextStyles.title),
-              SizedBox(height: 16.h),
+              Center(
+                child: Text(
+                  isEditMode ? '일정 수정' : '새 일정 추가',
+                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+                ),
+              ),
+              SizedBox(height: 24.h),
 
               TextField(
                 controller: widget.situationController,
                 decoration: const InputDecoration(labelText: '상황 or 횟수'),
               ),
-              SizedBox(height: 12.h),
+              SizedBox(height: 16.h),
 
               TextField(
                 controller: widget.actionController,
                 decoration: const InputDecoration(labelText: '행동'),
               ),
-              SizedBox(height: 12.h),
+              SizedBox(height: 16.h),
 
               DropdownButtonFormField<String>(
                 value: _localPriority,
-                items: priorityKeys.map((level) => DropdownMenuItem(
-                  value: level,
-                  child: Row(
-                    children: [
-                      getPriorityIcon(level),
-                      SizedBox(width: 8.w),
-                      Text(level),
-                    ],
-                  ),
-                )).toList(),
+                decoration: const InputDecoration(labelText: '중요도'),
+                items: priorityKeys.map((level) {
+                  return DropdownMenuItem(
+                    value: level,
+                    child: Row(
+                      children: [
+                        getPriorityIcon(level),
+                        SizedBox(width: 8.w),
+                        Text(level),
+                      ],
+                    ),
+                  );
+                }).toList(),
                 onChanged: (value) {
                   if (value != null) setState(() => _localPriority = value);
                 },
-                decoration: const InputDecoration(labelText: '중요도'),
               ),
+              SizedBox(height: 12.h),
 
               if (isEditMode)
                 Align(
@@ -96,29 +105,37 @@ class _DailyTaskDialogState extends ConsumerState<DailyTaskDialog> {
                       widget.onDelete(widget.index!);
                     },
                     child: Text('일정 제거',
-                        style: AppTextStyles.caption.copyWith(color: Colors.red)),
+                        style: TextStyle(color: Colors.red, fontSize: 13.sp)),
                   ),
                 ),
 
-              SizedBox(height: 16.h),
+              SizedBox(height: 20.h),
 
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  TextButton(
+                  ElevatedButton(
                     onPressed: () {
                       widget.situationController.clear();
                       widget.actionController.clear();
                       Navigator.of(context).pop();
                     },
-                    child: Text('취소', style: AppTextStyles.body.copyWith(color: AppColors.subText)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.lightPrimary,
+                      foregroundColor: AppColors.text,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      child: Text('취소', style: TextStyle(fontSize: 14.sp)),
+                    ),
                   ),
-                  SizedBox(width: 8.w),
                   ElevatedButton(
                     onPressed: () {
                       final situation = widget.situationController.text.trim();
                       final action = widget.actionController.text.trim();
-
                       if (situation.isEmpty || action.isEmpty) return;
 
                       final newTask = DailyTaskModel(
@@ -141,8 +158,14 @@ class _DailyTaskDialogState extends ConsumerState<DailyTaskDialog> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.accent,
                       foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
                     ),
-                    child: Text('저장', style: AppTextStyles.button),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      child: Text('저장', style: TextStyle(fontSize: 14.sp)),
+                    ),
                   ),
                 ],
               ),

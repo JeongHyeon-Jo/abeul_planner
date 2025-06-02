@@ -1,18 +1,22 @@
-// delete_dialog.dart
+// calendar_delete_dialog.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:abeul_planner/core/styles/color.dart';
-import 'package:abeul_planner/features/daily_planner/presentation/provider/daily_task_provider.dart';
 
-// 플랜 제거 확인 다이얼로그
-class DailyDeleteDialog extends ConsumerWidget {
-  final int index; // 삭제할 인덱스
+class CalendarDeleteDialog extends StatelessWidget {
+  final String title;
+  final String description;
+  final VoidCallback onConfirm;
 
-  const DailyDeleteDialog({super.key, required this.index});
+  const CalendarDeleteDialog({
+    super.key,
+    required this.title,
+    required this.description,
+    required this.onConfirm,
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
       insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
@@ -21,14 +25,13 @@ class DailyDeleteDialog extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(height: 16.h),
             Text(
-              '일정 제거',
+              title,
               style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 12.h),
             Text(
-              '정말 이 일정을 제거하시겠습니까?',
+              description,
               style: TextStyle(fontSize: 14.sp, color: AppColors.subText),
               textAlign: TextAlign.center,
             ),
@@ -41,9 +44,7 @@ class DailyDeleteDialog extends ConsumerWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.lightPrimary,
                     foregroundColor: AppColors.text,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                   ),
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
@@ -52,19 +53,17 @@ class DailyDeleteDialog extends ConsumerWidget {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    ref.read(dailyTaskProvider.notifier).removeTask(index);
                     Navigator.of(context).pop();
+                    onConfirm();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.redAccent,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                   ),
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                    child: Text('제거', style: TextStyle(fontSize: 14.sp)),
+                    child: Text('삭제', style: TextStyle(fontSize: 14.sp)),
                   ),
                 ),
               ],

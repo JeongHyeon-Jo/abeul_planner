@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
+import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_delete_dialog.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
 
 class CalendarTaskDialog extends ConsumerStatefulWidget {
@@ -163,23 +164,37 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                     child: Wrap(
                       spacing: 8.w,
                       children: [
-                        // 개별 삭제 버튼
                         TextButton(
-                          onPressed: _delete,
-                          child: Text('일정 삭제',
-                              style: AppTextStyles.caption.copyWith(color: Colors.red)),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (_) => CalendarDeleteDialog(
+                                title: '일정 삭제',
+                                description: '해당 일정을 정말 삭제하시겠습니까?',
+                                onConfirm: _delete,
+                              ),
+                            );
+                          },
+                          child: Text('일정 삭제', style: TextStyle(color: Colors.red, fontSize: 13.sp)),
                         ),
-                        // 반복 일정 삭제 버튼 (매주, 매월, 매년 중 하나일 때만 표시)
                         if (['매주', '매월', '매년'].contains(widget.existingTask?.repeat))
                           TextButton(
                             onPressed: () {
-                              ref
-                                  .read(calendarTaskProvider.notifier)
-                                  .deleteAllTasksWithRepeatId(widget.existingTask!.repeatId!);
-                              Navigator.of(context).pop();
+                              showDialog(
+                                context: context,
+                                builder: (_) => CalendarDeleteDialog(
+                                  title: '반복 일정 전체 삭제',
+                                  description: '이 반복 일정에 해당하는 모든 일정을 삭제할까요?',
+                                  onConfirm: () {
+                                    ref
+                                        .read(calendarTaskProvider.notifier)
+                                        .deleteAllTasksWithRepeatId(widget.existingTask!.repeatId!);
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              );
                             },
-                            child: Text('반복 일정 전체 삭제',
-                                style: AppTextStyles.caption.copyWith(color: Colors.red)),
+                            child: Text('반복 일정 전체 삭제', style: TextStyle(color: Colors.red, fontSize: 13.sp)),
                           ),
                       ],
                     ),

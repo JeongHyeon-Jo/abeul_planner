@@ -36,7 +36,16 @@ class CalendarTaskNotifier extends StateNotifier<List<CalendarTaskModel>> {
       final uuid = const Uuid();
       final repeatId = uuid.v4();
 
-      for (int i = 0; i < 10; i++) {
+      int repeatCount;
+      if (task.repeat == '매년') {
+        repeatCount = 10;
+      } else if (task.repeat == '매월') {
+        repeatCount = 12; // 12개월 = 1년
+      } else {
+        repeatCount = 52; // 52주 = 1년
+      }
+
+      for (int i = 0; i < repeatCount; i++) {
         late DateTime repeatedDate;
 
         if (task.repeat == '매년') {
