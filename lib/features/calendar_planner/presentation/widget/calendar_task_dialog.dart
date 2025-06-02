@@ -30,11 +30,22 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
   final _formKey = GlobalKey<FormState>();
   final _memoController = TextEditingController();
   late DateTime _selectedDate;
+  DateTime? _endDate;
+  bool _isSecret = false;
+  int? _selectedColorValue;
   String _selectedRepeat = '반복 없음';
   String _selectedPriority = '보통';
 
   final List<String> _repeatOptions = ['반복 없음','매주', '매월','매년'];
   final List<String> _priorityOptions = ['낮음', '보통', '중요'];
+
+  final List<Color> _colorOptions = [
+    AppColors.accent.withAlpha((0.15 * 255).toInt()),
+    Colors.green.withAlpha((0.15 * 255).toInt()),
+    Colors.orange.withAlpha((0.15 * 255).toInt()),
+    Colors.purple.withAlpha((0.15 * 255).toInt()),
+    Colors.blue.withAlpha((0.15 * 255).toInt()),
+  ];
 
   @override
   void initState() {
@@ -43,6 +54,9 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
     _memoController.text = widget.existingTask?.memo ?? '';
     _selectedRepeat = widget.existingTask?.repeat ?? '반복 없음';
     _selectedPriority = widget.existingTask?.priority ?? '보통';
+    _endDate = widget.existingTask?.endDate;
+    _isSecret = widget.existingTask?.secret ?? false;
+    _selectedColorValue = widget.existingTask?.colorValue ?? AppColors.accent.withAlpha((0.15 * 255).toInt()).value;
   }
 
   @override
@@ -58,6 +72,9 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
         date: _selectedDate,
         repeat: _selectedRepeat,
         priority: _selectedPriority,
+        endDate: _endDate,
+        secret: _isSecret,
+        colorValue: _selectedColorValue,
       );
 
       if (widget.existingTask == null) {
@@ -93,14 +110,38 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(isEditMode ? '일정 수정' : '새 일정 추가', style: AppTextStyles.title),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        isEditMode ? '일정 수정' : '새 일정 추가',
+                        style: AppTextStyles.title,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => setState(() => _isSecret = !_isSecret),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                        decoration: BoxDecoration(
+                          color: AppColors.lightPrimary,
+                          borderRadius: BorderRadius.circular(10.r),
+                          border: Border.all(color: AppColors.primary.withOpacity(0.4)),
+                        ),
+                        child: Icon(
+                          _isSecret ? Icons.lock : Icons.lock_open,
+                          color: _isSecret ? AppColors.accent : AppColors.subText,
+                          size: 18.sp,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 SizedBox(height: 16.h),
 
-                // 날짜 선택
                 TextFormField(
                   readOnly: true,
                   controller: TextEditingController(
-                    text: DateFormat('yyyy년 MM월 dd일').format(_selectedDate),
+                    text: DateFormat('yyyy년 M월 d일 (E)', 'ko_KR').format(_selectedDate),
                   ),
                   onTap: () async {
                     final picked = await showDatePicker(
@@ -121,7 +162,30 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                 ),
                 SizedBox(height: 12.h),
 
-                // 반복 설정
+                TextFormField(
+                  readOnly: true,
+                  controller: TextEditingController(
+                    text: _endDate != null ? DateFormat('yyyy년 M월 d일 (E)', 'ko_KR').format(_endDate!) : '',
+                  ),
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: _endDate ?? _selectedDate,
+                      firstDate: _selectedDate,
+                      lastDate: DateTime(2100),
+                      locale: const Locale('ko', 'KR'),
+                    );
+                    if (picked != null) {
+                      setState(() => _endDate = picked);
+                    }
+                  },
+                  decoration: const InputDecoration(
+                    labelText: '종료일 (선택)',
+                    suffixIcon: Icon(Icons.calendar_today),
+                  ),
+                ),
+                SizedBox(height: 12.h),
+
                 DropdownButtonFormField<String>(
                   value: _selectedRepeat,
                   items: _repeatOptions.map((e) => DropdownMenuItem(
@@ -133,7 +197,6 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                 ),
                 SizedBox(height: 12.h),
 
-                // 중요도
                 DropdownButtonFormField<String>(
                   value: _selectedPriority,
                   items: _priorityOptions.map((e) => DropdownMenuItem(
@@ -151,12 +214,36 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                 ),
                 SizedBox(height: 12.h),
 
-                // 메모 입력
+                Row(
+                  children: [
+                    Text('색상 선택', style: AppTextStyles.body),
+                    SizedBox(width: 12.w),
+                    Wrap(
+                      spacing: 8.w,
+                      children: _colorOptions.map((color) {
+                        final isSelected = _selectedColorValue == color.value;
+                        return GestureDetector(
+                          onTap: () => setState(() => _selectedColorValue = color.value),
+                          child: Container(
+                            width: 24.w,
+                            height: 24.w,
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                              border: isSelected ? Border.all(color: AppColors.primary, width: 2.w) : null,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+
                 TextFormField(
                   controller: _memoController,
                   decoration: const InputDecoration(labelText: '일정 내용'),
-                  validator: (val) =>
-                      (val == null || val.isEmpty) ? '일정 내용을 입력하세요' : null,
+                  validator: (val) => (val == null || val.isEmpty) ? '일정 내용을 입력하세요' : null,
                 ),
                 if (isEditMode)
                   Align(
@@ -186,8 +273,7 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                                   title: '반복 일정 전체 삭제',
                                   description: '이 반복 일정에 해당하는 모든 일정을 삭제할까요?',
                                   onConfirm: () {
-                                    ref
-                                        .read(calendarTaskProvider.notifier)
+                                    ref.read(calendarTaskProvider.notifier)
                                         .deleteAllTasksWithRepeatId(widget.existingTask!.repeatId!);
                                     Navigator.of(context).pop();
                                   },

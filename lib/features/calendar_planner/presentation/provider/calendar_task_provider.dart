@@ -40,9 +40,9 @@ class CalendarTaskNotifier extends StateNotifier<List<CalendarTaskModel>> {
       if (task.repeat == '매년') {
         repeatCount = 10;
       } else if (task.repeat == '매월') {
-        repeatCount = 12; // 12개월 = 1년
+        repeatCount = 12;
       } else {
-        repeatCount = 52; // 52주 = 1년
+        repeatCount = 52;
       }
 
       for (int i = 0; i < repeatCount; i++) {
@@ -56,6 +56,10 @@ class CalendarTaskNotifier extends StateNotifier<List<CalendarTaskModel>> {
           repeatedDate = task.date.add(Duration(days: 7 * i));
         }
 
+        if (task.endDate != null && repeatedDate.isAfter(task.endDate!)) {
+          break;
+        }
+
         _box.add(CalendarTaskModel(
           memo: task.memo,
           date: repeatedDate,
@@ -63,6 +67,9 @@ class CalendarTaskNotifier extends StateNotifier<List<CalendarTaskModel>> {
           isCompleted: task.isCompleted,
           priority: task.priority,
           repeatId: repeatId,
+          endDate: task.endDate,
+          secret: task.secret,
+          colorValue: task.colorValue,
         ));
       }
     } else {
@@ -78,9 +85,19 @@ class CalendarTaskNotifier extends StateNotifier<List<CalendarTaskModel>> {
   }
 
   void deleteSpecificTask(CalendarTaskModel task) {
-    final index = state.indexOf(task);
+    final index = _box.values.toList().indexWhere((t) =>
+      t.memo == task.memo &&
+      t.date == task.date &&
+      t.repeat == task.repeat &&
+      t.priority == task.priority &&
+      t.endDate == task.endDate &&
+      t.secret == task.secret &&
+      t.colorValue == task.colorValue
+    );
+
     if (index != -1) {
-      deleteTask(index);
+      _box.deleteAt(index);
+      state = _box.values.toList();
     }
   }
 

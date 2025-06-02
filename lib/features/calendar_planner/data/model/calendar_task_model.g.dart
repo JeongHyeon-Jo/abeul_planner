@@ -23,13 +23,16 @@ class CalendarTaskModelAdapter extends TypeAdapter<CalendarTaskModel> {
       isCompleted: fields[3] as bool,
       priority: fields[4] as String,
       repeatId: fields[5] as String?,
+      endDate: fields[6] as DateTime?,
+      secret: fields[7] as bool?,
+      colorValue: fields[8] as int?,
     );
   }
 
   @override
   void write(BinaryWriter writer, CalendarTaskModel obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.memo)
       ..writeByte(1)
@@ -41,7 +44,13 @@ class CalendarTaskModelAdapter extends TypeAdapter<CalendarTaskModel> {
       ..writeByte(4)
       ..write(obj.priority)
       ..writeByte(5)
-      ..write(obj.repeatId);
+      ..write(obj.repeatId)
+      ..writeByte(6)
+      ..write(obj.endDate)
+      ..writeByte(7)
+      ..write(obj.secret)
+      ..writeByte(8)
+      ..write(obj.colorValue);
   }
 
   @override

@@ -189,12 +189,15 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
 
                   final allItems = [
                     if (holidayNames is List<String>) ...holidayNames.map((e) => {'type': 'holiday', 'name': e}),
-                    ...events.map((e) => {'type': 'event', 'name': e.memo}),
+                    ...events.map((e) => {
+                      'type': 'event',
+                      'name': e.secret == true ? '' : e.memo,
+                      'isSecret': e.secret == true,
+                      'color': Color(e.colorValue ?? AppColors.accent.withAlpha((0.15 * 255).toInt()).value),
+                    }),
                   ];
 
-                  final visibleItems = allItems.length > maxItems
-                      ? allItems.take(maxItems - 1).toList()
-                      : allItems;
+                  final visibleItems = allItems.length > maxItems ? allItems.take(maxItems - 1).toList() : allItems;
                   final overflowCount = allItems.length > maxItems ? allItems.length - (maxItems - 1) : 0;
 
                   return Expanded(
@@ -239,15 +242,27 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                             SizedBox(height: 1.h),
                             ...visibleItems.map((item) {
                               final isHolidayItem = item['type'] == 'holiday';
+                              final isSecret = item['isSecret'] == true;
+                              final color = item['color'] as Color? ?? AppColors.accent.withAlpha((0.15 * 255).toInt());
+                              if (isSecret) {
+                                return Padding(
+                                  padding: EdgeInsets.only(bottom: 1.2.h),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 7.h),
+                                    decoration: BoxDecoration(
+                                      color: color,
+                                      borderRadius: BorderRadius.circular(4.r),
+                                    ),
+                                  ),
+                                );
+                              }
                               final name = item['name']?.toString() ?? '';
                               return Padding(
                                 padding: EdgeInsets.only(bottom: 1.2.h),
                                 child: Container(
                                   padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.2.h),
                                   decoration: BoxDecoration(
-                                    color: isHolidayItem
-                                        ? AppColors.warning.withAlpha((0.2 * 255).toInt())
-                                        : AppColors.accent.withAlpha((0.15 * 255).toInt()),
+                                    color: isHolidayItem ? AppColors.warning.withAlpha((0.2 * 255).toInt()) : color,
                                     borderRadius: BorderRadius.circular(4.r),
                                   ),
                                   child: Text(

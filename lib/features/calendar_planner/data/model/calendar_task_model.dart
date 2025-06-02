@@ -1,5 +1,7 @@
 // calendar_task_model.dart
 import 'package:hive/hive.dart';
+import 'package:flutter/material.dart';
+import 'package:abeul_planner/core/styles/color.dart';
 
 part 'calendar_task_model.g.dart'; // build_runner로 생성될 어댑터 파일
 
@@ -22,7 +24,16 @@ class CalendarTaskModel {
   final String priority; // 중요도
 
   @HiveField(5)
-  final String? repeatId;
+  final String? repeatId; // 반복 아이디
+
+  @HiveField(6)
+  final DateTime? endDate; // 종료일
+
+  @HiveField(7)
+  final bool? secret; // 비밀
+
+  @HiveField(8)
+  final int? colorValue; // 색상
 
   CalendarTaskModel({
     required this.memo,
@@ -31,5 +42,11 @@ class CalendarTaskModel {
     this.isCompleted = false,
     this.priority = '보통',
     this.repeatId,
+    this.endDate,
+    this.secret,
+    this.colorValue,
   });
+
+  // 실제 색상으로 변환
+  Color get color => colorValue != null ? Color(colorValue!) : AppColors.accent.withAlpha((0.15 * 255).toInt());
 }
