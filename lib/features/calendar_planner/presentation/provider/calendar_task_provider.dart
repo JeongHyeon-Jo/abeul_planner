@@ -2,8 +2,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
+import 'package:intl/intl.dart';
 import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
 import 'package:abeul_planner/features/calendar_planner/data/datasource/calendar_task_box.dart';
+import 'package:abeul_planner/features/settings/data/datasource/record/calendar_record_box.dart';
+import 'package:abeul_planner/features/settings/data/model/record/calendar_record_group.dart';
 
 // 선택된 날짜에 해당하는 캘린더 일정(Task)을 관리하는 Riverpod Provider
 final calendarTaskProvider = StateNotifierProvider<CalendarTaskNotifier, List<CalendarTaskModel>>((ref) {
@@ -19,7 +22,27 @@ class CalendarTaskNotifier extends StateNotifier<List<CalendarTaskModel>> {
 
   Future<void> _init() async {
     _box = Hive.box<CalendarTaskModel>(CalendarTaskBox.boxName);
+    final today = DateTime.now();
+    final yesterday = DateTime(today.year, today.month, today.day - 1);
+    await _saveCalendarRecord(yesterday);
     state = _box.values.toList();
+  }
+
+  // 하루가 지났을 때 기록 저장
+  Future<void> _saveCalendarRecord(DateTime date) async {
+    final key = DateFormat('yyyy-MM-dd').format(date);
+    final filtered = _box.values.where((task) => DateFormat('yyyy-MM-dd').format(task.date) == key).toList();
+
+    if (filtered.isEmpty) return;
+
+    final exists = CalendarRecordBox.box.values.any(
+      (record) => DateFormat('yyyy-MM-dd').format(record.date) == key,
+    );
+
+    if (!exists) {
+      final record = CalendarRecordGroup(date: date, tasks: filtered);
+      await CalendarRecordBox.box.add(record);
+    }
   }
 
   List<CalendarTaskModel> getTasksForDate(DateTime date) {
@@ -101,7 +124,6 @@ class CalendarTaskNotifier extends StateNotifier<List<CalendarTaskModel>> {
     }
   }
 
-  // 반복 ID 기준 전체 삭제
   void deleteAllTasksWithRepeatId(String repeatId) {
     final tasksToDelete = _box.values.where((task) => task.repeatId == repeatId).toList();
 

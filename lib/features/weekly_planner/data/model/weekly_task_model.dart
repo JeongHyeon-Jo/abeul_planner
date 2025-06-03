@@ -23,6 +23,21 @@ class WeeklyTask {
     this.isCompleted = false,
     this.lastCheckedWeek,
   });
+
+  // copyWith
+  WeeklyTask copyWith({
+    String? content,
+    String? priority,
+    bool? isCompleted,
+    DateTime? lastCheckedWeek,
+  }) {
+    return WeeklyTask(
+      content: content ?? this.content,
+      priority: priority ?? this.priority,
+      isCompleted: isCompleted ?? this.isCompleted,
+      lastCheckedWeek: lastCheckedWeek ?? this.lastCheckedWeek,
+    );
+  }
 }
 
 @HiveType(typeId: 2)

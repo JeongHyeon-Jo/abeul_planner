@@ -1,6 +1,10 @@
+// weekly_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:abeul_planner/features/weekly_planner/data/datasource/weekly_task_box.dart';
 import 'package:abeul_planner/features/weekly_planner/data/model/weekly_task_model.dart';
+import 'package:abeul_planner/features/settings/data/datasource/record/weekly_record_box.dart';
+import 'package:abeul_planner/features/settings/data/model/record/weekly_record_group.dart';
 
 // 상태 관리를 위한 Provider
 final weeklyTaskProvider =
@@ -14,16 +18,18 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
     _init();
   }
 
-  // 초기화: 박스를 불러오고, 매주 월요일마다 완료 여부 초기화
-  void _init() {
+  // 초기화: 기록 먼저 저장한 뒤 완료 여부 초기화
+  Future<void> _init() async {
     final box = WeeklyTaskBox.box;
     final now = DateTime.now();
-    final currentWeekStart = now.subtract(Duration(days: now.weekday - 1)); // 이번 주 월요일
+    final yesterday = DateTime(now.year, now.month, now.day - 1);
+    await _saveWeeklyRecord(yesterday);
+
+    final currentWeekStart = now.subtract(Duration(days: now.weekday - 1));
 
     for (final model in box.values) {
       for (final task in model.tasks) {
         final lastChecked = task.lastCheckedWeek;
-
         final isNewWeek = lastChecked == null ||
             lastChecked.year != currentWeekStart.year ||
             lastChecked.month != currentWeekStart.month ||
@@ -38,6 +44,35 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
     }
 
     state = box.values.toList();
+  }
+
+  Future<void> _saveWeeklyRecord(DateTime date) async {
+    final weekday = DateFormat('E', 'ko_KR').format(date);
+
+    for (final model in WeeklyTaskBox.box.values) {
+      if (model.day == weekday && model.tasks.isNotEmpty) {
+        final exists = WeeklyRecordBox.box.values.any((record) =>
+            DateFormat('yyyy-MM-dd').format(record.date) ==
+                DateFormat('yyyy-MM-dd').format(date) &&
+            record.day == model.day);
+
+        if (!exists) {
+          final shouldMarkIncomplete = date.isBefore(
+              DateTime.now().subtract(const Duration(days: 1)));
+          final tasksCopy = model.tasks.map((task) => task.copyWith(
+                isCompleted:
+                    shouldMarkIncomplete ? false : task.isCompleted,
+              )).toList();
+
+          final record = WeeklyRecordGroup(
+            date: date,
+            day: model.day,
+            tasks: tasksCopy,
+          );
+          await WeeklyRecordBox.box.add(record);
+        }
+      }
+    }
   }
 
   // 일정 추가
@@ -90,7 +125,7 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
         isCompleted: !old.isCompleted,
         lastCheckedWeek: DateTime.now().subtract(
           Duration(days: DateTime.now().weekday - 1),
-        ), // 현재 주 월요일로 기록
+        ),
       );
       updated.save();
       state = [...state];
@@ -127,7 +162,6 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
       return;
     }
 
-    // 기존 요일에서 제거
     final fromIndex = state.indexWhere((element) => element.day == fromDay);
     if (fromIndex != -1) {
       final fromTaskModel = state[fromIndex];
@@ -135,7 +169,6 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
       fromTaskModel.save();
     }
 
-    // 새 요일에 추가
     addTask(toDay, newTask);
   }
 
