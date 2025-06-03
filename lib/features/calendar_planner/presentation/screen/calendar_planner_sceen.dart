@@ -1,6 +1,4 @@
 // calendar_planner_screen.dart
-import 'package:abeul_planner/features/calendar_planner/presentation/screen/search_task_screen.dart';
-import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_task_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -11,9 +9,11 @@ import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
 import 'package:abeul_planner/core/utils/korean_holidays.dart';
 // feature
-import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
 import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
+import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/screen/calendar_all_task_screen.dart';
+import 'package:abeul_planner/features/calendar_planner/presentation/screen/search_task_screen.dart';
+import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_task_list.dart';
 
 class CalendarPlannerScreen extends ConsumerStatefulWidget {
   const CalendarPlannerScreen({super.key});
@@ -164,6 +164,20 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
     final gridCount = (allDays.length / 7).ceil() * 7;
     final paddedDays = allDays + List.generate(gridCount - allDays.length, (i) => end.add(Duration(days: i + 1)));
 
+    final allTasks = ref.read(calendarTaskProvider);
+
+    final Map<String, List<Map<String, dynamic>>> mappedTasks = {};
+    for (final task in allTasks) {
+      final key = DateFormat('yyyy-MM-dd').format(task.date);
+      mappedTasks.putIfAbsent(key, () => []).add({
+        'type': 'event',
+        'name': task.secret == true ? '' : task.memo,
+        'isSecret': task.secret == true,
+        'color': Color(task.colorValue ?? AppColors.accent.withAlpha((0.15 * 255).toInt()).value),
+        'isHoliday': false,
+      });
+    }
+
     return ListView.builder(
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
@@ -184,21 +198,19 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                   final isToday = DateTime.now().year == day.year && DateTime.now().month == day.month && DateTime.now().day == day.day;
                   final isSelected = _selectedDay.year == day.year && _selectedDay.month == day.month && _selectedDay.day == day.day;
                   final isCurrentMonth = day.month == monthDate.month;
-                  final events = grouped[dateKey] ?? [];
-                  final maxItems = 4;
 
                   final allItems = [
-                    if (holidayNames is List<String>) ...holidayNames.map((e) => {'type': 'holiday', 'name': e}),
-                    ...events.map((e) => {
-                      'type': 'event',
-                      'name': e.secret == true ? '' : e.memo,
-                      'isSecret': e.secret == true,
-                      'color': Color(e.colorValue ?? AppColors.accent.withAlpha((0.15 * 255).toInt()).value),
-                    }),
+                    if (holidayNames is List<String>)
+                      ...holidayNames.map((e) => {
+                            'type': 'holiday',
+                            'name': e,
+                            'isHoliday': true,
+                          }),
+                    ...(mappedTasks[dateKey] ?? []),
                   ];
 
-                  final visibleItems = allItems.length > maxItems ? allItems.take(maxItems - 1).toList() : allItems;
-                  final overflowCount = allItems.length > maxItems ? allItems.length - (maxItems - 1) : 0;
+                  final visibleItems = allItems.length > 4 ? allItems.take(3).toList() : allItems;
+                  final overflowCount = allItems.length > 4 ? allItems.length - 3 : 0;
 
                   return Expanded(
                     child: GestureDetector(
@@ -217,7 +229,9 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                         constraints: BoxConstraints(minHeight: 90.h),
                         decoration: BoxDecoration(
                           color: isToday ? AppColors.highlight.withAlpha((0.2 * 255).toInt()) : null,
-                          border: Border.all(color: isSelected ? AppColors.accent : Colors.transparent, width: 1.5.w),
+                          border: Border.all(
+                              color: isSelected ? AppColors.accent : Colors.transparent,
+                              width: 1.5.w),
                           borderRadius: BorderRadius.circular(8.r),
                         ),
                         child: Column(
@@ -241,8 +255,9 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                             ),
                             SizedBox(height: 1.h),
                             ...visibleItems.map((item) {
-                              final isHolidayItem = item['type'] == 'holiday';
                               final isSecret = item['isSecret'] == true;
+                              final isHolidayItem = item['isHoliday'] == true;
+                              final name = item['name']?.toString() ?? '';
                               final color = item['color'] as Color? ?? AppColors.accent.withAlpha((0.15 * 255).toInt());
                               if (isSecret) {
                                 return Padding(
@@ -256,13 +271,14 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                                   ),
                                 );
                               }
-                              final name = item['name']?.toString() ?? '';
                               return Padding(
                                 padding: EdgeInsets.only(bottom: 1.2.h),
                                 child: Container(
                                   padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.2.h),
                                   decoration: BoxDecoration(
-                                    color: isHolidayItem ? AppColors.warning.withAlpha((0.2 * 255).toInt()) : color,
+                                    color: isHolidayItem
+                                        ? AppColors.warning.withAlpha((0.2 * 255).toInt())
+                                        : color,
                                     borderRadius: BorderRadius.circular(4.r),
                                   ),
                                   child: Text(
