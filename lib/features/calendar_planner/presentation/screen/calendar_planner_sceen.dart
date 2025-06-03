@@ -106,12 +106,10 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
       ),
       body: PageView.builder(
         controller: _pageController,
-        onPageChanged: (index) {
-          setState(() {});
-        },
+        physics: const ClampingScrollPhysics(),
         itemBuilder: (context, index) {
           final date = DateTime(DateTime.now().year, DateTime.now().month + (index - initialPage));
-          return Column(
+          final monthView = Column(
             children: [
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 6.w),
@@ -145,10 +143,19 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                   ],
                 ),
               ),
-              Expanded(
-                child: _buildCalendarGrid(groupedTasks, date),
-              ),
+              _buildCalendarGrid(groupedTasks, date),
             ],
+          );
+
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: monthView,
+                ),
+              );
+            },
           );
         },
       ),
