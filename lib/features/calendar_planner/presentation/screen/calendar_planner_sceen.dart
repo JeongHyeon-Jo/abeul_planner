@@ -180,7 +180,9 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
         'type': 'event',
         'name': task.secret == true ? '' : task.memo,
         'isSecret': task.secret == true,
-        'color': Color(task.colorValue ?? AppColors.accent.withAlpha((0.15 * 255).toInt()).value),
+        'color': task.colorValue != null
+          ? Color(task.colorValue!)
+          : AppColors.accent.withAlpha((0.15 * 255).toInt()),
         'isHoliday': false,
       });
     }

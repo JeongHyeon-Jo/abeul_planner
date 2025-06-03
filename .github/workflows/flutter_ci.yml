@@ -20,7 +20,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.1'   # 사용할 Flutter 버전 명시
+          flutter-version: '3.32.0'   # 사용할 Flutter 버전 명시
 
       # 의존성 설치 (pubspec.yaml에 정의된 패키지들)
       - name: Install dependencies
