@@ -5,6 +5,7 @@ import 'package:abeul_planner/features/weekly_planner/data/datasource/weekly_tas
 import 'package:abeul_planner/features/weekly_planner/data/model/weekly_task_model.dart';
 import 'package:abeul_planner/features/settings/data/datasource/record/weekly_record_box.dart';
 import 'package:abeul_planner/features/settings/data/model/record/weekly_record_group.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // 상태 관리를 위한 Provider
 final weeklyTaskProvider =
@@ -22,57 +23,86 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
   Future<void> _init() async {
     final box = WeeklyTaskBox.box;
     final now = DateTime.now();
-    final yesterday = DateTime(now.year, now.month, now.day - 1);
-    await _saveWeeklyRecord(yesterday);
+    final yesterday = now.subtract(const Duration(days: 1));
 
-    final currentWeekStart = now.subtract(Duration(days: now.weekday - 1));
+    final prefs = await SharedPreferences.getInstance();
+    final lastSavedStr = prefs.getString('weekly_last_record_date');
+    final lastSavedDate = lastSavedStr == null
+        ? yesterday.subtract(const Duration(days: 1))
+        : DateFormat('yyyy-MM-dd').parse(lastSavedStr);
 
-    for (final model in box.values) {
-      for (final task in model.tasks) {
-        final lastChecked = task.lastCheckedWeek;
-        final isNewWeek = lastChecked == null ||
-            lastChecked.year != currentWeekStart.year ||
-            lastChecked.month != currentWeekStart.month ||
-            lastChecked.day != currentWeekStart.day;
+    final hasSundaySection =
+        WeeklyTaskBox.box.values.any((e) => e.day == '일');
 
-        if (isNewWeek) {
-          task.isCompleted = false;
-          task.lastCheckedWeek = currentWeekStart;
-        }
+    bool sundayRecorded = false;
+
+    DateTime current = lastSavedDate.add(const Duration(days: 1));
+    while (!current.isAfter(yesterday)) {
+      final addedDays = await _saveWeeklyRecord(current);
+      if (addedDays.contains('일')) {
+        sundayRecorded = true;
       }
-      model.save();
+      current = current.add(const Duration(days: 1));
+    }
+
+    final shouldInit =
+        !hasSundaySection || (hasSundaySection && sundayRecorded);
+
+    if (shouldInit) {
+      await prefs.setString(
+        'weekly_last_record_date',
+        DateFormat('yyyy-MM-dd').format(yesterday),
+      );
+
+      final currentWeekStart =
+          now.subtract(Duration(days: now.weekday - 1));
+
+      for (final model in box.values) {
+        for (final task in model.tasks) {
+          final lastChecked = task.lastCheckedWeek;
+          final isNewWeek = lastChecked == null ||
+              lastChecked.year != currentWeekStart.year ||
+              lastChecked.month != currentWeekStart.month ||
+              lastChecked.day != currentWeekStart.day;
+
+          if (isNewWeek) {
+            task.isCompleted = false;
+            task.lastCheckedWeek = currentWeekStart;
+          }
+        }
+        model.save();
+      }
     }
 
     state = box.values.toList();
   }
 
-  Future<void> _saveWeeklyRecord(DateTime date) async {
-    final weekday = DateFormat('E', 'ko_KR').format(date);
+  // 주간 플래너 기록 저장
+  Future<Set<String>> _saveWeeklyRecord(DateTime date) async {
+    final formattedDate = DateFormat('yyyy-MM-dd').format(date);
+    Set<String> addedDays = {};
 
     for (final model in WeeklyTaskBox.box.values) {
-      if (model.day == weekday && model.tasks.isNotEmpty) {
-        final exists = WeeklyRecordBox.box.values.any((record) =>
-            DateFormat('yyyy-MM-dd').format(record.date) ==
-                DateFormat('yyyy-MM-dd').format(date) &&
-            record.day == model.day);
+      if (model.tasks.isEmpty) continue;
 
-        if (!exists) {
-          final shouldMarkIncomplete = date.isBefore(
-              DateTime.now().subtract(const Duration(days: 1)));
-          final tasksCopy = model.tasks.map((task) => task.copyWith(
-                isCompleted:
-                    shouldMarkIncomplete ? false : task.isCompleted,
-              )).toList();
+      final alreadyExists = WeeklyRecordBox.box.values.any((record) =>
+          DateFormat('yyyy-MM-dd').format(record.date) == formattedDate &&
+          record.day == model.day);
 
-          final record = WeeklyRecordGroup(
-            date: date,
-            day: model.day,
-            tasks: tasksCopy,
-          );
-          await WeeklyRecordBox.box.add(record);
-        }
+      if (!alreadyExists) {
+        final tasksCopy = model.tasks.map((task) => task.copyWith()).toList();
+
+        final record = WeeklyRecordGroup(
+          date: date,
+          day: model.day,
+          tasks: tasksCopy,
+        );
+        await WeeklyRecordBox.box.add(record);
+        addedDays.add(model.day);
       }
     }
+
+    return addedDays;
   }
 
   // 일정 추가
