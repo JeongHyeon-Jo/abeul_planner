@@ -1,11 +1,12 @@
 // app_info_screen.dart
-import 'package:abeul_planner/features/settings/presentation/screen/info/privacy_policy_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
+import 'package:abeul_planner/features/settings/presentation/screen/info/icon_credits_screen.dart';
+import 'package:abeul_planner/features/settings/presentation/screen/info/privacy_policy_screen.dart';
 
 class AppInfoScreen extends StatefulWidget {
   const AppInfoScreen({super.key});
@@ -88,6 +89,29 @@ class _AppInfoScreenState extends State<AppInfoScreen> {
               ),
               const Spacer(),
               SizedBox(height: 16.h),
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const IconCreditsScreen()),
+                  );
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                  margin: EdgeInsets.only(top: 12.h),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '리소스 및 저작권 안내 보기',
+                      style: AppTextStyles.button,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 8.h),
               GestureDetector(
                 onTap: () {
                   Navigator.of(context).push(
