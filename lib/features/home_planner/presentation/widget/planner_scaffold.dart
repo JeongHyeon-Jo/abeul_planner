@@ -147,7 +147,7 @@ class _PlannerScaffoldState extends State<PlannerScaffold> {
                 BottomNavigationBarItem(icon: Icon(Icons.view_week), label: '주간'),
                 BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: '종합'),
                 BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: '달력'),
-                BottomNavigationBarItem(icon: Icon(Icons.folder), label: '메뉴'),
+                BottomNavigationBarItem(icon: Icon(Icons.settings), label: '메뉴'),
               ],
             ),
           ),

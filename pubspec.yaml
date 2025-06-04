@@ -66,6 +66,7 @@ flutter:
 
   assets:
     - assets/images/Abeul_Planner_Logo.png
+    - assets/icons/square-menu.svg
     - privacy_policy.html
     - icon_credits.html
 

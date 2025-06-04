@@ -1,6 +1,4 @@
 // weekly_task_list.dart
-// 주간 일정 리스트 표시 위젯
-
 import 'package:abeul_planner/core/utils/priority_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +8,7 @@ import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/features/weekly_planner/data/model/weekly_task_model.dart';
 import 'package:abeul_planner/features/weekly_planner/presentation/provider/weekly_task_provider.dart';
 import 'package:abeul_planner/features/weekly_planner/presentation/widget/weekly_task_dialog.dart';
+import 'package:abeul_planner/features/auth/presentation/provider/user_provider.dart';
 
 class WeeklyTaskList extends ConsumerWidget {
   final String day; // 해당 요일
@@ -29,7 +28,16 @@ class WeeklyTaskList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (tasks.isEmpty) {
+    final user = ref.watch(userProvider);
+
+    final sortedTasks = isEditing || !user.autoSortCompleted
+        ? tasks
+        : [
+            ...tasks.where((task) => !task.isCompleted),
+            ...tasks.where((task) => task.isCompleted),
+          ];
+
+    if (sortedTasks.isEmpty) {
       return SizedBox(
         height: 500.h, // 또는 Expanded로 바꿀 수도 있음
         child: Center(
@@ -42,14 +50,14 @@ class WeeklyTaskList extends ConsumerWidget {
       shrinkWrap: shrinkWrap, // 상위에서 제어
       physics: physics, // 상위에서 제어
       buildDefaultDragHandles: false, // 커스텀 드래그 핸들 사용
-      itemCount: tasks.length,
+      itemCount: sortedTasks.length,
       onReorder: (oldIndex, newIndex) {
         if (isEditing) {
           ref.read(weeklyTaskProvider.notifier).reorderTask(day, oldIndex, newIndex);
         }
       },
       itemBuilder: (context, index) {
-        final task = tasks[index];
+        final task = sortedTasks[index];
 
         return Container(
           key: ValueKey('$index-${task.content}'), // 순서 변경을 위한 고유 키

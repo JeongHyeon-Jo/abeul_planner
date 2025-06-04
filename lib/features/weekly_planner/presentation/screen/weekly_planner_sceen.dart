@@ -251,7 +251,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
                             children: [
                               WeeklyTaskList(
                                 day: day,
-                                tasks: displayTasks,
+                                tasks: filteredTasks,
                                 isEditing: _isEditing,
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
