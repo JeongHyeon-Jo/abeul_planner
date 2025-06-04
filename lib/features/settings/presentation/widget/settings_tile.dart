@@ -1,4 +1,5 @@
 // settings_tile.dart
+import 'package:abeul_planner/core/styles/color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
@@ -20,7 +21,7 @@ class SettingsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
-      leading: Icon(icon, size: 24.sp),
+      leading: Icon(icon, size: 24.sp, color: AppColors.accent,),
       title: Text(title, style: AppTextStyles.body),
       trailing: Icon(Icons.arrow_forward_ios, size: 16.sp),
       onTap: onTap,

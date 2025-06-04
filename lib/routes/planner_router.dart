@@ -8,10 +8,12 @@ import 'package:abeul_planner/features/daily_planner/presentation/screen/daily_p
 import 'package:abeul_planner/features/weekly_planner/presentation/screen/weekly_planner_sceen.dart';
 // 설정 화면
 import 'package:abeul_planner/features/settings/presentation/screen/settings_screen.dart';
+import 'package:abeul_planner/features/settings/presentation/screen/info/app_info_screen.dart';
+// 기록 화면
 import 'package:abeul_planner/features/record/presentation/screen/daily_record_screen.dart';
 import 'package:abeul_planner/features/record/presentation/screen/weekly_record_screen.dart';
 import 'package:abeul_planner/features/record/presentation/screen/calendar_record_screen.dart';
-import 'package:abeul_planner/features/settings/presentation/screen/info/app_info_screen.dart';
+import 'package:abeul_planner/features/record/presentation/screen/record_select_screen.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: '/home',
@@ -57,6 +59,10 @@ final GoRouter router = GoRouter(
         GoRoute(
           path: '/records/calendar',
           builder: (context, state) => const CalendarRecordScreen(),
+        ),
+        GoRoute(
+          path: '/records/select',
+          builder: (context, state) => const RecordSelectScreen(),
         ),
       ],
     ),

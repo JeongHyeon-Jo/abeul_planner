@@ -57,21 +57,9 @@ class SettingsScreen extends ConsumerWidget {
               ),
               Divider(height: 1.h, color: AppColors.primary),
               SettingsTile(
-                icon: Icons.today,
-                title: '일상 플래너 기록',
-                onTap: () => context.push('/records/daily'),
-              ),
-              Divider(height: 1.h, color: AppColors.primary),
-              SettingsTile(
-                icon: Icons.view_week,
-                title: '주간 플래너 기록',
-                onTap: () => context.push('/records/weekly'),
-              ),
-              Divider(height: 1.h, color: AppColors.primary),
-              SettingsTile(
-                icon: Icons.calendar_month,
-                title: '달력 플래너 기록',
-                onTap: () => context.push('/records/calendar'),
+                icon: Icons.history,
+                title: '기록 보기',
+                onTap: () => context.push('/records/select'),
               ),
               Divider(height: 1.h, color: AppColors.primary),
               SettingsTile(
