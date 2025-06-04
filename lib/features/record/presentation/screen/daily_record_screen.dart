@@ -1,22 +1,23 @@
-// calendar_record_screen.dart
+// daily_record_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:abeul_planner/features/record/data/datasource/record/daily_record_box.dart';
+// core
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
-import 'package:abeul_planner/features/settings/data/datasource/record/calendar_record_box.dart';
 import 'package:abeul_planner/core/utils/priority_icon.dart';
 
-class CalendarRecordScreen extends ConsumerStatefulWidget {
-  const CalendarRecordScreen({super.key});
+class DailyRecordScreen extends ConsumerStatefulWidget {
+  const DailyRecordScreen({super.key});
 
   @override
-  ConsumerState<CalendarRecordScreen> createState() => _CalendarRecordScreenState();
+  ConsumerState<DailyRecordScreen> createState() => _DailyRecordScreenState();
 }
 
-class _CalendarRecordScreenState extends ConsumerState<CalendarRecordScreen> {
+class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
   bool isEditing = false;
   DateTime? expandedDate;
   DateTime? selectedDate;
@@ -40,7 +41,7 @@ class _CalendarRecordScreenState extends ConsumerState<CalendarRecordScreen> {
           ),
           TextButton(
             onPressed: () {
-              CalendarRecordBox.box.clear();
+              DailyRecordBox.box.clear();
               setState(() {});
               Navigator.of(context).pop();
             },
@@ -56,7 +57,7 @@ class _CalendarRecordScreenState extends ConsumerState<CalendarRecordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final recordBox = CalendarRecordBox.box;
+    final recordBox = DailyRecordBox.box;
     final records = recordBox.values
         .where((record) => selectedDate == null ||
             DateFormat('yyyy-MM-dd').format(record.date) ==
@@ -66,7 +67,7 @@ class _CalendarRecordScreenState extends ConsumerState<CalendarRecordScreen> {
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: Text('달력 플래너 기록', style: AppTextStyles.title.copyWith(color: AppColors.text)),
+        title: Text('일상 플래너 기록', style: AppTextStyles.title.copyWith(color: AppColors.text)),
         isTransparent: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.text),
@@ -198,7 +199,10 @@ class _CalendarRecordScreenState extends ConsumerState<CalendarRecordScreen> {
                                         getPriorityIcon(task.priority),
                                         SizedBox(width: 8.w),
                                         Expanded(
-                                          child: Text(task.memo, style: AppTextStyles.body),
+                                          child: Text(
+                                            '${task.situation} → ${task.action}',
+                                            style: AppTextStyles.body,
+                                          ),
                                         ),
                                         Icon(
                                           task.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
@@ -209,11 +213,13 @@ class _CalendarRecordScreenState extends ConsumerState<CalendarRecordScreen> {
                                             icon: const Icon(Icons.close, color: Colors.red),
                                             onPressed: () {
                                               record.tasks.remove(task);
+
                                               if (record.tasks.isEmpty) {
-                                                CalendarRecordBox.box.deleteAt(index);
+                                                DailyRecordBox.box.deleteAt(index);
                                               } else {
-                                                CalendarRecordBox.box.putAt(index, record);
+                                                DailyRecordBox.box.putAt(index, record);
                                               }
+
                                               setState(() {});
                                             },
                                           ),

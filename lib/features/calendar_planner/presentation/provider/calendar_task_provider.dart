@@ -5,8 +5,8 @@ import 'package:uuid/uuid.dart';
 import 'package:intl/intl.dart';
 import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
 import 'package:abeul_planner/features/calendar_planner/data/datasource/calendar_task_box.dart';
-import 'package:abeul_planner/features/settings/data/datasource/record/calendar_record_box.dart';
-import 'package:abeul_planner/features/settings/data/model/record/calendar_record_group.dart';
+import 'package:abeul_planner/features/record/data/datasource/record/calendar_record_box.dart';
+import 'package:abeul_planner/features/record/data/model/record/calendar_record_group.dart';
 
 // 선택된 날짜에 해당하는 캘린더 일정(Task)을 관리하는 Riverpod Provider
 final calendarTaskProvider = StateNotifierProvider<CalendarTaskNotifier, List<CalendarTaskModel>>((ref) {

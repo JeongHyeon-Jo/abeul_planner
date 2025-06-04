@@ -1,6 +1,6 @@
 // daily_task_provider.dart
-import 'package:abeul_planner/features/settings/data/datasource/record/daily_record_box.dart';
-import 'package:abeul_planner/features/settings/data/model/record/daily_record_group.dart';
+import 'package:abeul_planner/features/record/data/datasource/record/daily_record_box.dart';
+import 'package:abeul_planner/features/record/data/model/record/daily_record_group.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:abeul_planner/features/daily_planner/data/model/daily_task_model.dart';

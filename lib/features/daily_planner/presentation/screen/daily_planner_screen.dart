@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:abeul_planner/features/daily_planner/data/model/daily_task_model.dart';
 import 'package:abeul_planner/features/daily_planner/presentation/provider/daily_task_provider.dart';
+import 'package:abeul_planner/features/auth/presentation/provider/user_provider.dart';
 // core
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
 import 'package:abeul_planner/core/utils/priority_icon.dart';
@@ -100,14 +101,15 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
   @override
   Widget build(BuildContext context) {
     final tasks = ref.watch(dailyTaskProvider);
+    final user = ref.watch(userProvider);
 
     // 필터된 일정 목록
     final filteredTasks = _filterPriority == '전체'
         ? tasks
         : tasks.where((task) => task.priority == _filterPriority).toList();
 
-    // 편집 모드일 때는 순서 유지, 아닐 때는 미완료 우선 정렬
-    final sortedTasks = _isEditing
+    // 편집 모드일 때는 순서 유지, 아닐 때는 유저 설정에 따라 정렬
+    final sortedTasks = _isEditing || !user.autoSortCompleted
         ? filteredTasks
         : [
             ...filteredTasks.where((task) => !task.isCompleted),

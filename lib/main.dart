@@ -16,9 +16,12 @@ import 'features/daily_planner/data/datasource/daily_task_box.dart';
 import 'features/calendar_planner/data/datasource/calendar_task_box.dart';
 import 'features/weekly_planner/data/datasource/weekly_task_box.dart';
 // record
-import 'package:abeul_planner/features/settings/data/datasource/record/daily_record_box.dart';
-import 'package:abeul_planner/features/settings/data/datasource/record/weekly_record_box.dart';
-import 'package:abeul_planner/features/settings/data/datasource/record/calendar_record_box.dart';
+import 'package:abeul_planner/features/record/data/datasource/record/daily_record_box.dart';
+import 'package:abeul_planner/features/record/data/datasource/record/weekly_record_box.dart';
+import 'package:abeul_planner/features/record/data/datasource/record/calendar_record_box.dart';
+// user
+import 'package:abeul_planner/features/auth/data/datasource/user_box.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +31,10 @@ void main() async {
 
   // Hive 초기화
   await Hive.initFlutter();
+
+  // UserModel
+  await UserBox.registerAdapters();
+  await UserBox.openBox();
 
   // DailyTask
   await DailyTaskBox.registerAdapters();

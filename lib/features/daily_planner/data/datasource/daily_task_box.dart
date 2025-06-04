@@ -1,7 +1,6 @@
 // daily_task_box.dart
-
 import 'package:hive/hive.dart';
-import '../model/daily_task_model.dart';
+import 'package:abeul_planner/features/daily_planner/data/model/daily_task_model.dart';
 
 /// Hive에서 사용할 박스(Box)를 관리하는 클래스
 class DailyTaskBox {

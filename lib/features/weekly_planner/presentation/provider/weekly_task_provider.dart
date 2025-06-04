@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:abeul_planner/features/weekly_planner/data/datasource/weekly_task_box.dart';
 import 'package:abeul_planner/features/weekly_planner/data/model/weekly_task_model.dart';
-import 'package:abeul_planner/features/settings/data/datasource/record/weekly_record_box.dart';
-import 'package:abeul_planner/features/settings/data/model/record/weekly_record_group.dart';
+import 'package:abeul_planner/features/record/data/datasource/record/weekly_record_box.dart';
+import 'package:abeul_planner/features/record/data/model/record/weekly_record_group.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // 상태 관리를 위한 Provider

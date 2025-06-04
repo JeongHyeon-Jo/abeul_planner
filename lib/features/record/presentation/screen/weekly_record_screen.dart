@@ -1,23 +1,23 @@
-// daily_record_screen.dart
+// weekly_record_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
-import 'package:abeul_planner/features/settings/data/datasource/record/daily_record_box.dart';
-// core
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
+import 'package:abeul_planner/features/record/data/datasource/record/weekly_record_box.dart';
+import 'package:abeul_planner/features/weekly_planner/data/model/weekly_task_model.dart';
 import 'package:abeul_planner/core/utils/priority_icon.dart';
 
-class DailyRecordScreen extends ConsumerStatefulWidget {
-  const DailyRecordScreen({super.key});
+class WeeklyRecordScreen extends ConsumerStatefulWidget {
+  const WeeklyRecordScreen({super.key});
 
   @override
-  ConsumerState<DailyRecordScreen> createState() => _DailyRecordScreenState();
+  ConsumerState<WeeklyRecordScreen> createState() => _WeeklyRecordScreenState();
 }
 
-class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
+class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
   bool isEditing = false;
   DateTime? expandedDate;
   DateTime? selectedDate;
@@ -41,7 +41,7 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
           ),
           TextButton(
             onPressed: () {
-              DailyRecordBox.box.clear();
+              WeeklyRecordBox.box.clear();
               setState(() {});
               Navigator.of(context).pop();
             },
@@ -57,7 +57,7 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final recordBox = DailyRecordBox.box;
+    final recordBox = WeeklyRecordBox.box;
     final records = recordBox.values
         .where((record) => selectedDate == null ||
             DateFormat('yyyy-MM-dd').format(record.date) ==
@@ -67,7 +67,7 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: Text('일상 플래너 기록', style: AppTextStyles.title.copyWith(color: AppColors.text)),
+        title: Text('주간 플래너 기록', style: AppTextStyles.title.copyWith(color: AppColors.text)),
         isTransparent: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.text),
@@ -175,7 +175,7 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      DateFormat('yyyy.MM.dd').format(record.date),
+                                      '${DateFormat('yyyy.MM.dd').format(record.date)} (${record.day})',
                                       style: AppTextStyles.title,
                                     ),
                                     Icon(isExpanded ? Icons.expand_less : Icons.expand_more),
@@ -184,50 +184,43 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
                               ),
                             ),
                             if (isExpanded)
-                              ...record.tasks.map(
-                                (task) => Padding(
-                                  padding: EdgeInsets.only(left: 12.w, top: 8.h),
-                                  child: Container(
-                                    padding: EdgeInsets.all(12.w),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.cardBackground,
-                                      borderRadius: BorderRadius.circular(10.r),
-                                      border: Border.all(color: AppColors.primary, width: 1.1.w),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        getPriorityIcon(task.priority),
-                                        SizedBox(width: 8.w),
-                                        Expanded(
-                                          child: Text(
-                                            '${task.situation} → ${task.action}',
-                                            style: AppTextStyles.body,
+                              ...record.tasks.map((WeeklyTask task) => Padding(
+                                    padding: EdgeInsets.only(left: 12.w, top: 8.h),
+                                    child: Container(
+                                      padding: EdgeInsets.all(12.w),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.cardBackground,
+                                        borderRadius: BorderRadius.circular(10.r),
+                                        border: Border.all(color: AppColors.primary, width: 1.1.w),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          getPriorityIcon(task.priority),
+                                          SizedBox(width: 8.w),
+                                          Expanded(
+                                            child: Text(task.content, style: AppTextStyles.body),
                                           ),
-                                        ),
-                                        Icon(
-                                          task.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-                                          color: AppColors.primary,
-                                        ),
-                                        if (isEditing)
-                                          IconButton(
-                                            icon: const Icon(Icons.close, color: Colors.red),
-                                            onPressed: () {
-                                              record.tasks.remove(task);
-
-                                              if (record.tasks.isEmpty) {
-                                                DailyRecordBox.box.deleteAt(index);
-                                              } else {
-                                                DailyRecordBox.box.putAt(index, record);
-                                              }
-
-                                              setState(() {});
-                                            },
+                                          Icon(
+                                            task.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
+                                            color: AppColors.primary,
                                           ),
-                                      ],
+                                          if (isEditing)
+                                            IconButton(
+                                              icon: const Icon(Icons.close, color: Colors.red),
+                                              onPressed: () {
+                                                record.tasks.remove(task);
+                                                if (record.tasks.isEmpty) {
+                                                  WeeklyRecordBox.box.deleteAt(index);
+                                                } else {
+                                                  WeeklyRecordBox.box.putAt(index, record);
+                                                }
+                                                setState(() {});
+                                              },
+                                            ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ),
-                              ),
+                                  )),
                           ],
                         );
                       },

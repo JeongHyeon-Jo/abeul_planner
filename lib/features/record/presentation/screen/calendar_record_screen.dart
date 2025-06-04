@@ -1,4 +1,4 @@
-// weekly_record_screen.dart
+// calendar_record_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -6,18 +6,17 @@ import 'package:intl/intl.dart';
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
-import 'package:abeul_planner/features/settings/data/datasource/record/weekly_record_box.dart';
-import 'package:abeul_planner/features/weekly_planner/data/model/weekly_task_model.dart';
+import 'package:abeul_planner/features/record/data/datasource/record/calendar_record_box.dart';
 import 'package:abeul_planner/core/utils/priority_icon.dart';
 
-class WeeklyRecordScreen extends ConsumerStatefulWidget {
-  const WeeklyRecordScreen({super.key});
+class CalendarRecordScreen extends ConsumerStatefulWidget {
+  const CalendarRecordScreen({super.key});
 
   @override
-  ConsumerState<WeeklyRecordScreen> createState() => _WeeklyRecordScreenState();
+  ConsumerState<CalendarRecordScreen> createState() => _CalendarRecordScreenState();
 }
 
-class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
+class _CalendarRecordScreenState extends ConsumerState<CalendarRecordScreen> {
   bool isEditing = false;
   DateTime? expandedDate;
   DateTime? selectedDate;
@@ -41,7 +40,7 @@ class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
           ),
           TextButton(
             onPressed: () {
-              WeeklyRecordBox.box.clear();
+              CalendarRecordBox.box.clear();
               setState(() {});
               Navigator.of(context).pop();
             },
@@ -57,7 +56,7 @@ class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final recordBox = WeeklyRecordBox.box;
+    final recordBox = CalendarRecordBox.box;
     final records = recordBox.values
         .where((record) => selectedDate == null ||
             DateFormat('yyyy-MM-dd').format(record.date) ==
@@ -67,7 +66,7 @@ class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: Text('주간 플래너 기록', style: AppTextStyles.title.copyWith(color: AppColors.text)),
+        title: Text('달력 플래너 기록', style: AppTextStyles.title.copyWith(color: AppColors.text)),
         isTransparent: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.text),
@@ -175,7 +174,7 @@ class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      '${DateFormat('yyyy.MM.dd').format(record.date)} (${record.day})',
+                                      DateFormat('yyyy.MM.dd').format(record.date),
                                       style: AppTextStyles.title,
                                     ),
                                     Icon(isExpanded ? Icons.expand_less : Icons.expand_more),
@@ -184,43 +183,45 @@ class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
                               ),
                             ),
                             if (isExpanded)
-                              ...record.tasks.map((WeeklyTask task) => Padding(
-                                    padding: EdgeInsets.only(left: 12.w, top: 8.h),
-                                    child: Container(
-                                      padding: EdgeInsets.all(12.w),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.cardBackground,
-                                        borderRadius: BorderRadius.circular(10.r),
-                                        border: Border.all(color: AppColors.primary, width: 1.1.w),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          getPriorityIcon(task.priority),
-                                          SizedBox(width: 8.w),
-                                          Expanded(
-                                            child: Text(task.content, style: AppTextStyles.body),
-                                          ),
-                                          Icon(
-                                            task.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-                                            color: AppColors.primary,
-                                          ),
-                                          if (isEditing)
-                                            IconButton(
-                                              icon: const Icon(Icons.close, color: Colors.red),
-                                              onPressed: () {
-                                                record.tasks.remove(task);
-                                                if (record.tasks.isEmpty) {
-                                                  WeeklyRecordBox.box.deleteAt(index);
-                                                } else {
-                                                  WeeklyRecordBox.box.putAt(index, record);
-                                                }
-                                                setState(() {});
-                                              },
-                                            ),
-                                        ],
-                                      ),
+                              ...record.tasks.map(
+                                (task) => Padding(
+                                  padding: EdgeInsets.only(left: 12.w, top: 8.h),
+                                  child: Container(
+                                    padding: EdgeInsets.all(12.w),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.cardBackground,
+                                      borderRadius: BorderRadius.circular(10.r),
+                                      border: Border.all(color: AppColors.primary, width: 1.1.w),
                                     ),
-                                  )),
+                                    child: Row(
+                                      children: [
+                                        getPriorityIcon(task.priority),
+                                        SizedBox(width: 8.w),
+                                        Expanded(
+                                          child: Text(task.memo, style: AppTextStyles.body),
+                                        ),
+                                        Icon(
+                                          task.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
+                                          color: AppColors.primary,
+                                        ),
+                                        if (isEditing)
+                                          IconButton(
+                                            icon: const Icon(Icons.close, color: Colors.red),
+                                            onPressed: () {
+                                              record.tasks.remove(task);
+                                              if (record.tasks.isEmpty) {
+                                                CalendarRecordBox.box.deleteAt(index);
+                                              } else {
+                                                CalendarRecordBox.box.putAt(index, record);
+                                              }
+                                              setState(() {});
+                                            },
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
                           ],
                         );
                       },

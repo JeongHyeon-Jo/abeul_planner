@@ -8,9 +8,9 @@ import 'package:abeul_planner/features/daily_planner/presentation/screen/daily_p
 import 'package:abeul_planner/features/weekly_planner/presentation/screen/weekly_planner_sceen.dart';
 // 설정 화면
 import 'package:abeul_planner/features/settings/presentation/screen/settings_screen.dart';
-import 'package:abeul_planner/features/settings/presentation/screen/records/daily_record_screen.dart';
-import 'package:abeul_planner/features/settings/presentation/screen/records/weekly_record_screen.dart';
-import 'package:abeul_planner/features/settings/presentation/screen/records/calendar_record_screen.dart';
+import 'package:abeul_planner/features/record/presentation/screen/daily_record_screen.dart';
+import 'package:abeul_planner/features/record/presentation/screen/weekly_record_screen.dart';
+import 'package:abeul_planner/features/record/presentation/screen/calendar_record_screen.dart';
 import 'package:abeul_planner/features/settings/presentation/screen/info/app_info_screen.dart';
 
 final GoRouter router = GoRouter(

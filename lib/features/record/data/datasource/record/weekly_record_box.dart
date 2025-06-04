@@ -1,6 +1,6 @@
 // weekly_record_box.dart
 import 'package:hive/hive.dart';
-import 'package:abeul_planner/features/settings/data/model/record/weekly_record_group.dart';
+import 'package:abeul_planner/features/record/data/model/record/weekly_record_group.dart';
 
 class WeeklyRecordBox {
   static const String boxName = 'weeklyRecordBox';

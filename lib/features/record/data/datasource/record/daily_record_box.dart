@@ -1,6 +1,6 @@
 // daily_record_box.dart
 import 'package:hive/hive.dart';
-import 'package:abeul_planner/features/settings/data/model/record/daily_record_group.dart';
+import 'package:abeul_planner/features/record/data/model/record/daily_record_group.dart';
 
 class DailyRecordBox {
   static const String boxName = 'dailyRecordBox';
