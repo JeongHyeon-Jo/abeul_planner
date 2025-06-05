@@ -98,7 +98,7 @@ class WeeklyTaskList extends ConsumerWidget {
                 ),
                 ReorderableDragStartListener(
                   index: index,
-                  child: Icon(Icons.drag_indicator, size: 24.sp, color: AppColors.subText),
+                  child: Icon(Icons.drag_handle, size: 24.sp, color: AppColors.subText),
                 ),
               ] else
                 // 체크박스 (수행 여부)

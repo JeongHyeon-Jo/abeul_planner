@@ -150,4 +150,32 @@ class CalendarTaskNotifier extends StateNotifier<List<CalendarTaskModel>> {
       state = List.from(state);
     }
   }
+
+    // 특정 날짜의 일정 순서 변경
+  void reorderTask(DateTime date, int oldIndex, int newIndex) {
+    final tasksForDate = state.where((task) =>
+      task.date.year == date.year &&
+      task.date.month == date.month &&
+      task.date.day == date.day
+    ).toList();
+
+    if (oldIndex < 0 || oldIndex >= tasksForDate.length || newIndex < 0) return;
+    if (oldIndex < newIndex) newIndex -= 1;
+
+    final movedTask = tasksForDate.removeAt(oldIndex);
+    tasksForDate.insert(newIndex, movedTask);
+
+    // 기존 state에서 해당 날짜의 task들 제거
+    final otherTasks = state.where((task) =>
+      !(task.date.year == date.year &&
+        task.date.month == date.month &&
+        task.date.day == date.day)).toList();
+
+    final updatedState = [...otherTasks, ...tasksForDate];
+
+    // box clear 후 순서 반영하여 다시 추가 (단순화된 방식)
+    _box.clear();
+    _box.addAll(updatedState);
+    state = updatedState;
+  }
 }

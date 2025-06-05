@@ -74,7 +74,7 @@ class DailyTaskTile extends StatelessWidget {
             ),
             ReorderableDragStartListener(
               index: index,
-              child: Icon(Icons.drag_indicator, size: 24.sp, color: AppColors.subText),
+              child: Icon(Icons.drag_handle, size: 24.sp, color: AppColors.subText),
             ),
           ] else
             SizedBox(
