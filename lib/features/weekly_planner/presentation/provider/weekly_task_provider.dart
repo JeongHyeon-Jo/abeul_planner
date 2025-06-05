@@ -80,10 +80,17 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
   // 주간 플래너 기록 저장
   Future<Set<String>> _saveWeeklyRecord(DateTime date) async {
     final formattedDate = DateFormat('yyyy-MM-dd').format(date);
+    final dayLimit = date.weekday;
+    final weekdayMap = {
+      '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6, '일': 7,
+    };
+
     Set<String> addedDays = {};
 
     for (final model in WeeklyTaskBox.box.values) {
-      if (model.tasks.isEmpty) continue;
+      final modelDay = weekdayMap[model.day] ?? 0;
+
+      if (model.tasks.isEmpty || modelDay > dayLimit) continue;
 
       final alreadyExists = WeeklyRecordBox.box.values.any((record) =>
           DateFormat('yyyy-MM-dd').format(record.date) == formattedDate &&

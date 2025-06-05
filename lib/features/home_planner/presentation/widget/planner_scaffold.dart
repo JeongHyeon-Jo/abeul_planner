@@ -143,10 +143,10 @@ class _PlannerScaffoldState extends State<PlannerScaffold> {
               selectedLabelStyle: TextStyle(fontSize: isTablet ? 16.0 : 12.sp, fontWeight: FontWeight.bold),
               unselectedLabelStyle: TextStyle(fontSize: isTablet ? 16.0 : 12.sp),
               items: const [
-                BottomNavigationBarItem(icon: Icon(Icons.check_circle), label: '일상'),
-                BottomNavigationBarItem(icon: Icon(Icons.view_week), label: '주간'),
+                BottomNavigationBarItem(icon: Icon(Icons.today), label: '일상'),
+                BottomNavigationBarItem(icon: Icon(Icons.calendar_view_week), label: '주간'),
                 BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: '종합'),
-                BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: '달력'),
+                BottomNavigationBarItem(icon: Icon(Icons.calendar_month), label: '달력'),
                 BottomNavigationBarItem(icon: Icon(Icons.settings), label: '메뉴'),
               ],
             ),

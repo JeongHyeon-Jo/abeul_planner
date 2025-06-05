@@ -46,7 +46,7 @@ class SettingsScreen extends ConsumerWidget {
                 title: Row(
                   children: [
                     Icon(Icons.check_circle_outline, color: AppColors.accent, size: 24.sp),
-                    SizedBox(width: 8.w),
+                    SizedBox(width: 15.w),
                     Text('완료된 일정 아래로 정렬', style: AppTextStyles.body),
                   ],
                 ),

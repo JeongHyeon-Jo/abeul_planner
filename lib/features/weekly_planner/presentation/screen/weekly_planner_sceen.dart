@@ -236,13 +236,6 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
                               .where((task) => task.priority == _filterPriority)
                               .toList();
 
-                      final displayTasks = _isEditing
-                          ? filteredTasks
-                          : [
-                              ...filteredTasks.where((task) => !task.isCompleted),
-                              ...filteredTasks.where((task) => task.isCompleted),
-                            ];
-
                       return SingleChildScrollView(
                         child: Padding(
                           padding: EdgeInsets.all(16.w),

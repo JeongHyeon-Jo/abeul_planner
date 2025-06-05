@@ -36,7 +36,7 @@ class RecordSelectScreen extends StatelessWidget {
             SizedBox(height: 12.h),
             _buildRecordCard(
               context,
-              icon: Icons.view_week,
+              icon: Icons.calendar_view_week,
               title: '주간 플래너 기록',
               route: '/records/weekly',
             ),
