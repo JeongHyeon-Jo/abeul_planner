@@ -126,11 +126,55 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
                       ),
                       child: Row(
                         children: [
-                          getPriorityIcon(task.priority),
+                          Column(
+                            children: [
+                              Container(
+                                width: 18.w,
+                                height: 18.w,
+                                margin: EdgeInsets.only(bottom: 6.h),
+                                decoration: BoxDecoration(
+                                  color: task.color,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              SizedBox(width: 8.h),
+                              getPriorityIcon(task.priority),
+                            ],
+                          ),
                           SizedBox(width: 12.w),
                           Expanded(
-                            child: InkWell(
-                              onTap: () {
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // 날짜 표시
+                                Text(
+                                  task.endDate != null
+                                      ? '${DateFormat('yyyy.MM.dd').format(task.date)} ~ ${DateFormat('yyyy.MM.dd').format(task.endDate!)}'
+                                      : DateFormat('yyyy.MM.dd').format(task.date),
+                                  style: AppTextStyles.caption,
+                                ),
+                                SizedBox(height: 4.h),
+
+                                // 메모 내용 + 자물쇠 아이콘
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(task.memo, style: AppTextStyles.body),
+                                    ),
+                                    if (task.secret == true)
+                                      Padding(
+                                        padding: EdgeInsets.only(left: 4.w),
+                                        child: Icon(Icons.lock, size: 16.sp, color: AppColors.subText),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (_isEditing) ...[
+                            IconButton(
+                              icon: Icon(Icons.edit, size: 20.sp, color: AppColors.subText),
+                              onPressed: () {
                                 showDialog(
                                   context: context,
                                   builder: (_) => CalendarTaskDialog(
@@ -139,30 +183,18 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
                                   ),
                                 );
                               },
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    DateFormat('yyyy년 MM월 dd일').format(task.date),
-                                    style: AppTextStyles.caption,
-                                  ),
-                                  SizedBox(height: 4.h),
-                                  Text(task.memo, style: AppTextStyles.body),
-                                ],
-                              ),
                             ),
-                          ),
-                          _isEditing
-                              ? ReorderableDragStartListener(
-                                  index: index,
-                                  child: Icon(Icons.drag_handle, color: AppColors.subText),
-                                )
-                              : Checkbox(
-                                  value: task.isCompleted,
-                                  onChanged: (_) {
-                                    ref.read(calendarTaskProvider.notifier).toggleTask(task);
-                                  },
-                                ),
+                            ReorderableDragStartListener(
+                              index: index,
+                              child: Icon(Icons.drag_handle, color: AppColors.subText),
+                            ),
+                          ] else
+                            Checkbox(
+                              value: task.isCompleted,
+                              onChanged: (_) {
+                                ref.read(calendarTaskProvider.notifier).toggleTask(task);
+                              },
+                            ),
                         ],
                       ),
                     );
