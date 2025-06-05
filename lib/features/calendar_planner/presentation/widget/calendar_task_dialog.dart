@@ -188,15 +188,16 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                 ),
                 SizedBox(height: 12.h),
 
-                DropdownButtonFormField<String>(
-                  value: _selectedRepeat,
-                  items: _repeatOptions.map((e) => DropdownMenuItem(
-                    value: e,
-                    child: Text(e),
-                  )).toList(),
-                  onChanged: (val) => setState(() => _selectedRepeat = val!),
-                  decoration: const InputDecoration(labelText: '반복 설정'),
-                ),
+                if (!isEditMode)
+                  DropdownButtonFormField<String>(
+                    value: _selectedRepeat,
+                    items: _repeatOptions.map((e) => DropdownMenuItem(
+                      value: e,
+                      child: Text(e),
+                    )).toList(),
+                    onChanged: (val) => setState(() => _selectedRepeat = val!),
+                    decoration: const InputDecoration(labelText: '반복 설정'),
+                  ),
                 SizedBox(height: 12.h),
 
                 DropdownButtonFormField<String>(

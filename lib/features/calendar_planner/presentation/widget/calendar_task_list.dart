@@ -147,11 +147,20 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 // 날짜 표시
-                                Text(
-                                  task.endDate != null
-                                      ? '${DateFormat('yyyy.MM.dd').format(task.date)} ~ ${DateFormat('yyyy.MM.dd').format(task.endDate!)}'
-                                      : DateFormat('yyyy.MM.dd').format(task.date),
-                                  style: AppTextStyles.caption,
+                                Row(
+                                  children: [
+                                    Text(
+                                      task.endDate != null
+                                          ? '${DateFormat('yyyy.MM.dd').format(task.date)} ~ ${DateFormat('yyyy.MM.dd').format(task.endDate!)}'
+                                          : DateFormat('yyyy.MM.dd').format(task.date),
+                                      style: AppTextStyles.caption,
+                                    ),
+                                    if (task.secret == true)
+                                      Padding(
+                                        padding: EdgeInsets.only(left: 4.w),
+                                        child: Icon(Icons.lock, size: 16.sp, color: AppColors.subText),
+                                      ),
+                                  ],
                                 ),
                                 SizedBox(height: 4.h),
 
@@ -161,11 +170,6 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
                                     Expanded(
                                       child: Text(task.memo, style: AppTextStyles.body),
                                     ),
-                                    if (task.secret == true)
-                                      Padding(
-                                        padding: EdgeInsets.only(left: 4.w),
-                                        child: Icon(Icons.lock, size: 16.sp, color: AppColors.subText),
-                                      ),
                                   ],
                                 ),
                               ],
