@@ -163,6 +163,7 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
                 child: sortedTasks.isEmpty
                     ? Center(child: Text('등록된 일정이 없습니다.', style: AppTextStyles.body))
                     : ReorderableListView.builder(
+                        padding: EdgeInsets.only(bottom: 80.h),
                         buildDefaultDragHandles: false,
                         itemCount: sortedTasks.length,
                         onReorder: (oldIndex, newIndex) {

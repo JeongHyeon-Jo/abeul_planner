@@ -45,29 +45,46 @@ class DailyTaskNotifier extends StateNotifier<List<DailyTaskModel>> {
     if (anyRecordAdded) {
       await prefs.setString('last_record_date', DateFormat('yyyy-MM-dd').format(yesterday));
 
-      final updatedTasks = originalTasks.map((task) {
+      final updatedTasks = <DailyTaskModel>[];
+
+      for (final task in originalTasks) {
         final lastChecked = task.lastCheckedDate;
         final isNewDay = lastChecked == null ||
             lastChecked.year != today.year ||
             lastChecked.month != today.month ||
             lastChecked.day != today.day;
 
-        return isNewDay
-            ? DailyTaskModel(
-                situation: task.situation,
-                action: task.action,
-                isCompleted: false,
-                priority: task.priority,
-                lastCheckedDate: null,
-              )
-            : task;
-      }).toList();
+        if (task.goalCount != null && task.isCompleted && isNewDay) {
+          final newCount = (task.completedCount ?? 0) + 1;
+
+          if (newCount < task.goalCount!) {
+            updatedTasks.add(DailyTaskModel(
+              situation: task.situation,
+              action: task.action,
+              isCompleted: false,
+              priority: task.priority,
+              lastCheckedDate: null,
+              goalCount: task.goalCount,
+              completedCount: newCount,
+            ));
+          }
+        } else {
+          updatedTasks.add(DailyTaskModel(
+            situation: task.situation,
+            action: task.action,
+            isCompleted: isNewDay ? false : task.isCompleted,
+            priority: task.priority,
+            lastCheckedDate: isNewDay ? null : task.lastCheckedDate,
+            goalCount: task.goalCount,
+            completedCount: task.completedCount ?? 0,
+          ));
+        }
+      }
 
       await _box.clear();
       await _box.addAll(updatedTasks);
       state = updatedTasks;
     } else {
-      // 기록이 없으면 그대로 유지
       state = _box.values.toList();
     }
   }
@@ -87,6 +104,8 @@ class DailyTaskNotifier extends StateNotifier<List<DailyTaskModel>> {
           isCompleted: task.isCompleted,
           priority: task.priority,
           lastCheckedDate: task.lastCheckedDate,
+          goalCount: task.goalCount,
+          completedCount: task.completedCount ?? 0,
         );
       }).toList();
 
@@ -107,17 +126,23 @@ class DailyTaskNotifier extends StateNotifier<List<DailyTaskModel>> {
   // 완료 여부 토글 시, 오늘 날짜로 lastCheckedDate 기록
   void toggleTask(int index) {
     final task = _box.getAt(index);
-    if (task != null) {
-      final updatedTask = DailyTaskModel(
-        situation: task.situation,
-        action: task.action,
-        isCompleted: !task.isCompleted,
-        priority: task.priority,
-        lastCheckedDate: DateTime.now(),
-      );
-      _box.putAt(index, updatedTask);
-      state = _box.values.toList();
-    }
+    if (task == null) return;
+
+    // 목표 완료된 경우 무시
+    if (task.goalCount != null && (task.completedCount ?? 0) >= task.goalCount!) return;
+
+    final updatedTask = DailyTaskModel(
+      situation: task.situation,
+      action: task.action,
+      isCompleted: !task.isCompleted,
+      priority: task.priority,
+      lastCheckedDate: DateTime.now(),
+      goalCount: task.goalCount,
+      completedCount: task.completedCount ?? 0,
+    );
+
+    _box.putAt(index, updatedTask);
+    state = _box.values.toList();
   }
 
   // 기존 일정 수정

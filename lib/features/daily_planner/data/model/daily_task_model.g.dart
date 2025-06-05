@@ -22,13 +22,15 @@ class DailyTaskModelAdapter extends TypeAdapter<DailyTaskModel> {
       isCompleted: fields[2] as bool,
       priority: fields[3] as String,
       lastCheckedDate: fields[4] as DateTime?,
+      goalCount: fields[5] as int?,
+      completedCount: fields[6] as int?,
     );
   }
 
   @override
   void write(BinaryWriter writer, DailyTaskModel obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.situation)
       ..writeByte(1)
@@ -38,7 +40,11 @@ class DailyTaskModelAdapter extends TypeAdapter<DailyTaskModel> {
       ..writeByte(3)
       ..write(obj.priority)
       ..writeByte(4)
-      ..write(obj.lastCheckedDate);
+      ..write(obj.lastCheckedDate)
+      ..writeByte(5)
+      ..write(obj.goalCount)
+      ..writeByte(6)
+      ..write(obj.completedCount);
   }
 
   @override

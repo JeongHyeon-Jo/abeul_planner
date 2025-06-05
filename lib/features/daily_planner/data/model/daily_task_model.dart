@@ -22,11 +22,20 @@ class DailyTaskModel {
   @HiveField(4) // 마지막으로 완료 체크한 날짜
   final DateTime? lastCheckedDate;
 
+  @HiveField(5) // 목표 횟수 (null이면 항상)
+  final int? goalCount;
+
+  @HiveField(6) // 지금까지 완료한 횟수
+  final int? completedCount;
+
+
   DailyTaskModel({
     required this.situation,
     required this.action,
     this.isCompleted = false,
     this.priority = '보통',
     this.lastCheckedDate,
+    this.goalCount,
+    this.completedCount = 0,
   });
 }

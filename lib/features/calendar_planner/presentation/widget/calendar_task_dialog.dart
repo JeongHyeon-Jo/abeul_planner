@@ -3,11 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
-// core
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/core/utils/priority_icon.dart';
-// feature
 import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_delete_dialog.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
@@ -38,7 +36,7 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
   String _selectedRepeat = '반복 없음';
   String _selectedPriority = '보통';
 
-  final List<String> _repeatOptions = ['반복 없음','매주', '매월','매년'];
+  final List<String> _repeatOptions = ['반복 없음', '매주', '매월', '매년'];
   final List<String> _priorityOptions = ['낮음', '보통', '중요'];
 
   final List<Color> _colorOptions = [
@@ -58,7 +56,7 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
     _selectedPriority = widget.existingTask?.priority ?? '보통';
     _endDate = widget.existingTask?.endDate;
     _isSecret = widget.existingTask?.secret ?? false;
-    _selectedColorValue = widget.existingTask?.colorValue ?? AppColors.accent.withAlpha((0.15 * 255).toInt()).value;
+    _selectedColorValue = widget.existingTask?.colorValue ?? _colorOptions.first.value;
   }
 
   @override
@@ -140,61 +138,21 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                 ),
                 SizedBox(height: 16.h),
 
-                TextFormField(
-                  readOnly: true,
-                  controller: TextEditingController(
-                    text: DateFormat('yyyy년 M월 d일 (E)', 'ko_KR').format(_selectedDate),
-                  ),
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: _selectedDate,
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime(2100),
-                      locale: const Locale('ko', 'KR'),
-                    );
-                    if (picked != null) {
-                      setState(() => _selectedDate = picked);
-                    }
-                  },
-                  decoration: const InputDecoration(
-                    labelText: '날짜',
-                    suffixIcon: Icon(Icons.calendar_today),
-                  ),
-                ),
+                _buildDateField(label: '날짜', date: _selectedDate, onPick: (picked) => setState(() => _selectedDate = picked)),
                 SizedBox(height: 12.h),
 
-                TextFormField(
-                  readOnly: true,
-                  controller: TextEditingController(
-                    text: _endDate != null ? DateFormat('yyyy년 M월 d일 (E)', 'ko_KR').format(_endDate!) : '',
-                  ),
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: _endDate ?? _selectedDate,
-                      firstDate: _selectedDate,
-                      lastDate: DateTime(2100),
-                      locale: const Locale('ko', 'KR'),
-                    );
-                    if (picked != null) {
-                      setState(() => _endDate = picked);
-                    }
-                  },
-                  decoration: const InputDecoration(
-                    labelText: '종료일 (선택)',
-                    suffixIcon: Icon(Icons.calendar_today),
-                  ),
+                _buildDateField(
+                  label: '종료일 (선택)',
+                  date: _endDate,
+                  onPick: (picked) => setState(() => _endDate = picked),
+                  firstDate: _selectedDate,
                 ),
                 SizedBox(height: 12.h),
 
                 if (!isEditMode)
                   DropdownButtonFormField<String>(
                     value: _selectedRepeat,
-                    items: _repeatOptions.map((e) => DropdownMenuItem(
-                      value: e,
-                      child: Text(e),
-                    )).toList(),
+                    items: _repeatOptions.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
                     onChanged: (val) => setState(() => _selectedRepeat = val!),
                     decoration: const InputDecoration(labelText: '반복 설정'),
                   ),
@@ -204,13 +162,7 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                   value: _selectedPriority,
                   items: _priorityOptions.map((e) => DropdownMenuItem(
                     value: e,
-                    child: Row(
-                      children: [
-                        getPriorityIcon(e),
-                        SizedBox(width: 8.w),
-                        Text(e),
-                      ],
-                    ),
+                    child: Row(children: [getPriorityIcon(e), SizedBox(width: 8.w), Text(e)]),
                   )).toList(),
                   onChanged: (val) => setState(() => _selectedPriority = val!),
                   decoration: const InputDecoration(labelText: '중요도'),
@@ -248,6 +200,7 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                   decoration: const InputDecoration(labelText: '일정 내용'),
                   validator: (val) => (val == null || val.isEmpty) ? '일정 내용을 입력하세요' : null,
                 ),
+
                 if (isEditMode)
                   Align(
                     alignment: Alignment.centerRight,
@@ -255,34 +208,24 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                       spacing: 8.w,
                       children: [
                         TextButton(
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (_) => CalendarDeleteDialog(
-                                title: '일정 삭제',
-                                description: '해당 일정을 정말 삭제하시겠습니까?',
-                                onConfirm: _delete,
-                              ),
-                            );
-                          },
+                          onPressed: () => _showDeleteDialog(
+                            title: '일정 삭제',
+                            description: '해당 일정을 정말 삭제하시겠습니까?',
+                            onConfirm: _delete,
+                          ),
                           child: Text('일정 삭제', style: TextStyle(color: Colors.red, fontSize: 13.sp)),
                         ),
-                        if (['매주', '매월', '매년'].contains(widget.existingTask?.repeat))
+                        if (["매주", "매월", "매년"].contains(widget.existingTask?.repeat))
                           TextButton(
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (_) => CalendarDeleteDialog(
-                                  title: '반복 일정 전체 삭제',
-                                  description: '이 반복 일정에 해당하는 모든 일정을 삭제할까요?',
-                                  onConfirm: () {
-                                    ref.read(calendarTaskProvider.notifier)
-                                        .deleteAllTasksWithRepeatId(widget.existingTask!.repeatId!);
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                              );
-                            },
+                            onPressed: () => _showDeleteDialog(
+                              title: '반복 일정 전체 삭제',
+                              description: '이 반복 일정에 해당하는 모든 일정을 삭제할까요?',
+                              onConfirm: () {
+                                ref.read(calendarTaskProvider.notifier)
+                                  .deleteAllTasksWithRepeatId(widget.existingTask!.repeatId!);
+                                Navigator.of(context).pop();
+                              },
+                            ),
                             child: Text('반복 일정 전체 삭제', style: TextStyle(color: Colors.red, fontSize: 13.sp)),
                           ),
                       ],
@@ -312,6 +255,51 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildDateField({
+    required String label,
+    DateTime? date,
+    required void Function(DateTime picked) onPick,
+    DateTime? firstDate,
+  }) {
+    return TextFormField(
+      readOnly: true,
+      controller: TextEditingController(
+        text: date != null ? DateFormat('yyyy년 M월 d일 (E)', 'ko_KR').format(date) : '',
+      ),
+      onTap: () async {
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: date ?? DateTime.now(),
+          firstDate: firstDate ?? DateTime(2000),
+          lastDate: DateTime(2100),
+          locale: const Locale('ko', 'KR'),
+        );
+        if (picked != null) {
+          onPick(picked);
+        }
+      },
+      decoration: InputDecoration(
+        labelText: label,
+        suffixIcon: const Icon(Icons.calendar_today),
+      ),
+    );
+  }
+
+  void _showDeleteDialog({
+    required String title,
+    required String description,
+    required VoidCallback onConfirm,
+  }) {
+    showDialog(
+      context: context,
+      builder: (_) => CalendarDeleteDialog(
+        title: title,
+        description: description,
+        onConfirm: onConfirm,
       ),
     );
   }

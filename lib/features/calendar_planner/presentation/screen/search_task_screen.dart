@@ -111,7 +111,7 @@ class _SearchTaskScreenState extends ConsumerState<SearchTaskScreen> {
           borderRadius: BorderRadius.circular(12.r),
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // 색상 원 + 중요도 아이콘
             Column(

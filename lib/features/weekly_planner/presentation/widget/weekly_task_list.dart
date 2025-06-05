@@ -47,6 +47,7 @@ class WeeklyTaskList extends ConsumerWidget {
     }
 
     return ReorderableListView.builder(
+      padding: EdgeInsets.only(bottom: 80.h),
       shrinkWrap: shrinkWrap, // 상위에서 제어
       physics: physics, // 상위에서 제어
       buildDefaultDragHandles: false, // 커스텀 드래그 핸들 사용

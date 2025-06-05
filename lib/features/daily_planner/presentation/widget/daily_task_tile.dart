@@ -8,11 +8,11 @@ import 'package:abeul_planner/core/utils/priority_icon.dart';
 
 /// 개별 할 일 항목 위젯
 class DailyTaskTile extends StatelessWidget {
-  final DailyTaskModel task; // 할 일 모델
-  final int index; // 해당 항목의 인덱스
-  final bool isEditing; // 편집 모드 여부
-  final VoidCallback onEdit; // 편집 버튼 콜백
-  final VoidCallback onToggle; // 체크박스 변경 콜백
+  final DailyTaskModel task;
+  final int index;
+  final bool isEditing;
+  final VoidCallback onEdit;
+  final VoidCallback onToggle;
 
   const DailyTaskTile({
     super.key,
@@ -25,6 +25,12 @@ class DailyTaskTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final remainingCount = task.goalCount != null
+      ? task.goalCount! - (task.completedCount ?? 0)
+      : null;
+
+    final showRemaining = remainingCount != null && remainingCount > 0;
+
     return Container(
       key: ValueKey('$index-${task.situation}'),
       margin: EdgeInsets.symmetric(vertical: 6.h),
@@ -43,13 +49,12 @@ class DailyTaskTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          getPriorityIcon(task.priority), // 중요도에 따른 아이콘 사용
+          getPriorityIcon(task.priority),
           SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 상황 텍스트
                 Text(
                   task.situation,
                   style: AppTextStyles.body.copyWith(
@@ -57,13 +62,23 @@ class DailyTaskTile extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 4.h),
-                // 행동 텍스트
                 Text(
                   task.action,
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.actionText,
                   ),
                 ),
+                if (showRemaining)
+                  Padding(
+                    padding: EdgeInsets.only(top: 2.h),
+                    child: Text(
+                      '$remainingCount회 남음',
+                      style: AppTextStyles.caption.copyWith(
+                        fontSize: 12.sp,
+                        color: AppColors.subText,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
