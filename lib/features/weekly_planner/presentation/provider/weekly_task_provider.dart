@@ -38,7 +38,7 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
 
     DateTime current = lastSavedDate.add(const Duration(days: 1));
     while (!current.isAfter(yesterday)) {
-      final addedDays = await _saveWeeklyRecord(current);
+      final addedDays = await _saveWeeklyRecord(current, lastSavedDate);
       if (addedDays.contains('일')) {
         sundayRecorded = true;
       }
@@ -78,32 +78,41 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
   }
 
   // 주간 플래너 기록 저장
-  Future<Set<String>> _saveWeeklyRecord(DateTime date) async {
-    final formattedDate = DateFormat('yyyy-MM-dd').format(date);
-    final dayLimit = date.weekday;
+  Future<Set<String>> _saveWeeklyRecord(DateTime date, DateTime lastSavedDate) async {
     final weekdayMap = {
       '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6, '일': 7,
     };
+
+    final dayLimit = date.weekday;
+    final lastSavedWeekday = lastSavedDate.weekday;
+    final baseWeekDate = date.subtract(Duration(days: date.weekday - 1));
 
     Set<String> addedDays = {};
 
     for (final model in WeeklyTaskBox.box.values) {
       final modelDay = weekdayMap[model.day] ?? 0;
 
-      if (model.tasks.isEmpty || modelDay > dayLimit) continue;
+      // 🔒 핵심 조건: 이미 기록한 요일은 제외, 오늘 이후 요일도 제외
+      if (model.tasks.isEmpty || modelDay <= lastSavedWeekday || modelDay > dayLimit) {
+        continue;
+      }
+
+      final targetDate = baseWeekDate.add(Duration(days: modelDay - 1));
+      final formattedTarget = DateFormat('yyyy-MM-dd').format(targetDate);
 
       final alreadyExists = WeeklyRecordBox.box.values.any((record) =>
-          DateFormat('yyyy-MM-dd').format(record.date) == formattedDate &&
+          DateFormat('yyyy-MM-dd').format(record.date) == formattedTarget &&
           record.day == model.day);
 
       if (!alreadyExists) {
         final tasksCopy = model.tasks.map((task) => task.copyWith()).toList();
 
         final record = WeeklyRecordGroup(
-          date: date,
+          date: targetDate,
           day: model.day,
           tasks: tasksCopy,
         );
+
         await WeeklyRecordBox.box.add(record);
         addedDays.add(model.day);
       }
