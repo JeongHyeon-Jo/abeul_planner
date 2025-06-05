@@ -92,7 +92,9 @@ class _SearchTaskScreenState extends ConsumerState<SearchTaskScreen> {
     );
   }
 
-  Widget _buildItem(CalendarTaskModel task) => InkWell(
+  Widget _buildItem(CalendarTaskModel task) {
+    final priorityIcon = getPriorityIcon(task.priority);
+    return InkWell(
       onTap: () {
         showDialog(
           context: context,
@@ -125,8 +127,10 @@ class _SearchTaskScreenState extends ConsumerState<SearchTaskScreen> {
                     shape: BoxShape.circle,
                   ),
                 ),
-                SizedBox(height: 4.h),
-                getPriorityIcon(task.priority),
+                if (priorityIcon != null) ...[
+                  SizedBox(height: 4.h),
+                  priorityIcon,
+                ],
               ],
             ),
             SizedBox(width: 12.w),
@@ -175,4 +179,5 @@ class _SearchTaskScreenState extends ConsumerState<SearchTaskScreen> {
         ),
       ),
     );
+  }
 }

@@ -109,7 +109,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
               : Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    getPriorityIcon(_filterPriority),
+                    if (getPriorityIcon(_filterPriority) != null) getPriorityIcon(_filterPriority)!,
                     SizedBox(width: 6.w),
                     Text('중요도: $_filterPriority',
                         style: AppTextStyles.title.copyWith(color: AppColors.text)),
@@ -129,7 +129,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
           actions: [
             IconButton(
               icon: Icon(
-                _isEditing ? Icons.check : Icons.edit,
+                _isEditing ? Icons.check : Icons.edit_calendar,
                 color: _isEditing ? AppColors.success : AppColors.text,
                 size: 27.sp,
               ),

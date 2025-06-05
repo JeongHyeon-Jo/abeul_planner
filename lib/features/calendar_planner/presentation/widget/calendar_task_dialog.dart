@@ -32,12 +32,11 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
   late DateTime _selectedDate;
   DateTime? _endDate;
   bool _isSecret = false;
+  bool _isImportant = false;
   int? _selectedColorValue;
   String _selectedRepeat = '반복 없음';
-  String _selectedPriority = '보통';
 
   final List<String> _repeatOptions = ['반복 없음', '매주', '매월', '매년'];
-  final List<String> _priorityOptions = ['낮음', '보통', '중요'];
 
   final List<Color> _colorOptions = [
     AppColors.accent.withAlpha((0.15 * 255).toInt()),
@@ -53,10 +52,9 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
     _selectedDate = widget.existingTask?.date ?? widget.selectedDate;
     _memoController.text = widget.existingTask?.memo ?? '';
     _selectedRepeat = widget.existingTask?.repeat ?? '반복 없음';
-    _selectedPriority = widget.existingTask?.priority ?? '보통';
-    _endDate = widget.existingTask?.endDate;
     _isSecret = widget.existingTask?.secret ?? false;
     _selectedColorValue = widget.existingTask?.colorValue ?? _colorOptions.first.value;
+    _isImportant = widget.existingTask?.priority == '중요';
   }
 
   @override
@@ -71,7 +69,7 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
         memo: _memoController.text.trim(),
         date: _selectedDate,
         repeat: _selectedRepeat,
-        priority: _selectedPriority,
+        priority: _isImportant ? '중요' : '보통',
         endDate: _endDate,
         secret: _isSecret,
         colorValue: _selectedColorValue,
@@ -158,14 +156,21 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                   ),
                 SizedBox(height: 12.h),
 
-                DropdownButtonFormField<String>(
-                  value: _selectedPriority,
-                  items: _priorityOptions.map((e) => DropdownMenuItem(
-                    value: e,
-                    child: Row(children: [getPriorityIcon(e), SizedBox(width: 8.w), Text(e)]),
-                  )).toList(),
-                  onChanged: (val) => setState(() => _selectedPriority = val!),
-                  decoration: const InputDecoration(labelText: '중요도'),
+                // 중요도 체크박스
+                Row(
+                  children: [
+                    Checkbox(
+                      value: _isImportant,
+                      onChanged: (val) => setState(() => _isImportant = val ?? false),
+                    ),
+                    if (_isImportant) ...[
+                      getPriorityIcon('중요') ?? SizedBox(),
+                      SizedBox(width: 6.w),
+                      Text('중요하게 표시', style: AppTextStyles.body),
+                    ] else ...[
+                      Text('보통 일정', style: AppTextStyles.body),
+                    ]
+                  ],
                 ),
                 SizedBox(height: 12.h),
 

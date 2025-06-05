@@ -72,7 +72,7 @@ class WeeklyTaskList extends ConsumerWidget {
           child: Row(
             children: [
               // 중요도 아이콘
-              getPriorityIcon(task.priority),
+              if (getPriorityIcon(task.priority) != null) getPriorityIcon(task.priority)!,
               SizedBox(width: 12.w),
 
               // 일정 내용 텍스트

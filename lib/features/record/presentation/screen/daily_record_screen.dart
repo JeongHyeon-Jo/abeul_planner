@@ -196,7 +196,7 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
                                     ),
                                     child: Row(
                                       children: [
-                                        getPriorityIcon(task.priority),
+                                        if (getPriorityIcon(task.priority) != null) getPriorityIcon(task.priority)!,
                                         SizedBox(width: 8.w),
                                         Expanded(
                                           child: Text(

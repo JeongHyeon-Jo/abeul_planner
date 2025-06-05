@@ -32,19 +32,20 @@ class DailyTaskDialog extends ConsumerStatefulWidget {
 }
 
 class _DailyTaskDialogState extends ConsumerState<DailyTaskDialog> {
-  late String _localPriority;
   late TextEditingController _goalController;
   bool _isAlways = true;
+  bool _isImportant = false;
 
   @override
   void initState() {
     super.initState();
-    _localPriority = widget.selectedPriority;
     _goalController = TextEditingController();
 
     final goal = widget.task?.goalCount;
     _isAlways = goal == null;
     _goalController.text = goal?.toString() ?? '';
+
+    _isImportant = widget.selectedPriority == '중요';
   }
 
   @override
@@ -55,7 +56,6 @@ class _DailyTaskDialogState extends ConsumerState<DailyTaskDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final priorityKeys = ['낮음', '보통', '중요'];
     final isEditMode = widget.task != null;
 
     return Dialog(
@@ -88,24 +88,21 @@ class _DailyTaskDialogState extends ConsumerState<DailyTaskDialog> {
               ),
               SizedBox(height: 16.h),
 
-              DropdownButtonFormField<String>(
-                value: _localPriority,
-                decoration: const InputDecoration(labelText: '중요도'),
-                items: priorityKeys.map((level) {
-                  return DropdownMenuItem(
-                    value: level,
-                    child: Row(
-                      children: [
-                        getPriorityIcon(level),
-                        SizedBox(width: 8.w),
-                        Text(level, style: AppTextStyles.body),
-                      ],
-                    ),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  if (value != null) setState(() => _localPriority = value);
-                },
+              // 중요도 체크박스
+              Row(
+                children: [
+                  Checkbox(
+                    value: _isImportant,
+                    onChanged: (val) => setState(() => _isImportant = val ?? false),
+                  ),
+                  if (_isImportant) ...[
+                    getPriorityIcon('중요') ?? SizedBox(),
+                    SizedBox(width: 6.w),
+                    Text('중요하게 표시', style: AppTextStyles.body),
+                  ] else ...[
+                    Text('보통 일정', style: AppTextStyles.body),
+                  ]
+                ],
               ),
               SizedBox(height: 16.h),
 
@@ -184,7 +181,7 @@ class _DailyTaskDialogState extends ConsumerState<DailyTaskDialog> {
                         situation: situation,
                         action: action,
                         isCompleted: widget.task?.isCompleted ?? false,
-                        priority: _localPriority,
+                        priority: _isImportant ? '중요' : '보통',
                         goalCount: goal,
                         completedCount: widget.task?.completedCount ?? 0,
                       );

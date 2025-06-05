@@ -195,7 +195,7 @@ class _WeeklyRecordScreenState extends ConsumerState<WeeklyRecordScreen> {
                                       ),
                                       child: Row(
                                         children: [
-                                          getPriorityIcon(task.priority),
+                                          if (getPriorityIcon(task.priority) != null) getPriorityIcon(task.priority)!,
                                           SizedBox(width: 8.w),
                                           Expanded(
                                             child: Text(task.content, style: AppTextStyles.body),

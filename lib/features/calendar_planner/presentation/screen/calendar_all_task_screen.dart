@@ -112,6 +112,7 @@ class _CalendarAllTaskScreenState extends ConsumerState<CalendarAllTaskScreen> w
       separatorBuilder: (_, __) => SizedBox(height: 12.h),
       itemBuilder: (context, index) {
         final task = tasks[index];
+        final priorityIcon = getPriorityIcon(task.priority);
 
         return InkWell(
           onTap: () {
@@ -152,8 +153,10 @@ class _CalendarAllTaskScreenState extends ConsumerState<CalendarAllTaskScreen> w
                         shape: BoxShape.circle,
                       ),
                     ),
-                    SizedBox(height: 4.h),
-                    getPriorityIcon(task.priority),
+                    if (priorityIcon != null) ...[
+                      SizedBox(height: 4.h),
+                      priorityIcon,
+                    ],
                   ],
                 ),
                 SizedBox(width: 12.w),

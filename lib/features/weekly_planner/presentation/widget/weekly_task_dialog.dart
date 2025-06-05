@@ -32,15 +32,14 @@ class WeeklyTaskDialog extends ConsumerStatefulWidget {
 class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
   final TextEditingController _contentController = TextEditingController();
   String _selectedDay = '월';
-  String _priority = '보통';
-  final List<String> _priorityKeys = ['낮음', '보통', '중요'];
+  bool _isImportant = false;
 
   @override
   void initState() {
     super.initState();
     _selectedDay = widget.editingDay ?? widget.days.first;
     _contentController.text = widget.existingTask?.content ?? '';
-    _priority = widget.existingTask?.priority ?? '보통';
+    _isImportant = widget.existingTask?.priority == '중요';
   }
 
   @override
@@ -89,25 +88,23 @@ class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
               ),
               SizedBox(height: 16.h),
 
-              DropdownButtonFormField<String>(
-                value: _priority,
-                decoration: const InputDecoration(labelText: '중요도'),
-                items: _priorityKeys.map((level) {
-                  return DropdownMenuItem(
-                    value: level,
-                    child: Row(
-                      children: [
-                        getPriorityIcon(level),
-                        SizedBox(width: 8.w),
-                        Text(level),
-                      ],
-                    ),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  if (value != null) setState(() => _priority = value);
-                },
+              // 중요도 체크박스
+              Row(
+                children: [
+                  Checkbox(
+                    value: _isImportant,
+                    onChanged: (val) => setState(() => _isImportant = val ?? false),
+                  ),
+                  if (_isImportant) ...[
+                    getPriorityIcon('중요') ?? SizedBox(),
+                    SizedBox(width: 6.w),
+                    Text('중요하게 표시', style: TextStyle(fontSize: 14.sp)),
+                  ] else ...[
+                    Text('보통 일정', style: TextStyle(fontSize: 14.sp)),
+                  ]
+                ],
               ),
+              SizedBox(height: 12.h),
 
               if (isEditMode)
                 Align(
@@ -150,7 +147,10 @@ class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
                       final content = _contentController.text.trim();
                       if (content.isEmpty) return;
 
-                      final newTask = WeeklyTask(content: content, priority: _priority);
+                      final newTask = WeeklyTask(
+                        content: content,
+                        priority: _isImportant ? '중요' : '보통',
+                      );
 
                       if (isEditMode &&
                           widget.editingIndex != null &&

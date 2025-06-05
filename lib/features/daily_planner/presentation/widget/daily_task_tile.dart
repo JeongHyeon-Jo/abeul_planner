@@ -49,8 +49,9 @@ class DailyTaskTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          getPriorityIcon(task.priority),
-          SizedBox(width: 12.w),
+          if (getPriorityIcon(task.priority) != null)
+            getPriorityIcon(task.priority)!,
+            SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

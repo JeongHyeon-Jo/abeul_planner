@@ -60,7 +60,7 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
                     children: [
                       IconButton(
                         icon: Icon(
-                          _isEditing ? Icons.check : Icons.edit,
+                          _isEditing ? Icons.check : Icons.edit_calendar,
                           color: _isEditing ? AppColors.success : AppColors.text,
                         ),
                         onPressed: () => setState(() => _isEditing = !_isEditing),
@@ -138,7 +138,7 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
                                 ),
                               ),
                               SizedBox(width: 8.h),
-                              getPriorityIcon(task.priority),
+                              if (getPriorityIcon(task.priority) != null) getPriorityIcon(task.priority)!,
                             ],
                           ),
                           SizedBox(width: 12.w),
