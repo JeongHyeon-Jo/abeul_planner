@@ -138,28 +138,58 @@ class _CalendarAllTaskScreenState extends ConsumerState<CalendarAllTaskScreen> w
               ],
             ),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                getPriorityIcon(task.priority),
+                // 색상 원 + 중요도 아이콘
+                Column(
+                  children: [
+                    Container(
+                      width: 18.w,
+                      height: 18.w,
+                      margin: EdgeInsets.only(bottom: 6.h),
+                      decoration: BoxDecoration(
+                        color: task.color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    getPriorityIcon(task.priority),
+                  ],
+                ),
                 SizedBox(width: 12.w),
+
+                // 날짜 + 메모 + 자물쇠
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        DateFormat('yyyy.MM.dd').format(task.date),
-                        style: AppTextStyles.caption,
+                      Row(
+                        children: [
+                          Text(
+                            task.endDate != null
+                                ? '${DateFormat('yyyy.MM.dd').format(task.date)} ~ ${DateFormat('yyyy.MM.dd').format(task.endDate!)}'
+                                : DateFormat('yyyy.MM.dd').format(task.date),
+                            style: AppTextStyles.caption,
+                          ),
+                          if (task.secret == true)
+                            Padding(
+                              padding: EdgeInsets.only(left: 4.w),
+                              child: Icon(Icons.lock, size: 16.sp, color: AppColors.subText),
+                            ),
+                        ],
                       ),
                       SizedBox(height: 4.h),
                       Text(
                         task.memo,
                         style: AppTextStyles.body.copyWith(
-                          decoration: task.isCompleted ? TextDecoration.lineThrough : null,
                           color: task.isCompleted ? AppColors.subText : AppColors.text,
                         ),
                       ),
                     ],
                   ),
                 ),
+
+                // 완료 체크 표시 (읽기 전용)
                 SizedBox(
                   width: 24.w,
                   height: 24.w,
@@ -167,7 +197,7 @@ class _CalendarAllTaskScreenState extends ConsumerState<CalendarAllTaskScreen> w
                     value: task.isCompleted,
                     onChanged: null,
                   ),
-                )
+                ),
               ],
             ),
           ),

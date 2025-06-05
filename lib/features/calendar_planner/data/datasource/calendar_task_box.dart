@@ -17,4 +17,7 @@ class CalendarTaskBox {
   static Future<Box<CalendarTaskModel>> openBox() async {
     return await Hive.openBox<CalendarTaskModel>(boxName);
   }
+
+  // 현재 열린 박스를 가져오는 getter
+  static Box<CalendarTaskModel> get box => Hive.box<CalendarTaskModel>(boxName);
 }

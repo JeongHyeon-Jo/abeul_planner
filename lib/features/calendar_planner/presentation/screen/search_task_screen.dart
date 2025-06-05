@@ -1,4 +1,5 @@
 // search_task_screen.dart
+import 'package:abeul_planner/core/utils/priority_icon.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_task_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -92,49 +93,86 @@ class _SearchTaskScreenState extends ConsumerState<SearchTaskScreen> {
   }
 
   Widget _buildItem(CalendarTaskModel task) => InkWell(
-        onTap: () {
-          showDialog(
-            context: context,
-            builder: (_) => CalendarTaskDialog(
-              existingTask: task,
-              selectedDate: task.date,
-            ),
-          );
-        },
-        child: Container(
-          margin: EdgeInsets.symmetric(vertical: 6.h),
-          padding: EdgeInsets.all(12.w),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: AppColors.primary),
-            borderRadius: BorderRadius.circular(12.r),
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (_) => CalendarTaskDialog(
+            existingTask: task,
+            selectedDate: task.date,
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      DateFormat('yyyy년 M월 d일 (E)', 'ko_KR').format(task.date),
-                      style: AppTextStyles.caption,
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(task.memo, style: AppTextStyles.body),
-                  ],
-                ),
-              ),
-              SizedBox(
-                width: 24.w,
-                height: 24.w,
-                child: Checkbox(
-                  value: task.isCompleted,
-                  onChanged: null,
-                ),
-              ),
-            ],
-          ),
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(vertical: 6.h),
+        padding: EdgeInsets.all(12.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: AppColors.primary),
+          borderRadius: BorderRadius.circular(12.r),
         ),
-      );
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 색상 원 + 중요도 아이콘
+            Column(
+              children: [
+                Container(
+                  width: 18.w,
+                  height: 18.w,
+                  margin: EdgeInsets.only(bottom: 6.h),
+                  decoration: BoxDecoration(
+                    color: task.color,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                getPriorityIcon(task.priority),
+              ],
+            ),
+            SizedBox(width: 12.w),
+
+            // 날짜 + 메모 + 자물쇠
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        task.endDate != null
+                            ? '${DateFormat('yyyy.MM.dd').format(task.date)} ~ ${DateFormat('yyyy.MM.dd').format(task.endDate!)}'
+                            : DateFormat('yyyy.MM.dd').format(task.date),
+                        style: AppTextStyles.caption,
+                      ),
+                      if (task.secret == true)
+                        Padding(
+                          padding: EdgeInsets.only(left: 4.w),
+                          child: Icon(Icons.lock, size: 16.sp, color: AppColors.subText),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    task.memo,
+                    style: AppTextStyles.body.copyWith(
+                      color: task.isCompleted ? AppColors.subText : AppColors.text,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // 완료 체크박스 (읽기 전용)
+            SizedBox(
+              width: 24.w,
+              height: 24.w,
+              child: Checkbox(
+                value: task.isCompleted,
+                onChanged: null,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
 }
