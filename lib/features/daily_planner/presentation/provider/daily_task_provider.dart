@@ -35,9 +35,9 @@ class DailyTaskNotifier extends StateNotifier<List<DailyTaskModel>> {
     DateTime current = lastSavedDate.add(const Duration(days: 1));
     final originalTasks = _box.values.toList();
     bool anyRecordAdded = false;
-
+    final firstRecordDate = lastSavedDate.add(const Duration(days: 1));
     while (!current.isAfter(yesterday)) {
-      final added = await _saveDailyRecord(current, originalTasks);
+      final added = await _saveDailyRecord(current, originalTasks, firstRecordDate);
       if (added) anyRecordAdded = true;
       current = current.add(const Duration(days: 1));
     }
@@ -90,7 +90,11 @@ class DailyTaskNotifier extends StateNotifier<List<DailyTaskModel>> {
   }
 
   // 하루가 지났을 때 기록 저장
-  Future<bool> _saveDailyRecord(DateTime date, List<DailyTaskModel> originalTasks) async {
+  Future<bool> _saveDailyRecord(
+    DateTime date,
+    List<DailyTaskModel> originalTasks,
+    DateTime firstRecordDate, // last_record_date + 1
+  ) async {
     final dateStr = DateFormat('yyyy-MM-dd').format(date);
     final alreadySaved = DailyRecordBox.box.values.any(
       (record) => DateFormat('yyyy-MM-dd').format(record.date) == dateStr,
@@ -98,12 +102,13 @@ class DailyTaskNotifier extends StateNotifier<List<DailyTaskModel>> {
 
     if (!alreadySaved && originalTasks.isNotEmpty) {
       final backupTasks = originalTasks.map((task) {
+        final isFirstRecordDay = date.isAtSameMomentAs(firstRecordDate);
         return DailyTaskModel(
           situation: task.situation,
           action: task.action,
-          isCompleted: task.isCompleted,
+          isCompleted: isFirstRecordDay ? task.isCompleted : false,
           priority: task.priority,
-          lastCheckedDate: task.lastCheckedDate,
+          lastCheckedDate: isFirstRecordDay ? task.lastCheckedDate : null,
           goalCount: task.goalCount,
           completedCount: task.completedCount ?? 0,
         );
