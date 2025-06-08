@@ -147,6 +147,14 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                 ),
                 SizedBox(height: 12.h),
 
+                TextFormField(
+                  controller: _memoController,
+                  decoration: const InputDecoration(labelText: '일정 내용'),
+                  validator: (val) => (val == null || val.isEmpty) ? '일정 내용을 입력하세요' : null,
+                ),
+
+                SizedBox(height: 12.h),
+
                 if (!isEditMode)
                   DropdownButtonFormField<String>(
                     value: _selectedRepeat,
@@ -199,12 +207,6 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                   ],
                 ),
                 SizedBox(height: 16.h),
-
-                TextFormField(
-                  controller: _memoController,
-                  decoration: const InputDecoration(labelText: '일정 내용'),
-                  validator: (val) => (val == null || val.isEmpty) ? '일정 내용을 입력하세요' : null,
-                ),
 
                 if (isEditMode)
                   Align(

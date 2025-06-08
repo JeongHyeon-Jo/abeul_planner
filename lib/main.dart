@@ -6,9 +6,11 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
 // core
 import 'package:abeul_planner/core/utils/screen_util.dart';
 import 'package:abeul_planner/core/styles/theme.dart';
+import 'package:abeul_planner/core/utils/midnight_refresher.dart';
 // routes
 import 'package:abeul_planner/routes/planner_router.dart';
 // features
@@ -65,8 +67,10 @@ void main() async {
   ]);
 
   runApp(
-    const ProviderScope(
-      child: MyApp(),
+    Phoenix(
+      child: const ProviderScope(
+        child: MyApp(),
+      ),
     ),
   );
 }
@@ -83,9 +87,12 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   void initState() {
     super.initState();
-    // Future.microtask(() async {
-    //   await RecordSaver.saveAllIfNeeded(ref);
-    // });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        MidnightRefresher.start(context);
+      }
+    });
   }
 
   @override
