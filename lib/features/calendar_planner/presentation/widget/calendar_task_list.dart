@@ -115,6 +115,8 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
                   },
                   itemBuilder: (context, index) {
                     final task = tasks[index];
+                    final lunarText = ref.read(calendarTaskProvider.notifier).getLunarDateText(task.date);
+
                     return Container(
                       key: ValueKey('${task.memo}-${task.date}'),
                       margin: EdgeInsets.only(bottom: 8.h),
@@ -137,7 +139,7 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
                                   shape: BoxShape.circle,
                                 ),
                               ),
-                              SizedBox(width: 8.h),
+                              SizedBox(height: 8.h),
                               if (getPriorityIcon(task.priority) != null) getPriorityIcon(task.priority)!,
                             ],
                           ),
@@ -146,7 +148,6 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // 날짜 표시
                                 Row(
                                   children: [
                                     Text(
@@ -162,9 +163,19 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
                                       ),
                                   ],
                                 ),
+                                if (lunarText.isNotEmpty)
+                                  Row(
+                                    children: [
+                                      Text(
+                                        lunarText,
+                                        style: AppTextStyles.caption.copyWith(
+                                          color: AppColors.subText,
+                                          fontSize: 12.sp,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 SizedBox(height: 4.h),
-
-                                // 메모 내용 + 자물쇠 아이콘
                                 Row(
                                   children: [
                                     Expanded(

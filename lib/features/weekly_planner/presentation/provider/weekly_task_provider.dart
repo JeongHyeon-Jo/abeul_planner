@@ -35,12 +35,15 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
         WeeklyTaskBox.box.values.any((e) => e.day == '일');
 
     bool sundayRecorded = false;
+    bool initialized = false;
 
     DateTime current = lastSavedDate.add(const Duration(days: 1));
     while (!current.isAfter(yesterday)) {
       final addedDays = await _saveWeeklyRecord(current, lastSavedDate);
-      if (addedDays.contains('일')) {
+      if (!initialized && addedDays.contains('일')) {
         sundayRecorded = true;
+        await _resetTasksIfNeeded(now);
+        initialized = true;
       }
       current = current.add(const Duration(days: 1));
     }
@@ -75,6 +78,33 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
     }
 
     state = box.values.toList();
+  }
+
+  // 필요에 따라 초기화
+  Future<void> _resetTasksIfNeeded(DateTime now) async {
+    final prefs = await SharedPreferences.getInstance();
+    final currentWeekStart = now.subtract(Duration(days: now.weekday - 1));
+
+    for (final model in WeeklyTaskBox.box.values) {
+      for (final task in model.tasks) {
+        final lastChecked = task.lastCheckedWeek;
+        final isNewWeek = lastChecked == null ||
+            lastChecked.year != currentWeekStart.year ||
+            lastChecked.month != currentWeekStart.month ||
+            lastChecked.day != currentWeekStart.day;
+
+        if (isNewWeek) {
+          task.isCompleted = false;
+          task.lastCheckedWeek = currentWeekStart;
+        }
+      }
+      model.save();
+    }
+
+    await prefs.setString(
+      'weekly_last_record_date',
+      DateFormat('yyyy-MM-dd').format(now.subtract(const Duration(days: 1))),
+    );
   }
 
   // 주간 플래너 기록 저장

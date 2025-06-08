@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 import 'package:intl/intl.dart';
+import 'package:klc/klc.dart';
 import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
 import 'package:abeul_planner/features/calendar_planner/data/datasource/calendar_task_box.dart';
 import 'package:abeul_planner/features/record/data/datasource/record/calendar_record_box.dart';
@@ -151,7 +152,19 @@ class CalendarTaskNotifier extends StateNotifier<List<CalendarTaskModel>> {
     }
   }
 
-    // 특정 날짜의 일정 순서 변경
+  // 양력을 받아 음력 문자열 반환 (예: '음력 1월 1일')
+  String getLunarDateText(DateTime solarDate) {
+    try {
+      setSolarDate(solarDate.year, solarDate.month, solarDate.day);
+      final lunar = getLunarIsoFormat(); // 예: 2025-01-29
+      final lunarDate = DateTime.parse(lunar);
+      return '음력 ${lunarDate.month}월 ${lunarDate.day}일';
+    } catch (e) {
+      return ''; // 변환 실패 시 빈 문자열 반환
+    }
+  }
+
+  // 특정 날짜의 일정 순서 변경
   void reorderTask(DateTime date, int oldIndex, int newIndex) {
     final tasksForDate = state.where((task) =>
       task.date.year == date.year &&
