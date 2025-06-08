@@ -270,6 +270,10 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
     required void Function(DateTime picked) onPick,
     DateTime? firstDate,
   }) {
+    final adjustedInitialDate = date != null
+        ? (firstDate != null && date.isBefore(firstDate) ? firstDate : date)
+        : DateTime.now();
+
     return TextFormField(
       readOnly: true,
       controller: TextEditingController(
@@ -278,7 +282,7 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
       onTap: () async {
         final picked = await showDatePicker(
           context: context,
-          initialDate: date ?? DateTime.now(),
+          initialDate: adjustedInitialDate,
           firstDate: firstDate ?? DateTime(2000),
           lastDate: DateTime(2100),
           locale: const Locale('ko', 'KR'),
