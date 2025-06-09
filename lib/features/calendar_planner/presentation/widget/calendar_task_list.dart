@@ -1,4 +1,4 @@
-// calendar_task_list.dart
+// 개선된 calendar_task_list.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -14,10 +14,7 @@ import 'package:abeul_planner/core/utils/korean_holidays.dart';
 class CalendarTaskList extends ConsumerStatefulWidget {
   final DateTime selectedDate;
 
-  const CalendarTaskList({
-    super.key,
-    required this.selectedDate,
-  });
+  const CalendarTaskList({super.key, required this.selectedDate});
 
   @override
   ConsumerState<CalendarTaskList> createState() => _CalendarTaskListState();
@@ -25,6 +22,21 @@ class CalendarTaskList extends ConsumerStatefulWidget {
 
 class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
   bool _isEditing = false;
+
+  Color getDisplayColor(Color color) {
+    if (color == AppColors.accent.withAlpha((0.15 * 255).toInt())) {
+      return AppColors.accent.withAlpha((0.4 * 255).toInt());
+    } else if (color == Colors.green.withAlpha((0.15 * 255).toInt())) {
+      return Colors.green.withAlpha((0.4 * 255).toInt());
+    } else if (color == Colors.orange.withAlpha((0.15 * 255).toInt())) {
+      return Colors.orange.withAlpha((0.4 * 255).toInt());
+    } else if (color == Colors.purple.withAlpha((0.15 * 255).toInt())) {
+      return Colors.purple.withAlpha((0.4 * 255).toInt());
+    } else if (color == Colors.blue.withAlpha((0.15 * 255).toInt())) {
+      return Colors.blue.withAlpha((0.4 * 255).toInt());
+    }
+    return color;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,10 +47,7 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
 
     final tasks = _isEditing || !user.autoSortCompleted
         ? allTasks
-        : [
-            ...allTasks.where((task) => !task.isCompleted),
-            ...allTasks.where((task) => task.isCompleted),
-          ];
+        : [...allTasks.where((t) => !t.isCompleted), ...allTasks.where((t) => t.isCompleted)];
 
     final dateKey = DateFormat('yyyy-MM-dd').format(widget.selectedDate);
     final holidayNames = koreanHolidays[dateKey] ?? [];
@@ -53,70 +62,58 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(DateFormat('yyyy년 MM월 dd일').format(widget.selectedDate), style: AppTextStyles.title),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          _isEditing ? Icons.check : Icons.edit_calendar,
-                          color: _isEditing ? AppColors.success : AppColors.text,
-                        ),
-                        onPressed: () => setState(() => _isEditing = !_isEditing),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.add),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (_) => CalendarTaskDialog(selectedDate: widget.selectedDate),
-                          );
-                        },
-                      ),
-                    ],
+                  Expanded(
+                    child: Text(
+                      DateFormat('yyyy년 MM월 dd일').format(widget.selectedDate),
+                      style: AppTextStyles.title,
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(_isEditing ? Icons.check : Icons.edit_calendar,
+                        color: _isEditing ? AppColors.success : AppColors.text),
+                    onPressed: () => setState(() => _isEditing = !_isEditing),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.add, color: AppColors.accent),
+                    onPressed: () => showDialog(
+                      context: context,
+                      builder: (_) => CalendarTaskDialog(selectedDate: widget.selectedDate),
+                    ),
                   ),
                 ],
               ),
               SizedBox(height: 12.h),
-
               if (holidayNames.isNotEmpty)
                 ...holidayNames.map((h) => Container(
                       margin: EdgeInsets.only(bottom: 8.h),
                       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                       decoration: BoxDecoration(
-                        color: AppColors.warning.withAlpha((0.2 * 255).toInt()),
+                        color: AppColors.warning.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(12.r),
                         border: Border.all(color: AppColors.warning),
                       ),
                       child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(h, style: AppTextStyles.body.copyWith(color: Colors.red)),
-                          )
-                        ],
+                        children: [Expanded(child: Text(h, style: AppTextStyles.body.copyWith(color: Colors.red)))]
                       ),
                     )),
-
               if (tasks.isEmpty && holidayNames.isEmpty)
-                Text('등록된 일정이 없습니다.', style: AppTextStyles.body)
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20.h),
+                  child: Text('등록된 일정이 없습니다.', style: AppTextStyles.body),
+                )
               else
                 ReorderableListView.builder(
                   shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
+                  physics: NeverScrollableScrollPhysics(),
                   buildDefaultDragHandles: false,
                   itemCount: tasks.length,
-                  onReorder: (oldIndex, newIndex) {
-                    ref.read(calendarTaskProvider.notifier).reorderTask(
-                          widget.selectedDate,
-                          oldIndex,
-                          newIndex,
-                        );
-                  },
+                  onReorder: (oldIndex, newIndex) => ref
+                      .read(calendarTaskProvider.notifier)
+                      .reorderTask(widget.selectedDate, oldIndex, newIndex),
                   itemBuilder: (context, index) {
                     final task = tasks[index];
                     final lunarText = ref.read(calendarTaskProvider.notifier).getLunarDateText(task.date);
-
                     return Container(
                       key: ValueKey('${task.memo}-${task.date}'),
                       margin: EdgeInsets.only(bottom: 8.h),
@@ -135,12 +132,10 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
                                 height: 18.w,
                                 margin: EdgeInsets.only(bottom: 6.h),
                                 decoration: BoxDecoration(
-                                  color: task.color,
+                                  color: getDisplayColor(task.color),
                                   shape: BoxShape.circle,
                                 ),
                               ),
-                              SizedBox(height: 8.h),
-                              if (getPriorityIcon(task.priority) != null) getPriorityIcon(task.priority)!,
                             ],
                           ),
                           SizedBox(width: 12.w),
@@ -164,23 +159,21 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
                                   ],
                                 ),
                                 if (lunarText.isNotEmpty)
-                                  Row(
-                                    children: [
-                                      Text(
-                                        lunarText,
-                                        style: AppTextStyles.caption.copyWith(
-                                          color: AppColors.subText,
-                                          fontSize: 12.sp,
-                                        ),
-                                      ),
-                                    ],
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 2.h),
+                                    child: Text(
+                                      lunarText,
+                                      style: AppTextStyles.captionSmall.copyWith(color: AppColors.subText),
+                                    ),
                                   ),
                                 SizedBox(height: 4.h),
                                 Row(
                                   children: [
-                                    Expanded(
-                                      child: Text(task.memo, style: AppTextStyles.body),
-                                    ),
+                                    if (getPriorityIcon(task.priority) != null) ... [
+                                      getPriorityIcon(task.priority)!,
+                                      SizedBox(width: 4.w),
+                                    ],
+                                    Text(task.memo, style: AppTextStyles.body),
                                   ],
                                 ),
                               ],
@@ -189,15 +182,13 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
                           if (_isEditing) ...[
                             IconButton(
                               icon: Icon(Icons.edit, size: 20.sp, color: AppColors.subText),
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (_) => CalendarTaskDialog(
-                                    existingTask: task,
-                                    selectedDate: widget.selectedDate,
-                                  ),
-                                );
-                              },
+                              onPressed: () => showDialog(
+                                context: context,
+                                builder: (_) => CalendarTaskDialog(
+                                  existingTask: task,
+                                  selectedDate: widget.selectedDate,
+                                ),
+                              ),
                             ),
                             ReorderableDragStartListener(
                               index: index,
@@ -206,16 +197,13 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
                           ] else
                             Checkbox(
                               value: task.isCompleted,
-                              onChanged: (_) {
-                                ref.read(calendarTaskProvider.notifier).toggleTask(task);
-                              },
+                              onChanged: (_) => ref.read(calendarTaskProvider.notifier).toggleTask(task),
                             ),
                         ],
                       ),
                     );
                   },
                 ),
-
               SizedBox(height: 16.h),
               Align(
                 alignment: Alignment.centerRight,
@@ -231,7 +219,5 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
     );
   }
 
-  bool isSameDay(DateTime d1, DateTime d2) {
-    return d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;
-  }
+  bool isSameDay(DateTime d1, DateTime d2) => d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;
 }

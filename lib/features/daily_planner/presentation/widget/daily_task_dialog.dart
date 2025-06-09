@@ -200,7 +200,7 @@ class _DailyTaskDialogState extends ConsumerState<DailyTaskDialog> {
                                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                 enabled: true,
                                 style: AppTextStyles.body,
-                                textAlign: TextAlign.end,
+                                textAlign: TextAlign.center,
                                 onChanged: (_) => setState(() {}),
                                 decoration: InputDecoration(
                                   hintText: '여기에 숫자',
