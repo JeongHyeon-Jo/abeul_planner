@@ -26,19 +26,33 @@ class MidnightRefresher {
     });
   }
 
-  // 자정 알림 다이얼로그 표시
+  // 자정 알림 다이얼로그 표시 (디자인 개선)
   static Future<void> _showMidnightDialog(BuildContext context) async {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Text("자정이 지나 앱이 새로고침됩니다"),
-            SizedBox(height: 20),
-            CircularProgressIndicator(),
-          ],
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.nightlight_round, color: Colors.indigo, size: 36),
+              const SizedBox(height: 16),
+              Text(
+                "자정이 지나 앱이 새로고침됩니다",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              const CircularProgressIndicator(),
+            ],
+          ),
         ),
       ),
     );

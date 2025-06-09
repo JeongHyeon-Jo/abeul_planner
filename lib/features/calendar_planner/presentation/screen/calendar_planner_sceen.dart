@@ -15,6 +15,7 @@ import 'package:abeul_planner/features/calendar_planner/presentation/screen/cale
 import 'package:abeul_planner/features/calendar_planner/presentation/screen/search_task_screen.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_task_list.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/widget/month_picker_dialog.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class CalendarPlannerScreen extends ConsumerStatefulWidget {
   const CalendarPlannerScreen({super.key});
@@ -182,9 +183,10 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
         'name': task.secret == true ? '' : task.memo,
         'isSecret': task.secret == true,
         'color': task.colorValue != null
-          ? Color(task.colorValue!)
-          : AppColors.accent.withAlpha((0.15 * 255).toInt()),
+            ? Color(task.colorValue!)
+            : AppColors.accent.withAlpha((0.15 * 255).toInt()),
         'isHoliday': false,
+        'priority': task.priority,
       });
     }
 
@@ -269,6 +271,8 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                               final isHolidayItem = item['isHoliday'] == true;
                               final name = item['name']?.toString() ?? '';
                               final color = item['color'] as Color? ?? AppColors.accent.withAlpha((0.15 * 255).toInt());
+                              final isImportant = item['priority'] == '중요';
+
                               if (isSecret) {
                                 return Padding(
                                   padding: EdgeInsets.only(bottom: 1.2.h),
@@ -291,15 +295,30 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
                                         : color,
                                     borderRadius: BorderRadius.circular(4.r),
                                   ),
-                                  child: Text(
-                                    name,
-                                    style: AppTextStyles.caption.copyWith(
-                                      fontSize: 10.sp,
-                                      color: isHolidayItem ? Colors.red : AppColors.text,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.fade,
-                                    softWrap: false,
+                                  child: Row(
+                                    children: [
+                                      if (!isHolidayItem && isImportant)
+                                        Padding(
+                                          padding: EdgeInsets.only(right: 2.w),
+                                          child: Icon(
+                                            LucideIcons.alertTriangle,
+                                            size: 12.sp,
+                                            color: Colors.red,
+                                          ),
+                                        ),
+                                      Expanded(
+                                        child: Text(
+                                          name,
+                                          style: AppTextStyles.caption.copyWith(
+                                            fontSize: 10.sp,
+                                            color: isHolidayItem ? Colors.red : AppColors.text,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.fade,
+                                          softWrap: false,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               );
