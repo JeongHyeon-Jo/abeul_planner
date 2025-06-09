@@ -8,6 +8,7 @@ import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/core/utils/priority_icon.dart';
 import 'package:abeul_planner/features/daily_planner/data/model/daily_task_model.dart';
 import 'package:abeul_planner/features/daily_planner/presentation/provider/daily_task_provider.dart';
+import 'package:abeul_planner/features/daily_planner/presentation/widget/daily_delete_dialog.dart';
 
 class DailyTaskDialog extends ConsumerStatefulWidget {
   final DailyTaskModel? task;
@@ -33,7 +34,7 @@ class DailyTaskDialog extends ConsumerStatefulWidget {
 
 class _DailyTaskDialogState extends ConsumerState<DailyTaskDialog> {
   late TextEditingController _goalController;
-  bool _isAlways = true;
+  bool _isAlways = false;
   bool _isImportant = false;
 
   @override
@@ -42,8 +43,13 @@ class _DailyTaskDialogState extends ConsumerState<DailyTaskDialog> {
     _goalController = TextEditingController();
 
     final goal = widget.task?.goalCount;
-    _isAlways = goal == null;
-    _goalController.text = goal?.toString() ?? '';
+    if (widget.task != null) {
+      _isAlways = goal == null;
+      _goalController.text = goal?.toString() ?? '';
+    } else {
+      _isAlways = false;
+      _goalController.text = '';
+    }
 
     _isImportant = widget.selectedPriority == '중요';
   }
@@ -58,159 +64,252 @@ class _DailyTaskDialogState extends ConsumerState<DailyTaskDialog> {
   Widget build(BuildContext context) {
     final isEditMode = widget.task != null;
 
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
-      insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
-      child: Padding(
-        padding: EdgeInsets.all(24.w),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Text(
-                  isEditMode ? '일정 수정' : '새 일정 추가',
-                  style: AppTextStyles.title,
-                ),
-              ),
-              SizedBox(height: 24.h),
-
-              TextField(
-                controller: widget.situationController,
-                decoration: const InputDecoration(labelText: '언제'),
-              ),
-              SizedBox(height: 16.h),
-
-              TextField(
-                controller: widget.actionController,
-                decoration: const InputDecoration(labelText: '일정 내용'),
-              ),
-              SizedBox(height: 16.h),
-
-              // 중요도 체크박스
-              Row(
-                children: [
-                  Checkbox(
-                    value: _isImportant,
-                    onChanged: (val) => setState(() => _isImportant = val ?? false),
-                  ),
-                  if (_isImportant) ...[
-                    getPriorityIcon('중요') ?? SizedBox(),
-                    SizedBox(width: 6.w),
-                    Text('중요하게 표시', style: AppTextStyles.body),
-                  ] else ...[
-                    Text('보통 일정', style: AppTextStyles.body),
-                  ]
-                ],
-              ),
-              SizedBox(height: 16.h),
-
-              Text('목표 횟수', style: AppTextStyles.body),
-              SizedBox(height: 6.h),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _goalController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      enabled: !_isAlways,
-                      decoration: const InputDecoration(hintText: '예: 5'),
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Checkbox(
-                    value: _isAlways,
-                    onChanged: (val) {
-                      if (val == null) return;
-                      setState(() => _isAlways = val);
-                    },
-                  ),
-                  Text('항상', style: AppTextStyles.caption),
-                ],
-              ),
-              SizedBox(height: 16.h),
-
-              if (isEditMode)
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      widget.onDelete(widget.index!);
-                    },
-                    child: Text('일정 제거',
-                        style: TextStyle(color: Colors.red, fontSize: 13.sp)),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+        child: Padding(
+          padding: EdgeInsets.all(24.w),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Text(
+                    isEditMode ? '일정 수정' : '새 일정 추가',
+                    style: AppTextStyles.title,
                   ),
                 ),
-              SizedBox(height: 20.h),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      widget.situationController.clear();
-                      widget.actionController.clear();
-                      Navigator.of(context).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.lightPrimary,
-                      foregroundColor: AppColors.text,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
+                SizedBox(height: 24.h),
+      
+                TextField(
+                  controller: widget.situationController,
+                  decoration: InputDecoration(
+                    labelText: '언제',
+                    filled: true,
+                    fillColor: AppColors.cardBackground,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide(color: AppColors.primary, width: 2),
                     ),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                      child: Text('취소', style: AppTextStyles.body),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide(color: AppColors.primary, width: 2),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide(color: AppColors.highlight, width: 2),
                     ),
                   ),
-                  ElevatedButton(
-                    onPressed: () {
-                      final situation = widget.situationController.text.trim();
-                      final action = widget.actionController.text.trim();
-                      if (situation.isEmpty || action.isEmpty) return;
-
-                      final goal = _isAlways
-                          ? null
-                          : int.tryParse(_goalController.text.trim());
-
-                      final newTask = DailyTaskModel(
-                        situation: situation,
-                        action: action,
-                        isCompleted: widget.task?.isCompleted ?? false,
-                        priority: _isImportant ? '중요' : '보통',
-                        goalCount: goal,
-                        completedCount: widget.task?.completedCount ?? 0,
-                      );
-
-                      if (widget.task == null) {
-                        ref.read(dailyTaskProvider.notifier).addTask(newTask);
-                      } else {
-                        ref.read(dailyTaskProvider.notifier).editTask(widget.index!, newTask);
-                      }
-
-                      widget.situationController.clear();
-                      widget.actionController.clear();
-                      Navigator.of(context).pop();
+                ),
+                SizedBox(height: 16.h),
+      
+                TextField(
+                  controller: widget.actionController,
+                  decoration: InputDecoration(
+                    labelText: '일정 내용',
+                    filled: true,
+                    fillColor: AppColors.cardBackground,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide(color: AppColors.primary, width: 2),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide(color: AppColors.primary, width: 2),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide(color: AppColors.highlight, width: 2),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16.h),
+      
+                // 중요도
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isImportant = !_isImportant;
+                    });
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                    decoration: BoxDecoration(
+                      color: AppColors.cardBackground,
+                      border: Border.all(
+                        color: _isImportant ? AppColors.highlight : AppColors.primary,
+                        width: 2.w,
+                      ),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Row(
+                      children: [
+                        getPriorityIcon('중요') ?? const SizedBox(),
+                        SizedBox(width: 6.w),
+                        Text('중요 일정', style: AppTextStyles.body),
+                        Spacer(),
+                        if (_isImportant)
+                          Icon(Icons.check, color: AppColors.success)
+                        else
+                          Icon(Icons.check, color: AppColors.subText),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                // 반복
+                if (!isEditMode) ...[
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isAlways = !_isAlways;
+                      });
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.accent,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                      decoration: BoxDecoration(
+                        color: AppColors.cardBackground,
+                        border: Border.all(
+                          color: AppColors.primary,
+                          width: 2.w,
+                        ),
                         borderRadius: BorderRadius.circular(12.r),
                       ),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                      child: Text('저장', style: AppTextStyles.button),
+                      child: Row(
+                        children: [
+                          Text('반복', style: AppTextStyles.body),
+                          Spacer(),
+                          Expanded(
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 12.w),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                border: Border.all(
+                                  color: _goalController.text.trim().isEmpty
+                                      ? AppColors.divider
+                                      : AppColors.primary,
+                                ),
+                                borderRadius: BorderRadius.circular(8.r),
+                              ),
+                              child: TextField(
+                                controller: _goalController,
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                enabled: true,
+                                style: AppTextStyles.body,
+                                textAlign: TextAlign.end,
+                                onChanged: (_) => setState(() {}),
+                                decoration: InputDecoration(
+                                  hintText: '여기에 숫자',
+                                  border: InputBorder.none,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
-              ),
-            ],
+                // 일정 제거 버튼
+                if (isEditMode) ...[
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final shouldDelete = await showDialog<bool>(
+                          context: context,
+                          builder: (_) => DailyDeleteDialog(index: widget.index!),
+                        );
+                        if (shouldDelete == true && context.mounted) {
+                          Navigator.of(context).pop();
+                          widget.onDelete(widget.index!);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                      ),
+                      child: Text('일정 제거',
+                          style: AppTextStyles.body.copyWith(color: Colors.white)),
+                    ),
+                  ),
+                ],
+      
+                SizedBox(height: 16.h),
+      
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        widget.situationController.clear();
+                        widget.actionController.clear();
+                        Navigator.of(context).pop();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.lightPrimary,
+                        foregroundColor: AppColors.text,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                        child: Text('취소', style: AppTextStyles.body),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        final situation = widget.situationController.text.trim();
+                        final action = widget.actionController.text.trim();
+                        if (situation.isEmpty || action.isEmpty) return;
+      
+                        final goal = _isAlways
+                            ? null
+                            : int.tryParse(_goalController.text.trim());
+      
+                        final newTask = DailyTaskModel(
+                          situation: situation,
+                          action: action,
+                          isCompleted: widget.task?.isCompleted ?? false,
+                          priority: _isImportant ? '중요' : '보통',
+                          goalCount: goal,
+                          completedCount: widget.task?.completedCount ?? 0,
+                        );
+      
+                        if (widget.task == null) {
+                          ref.read(dailyTaskProvider.notifier).addTask(newTask);
+                        } else {
+                          ref.read(dailyTaskProvider.notifier).editTask(widget.index!, newTask);
+                        }
+      
+                        widget.situationController.clear();
+                        widget.actionController.clear();
+                        Navigator.of(context).pop();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.accent,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                        child: Text('저장', style: AppTextStyles.button),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

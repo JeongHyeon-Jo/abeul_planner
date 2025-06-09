@@ -133,31 +133,33 @@ class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
                   Text('중요 일정', style: AppTextStyles.body),
                   SizedBox(width: 6.w),
                   getPriorityIcon('중요') ?? SizedBox(),
+
+                  if (isEditMode) ...[
+                    Spacer(),
+                    ElevatedButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (_) => WeeklyDeleteDialog(
+                            day: widget.editingDay!,
+                            index: widget.editingIndex!,
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                      ),
+                      child: Text('일정 제거', style: AppTextStyles.body.copyWith(color: Colors.white)),
+                    ),
+                  ]
                 ],
               ),
-              SizedBox(height: 12.h),
 
-              if (isEditMode)
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (_) => WeeklyDeleteDialog(
-                          day: widget.editingDay!,
-                          index: widget.editingIndex!,
-                        ),
-                      );
-                    },
-                    child: Text(
-                      '일정 제거',
-                      style: AppTextStyles.caption.copyWith(color: Colors.red),
-                    ),
-                  ),
-                ),
-
-              SizedBox(height: 24.h),
+              SizedBox(height: 16.h),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
