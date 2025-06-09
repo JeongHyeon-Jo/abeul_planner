@@ -58,12 +58,6 @@ class _PlannerScaffoldState extends State<PlannerScaffold> {
                         Icon(Icons.exit_to_app, color: AppColors.primary, size: 70.sp),
                         SizedBox(height: 16.h),
                         Text('앱을 종료할까요?', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
-                        SizedBox(height: 12.h),
-                        Text(
-                          '정말로 앱을 종료하시겠습니까?',
-                          style: TextStyle(fontSize: 14.sp, color: AppColors.subText),
-                          textAlign: TextAlign.center,
-                        ),
                         SizedBox(height: 20.h),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,

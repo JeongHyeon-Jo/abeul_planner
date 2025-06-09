@@ -32,7 +32,7 @@ class CalendarDeleteDialog extends StatelessWidget {
             SizedBox(height: 12.h),
             Text(
               description,
-              style: TextStyle(fontSize: 14.sp, color: AppColors.subText),
+              style: TextStyle(fontSize: 14.sp, color: AppColors.text),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 24.h),
