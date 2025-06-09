@@ -7,7 +7,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:abeul_planner/features/weekly_planner/presentation/widget/weekly_task_dialog.dart';
 import 'package:abeul_planner/features/weekly_planner/presentation/widget/weekly_task_list.dart';
-import 'package:abeul_planner/core/utils/priority_icon.dart';
 import 'package:abeul_planner/features/weekly_planner/data/model/weekly_task_model.dart';
 import 'package:abeul_planner/features/weekly_planner/presentation/provider/weekly_task_provider.dart';
 import 'package:intl/intl.dart';
@@ -23,10 +22,8 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
   final List<String> days = ['월', '화', '수', '목', '금', '토', '일'];
-  final List<String> _priorities = ['전체', '낮음', '보통', '중요'];
   final appBarTitle = DateFormat('yyyy년 M월 d일 (E)', 'ko_KR').format(DateTime.now());
   bool _isEditing = false;
-  String _filterPriority = '전체';
   int _selectedIndex = 0;
 
   @override
@@ -69,30 +66,6 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
     );
   }
 
-  void _showPriorityFilterDialog() {
-    showModalBottomSheet(
-      context: context,
-      builder: (_) => Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: _priorities.map((priority) {
-            return ListTile(
-              leading: priority == '전체'
-                  ? const Icon(Icons.close, color: AppColors.subText)
-                  : getPriorityIcon(priority),
-              title: Text(priority == '전체' ? '전체 보기' : '중요도: $priority'),
-              onTap: () {
-                setState(() => _filterPriority = priority);
-                Navigator.of(context).pop();
-              },
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final tabWidth = (MediaQuery.of(context).size.width - 32.w) / 7;
@@ -101,31 +74,11 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
       length: days.length,
       child: Scaffold(
         appBar: CustomAppBar(
-          title: _filterPriority == '전체'
-              ? Text(
-                  appBarTitle,
-                  style: AppTextStyles.title.copyWith(color: AppColors.text),
-                )
-              : Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (getPriorityIcon(_filterPriority) != null) getPriorityIcon(_filterPriority)!,
-                    SizedBox(width: 6.w),
-                    Text('중요도: $_filterPriority',
-                        style: AppTextStyles.title.copyWith(color: AppColors.text)),
-                    SizedBox(width: 8.w),
-                    GestureDetector(
-                      onTap: () => setState(() => _filterPriority = '전체'),
-                      child: Icon(Icons.close, size: 20.sp, color: AppColors.subText),
-                    ),
-                  ],
-                ),
-          isTransparent: true,
-          leading: IconButton(
-            icon: Icon(Icons.filter_list, color: AppColors.text, size: 27.sp),
-            onPressed: _showPriorityFilterDialog,
-            tooltip: '중요도 필터',
+          title: Text(
+            appBarTitle,
+            style: AppTextStyles.title.copyWith(color: AppColors.text),
           ),
+          isTransparent: true,
           actions: [
             IconButton(
               icon: Icon(
@@ -230,12 +183,6 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
                           (t) => t.day == day,
                           orElse: () => WeeklyTaskModel(day: day, tasks: []));
 
-                      final filteredTasks = _filterPriority == '전체'
-                          ? weekTask.tasks
-                          : weekTask.tasks
-                              .where((task) => task.priority == _filterPriority)
-                              .toList();
-
                       return SingleChildScrollView(
                         child: Padding(
                           padding: EdgeInsets.all(16.w),
@@ -244,7 +191,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
                             children: [
                               WeeklyTaskList(
                                 day: day,
-                                tasks: filteredTasks,
+                                tasks: weekTask.tasks,
                                 isEditing: _isEditing,
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),

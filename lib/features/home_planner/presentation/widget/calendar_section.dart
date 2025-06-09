@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
-import 'package:abeul_planner/core/utils/priority_utils.dart';
 import 'package:abeul_planner/core/utils/priority_icon.dart';
 import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
@@ -54,12 +53,16 @@ class CalendarSection extends ConsumerWidget {
       );
     }
 
-    // 중요도 + 완료 여부 정렬
+    // 중요도 + 완료 여부 정렬 (calendar_task_list.dart와 동일하게)
     todayTasks.sort((a, b) {
       if (a.isCompleted != b.isCompleted) {
-        return a.isCompleted ? 1 : -1; // 완료 안된 게 먼저
+        return a.isCompleted ? 1 : -1; // 완료 안 된 게 먼저
       }
-      return priorityValue(a.repeat).compareTo(priorityValue(b.repeat));
+
+      int priorityA = a.priority == '중요' ? 0 : 1;
+      int priorityB = b.priority == '중요' ? 0 : 1;
+
+      return priorityA.compareTo(priorityB);
     });
 
     final displayTasks = todayTasks.take(3).toList(); // 최대 3개만 표시
@@ -74,7 +77,7 @@ class CalendarSection extends ConsumerWidget {
             side: BorderSide(color: AppColors.primary, width: 1.w),
           ),
           child: ListTile(
-            leading: getPriorityIcon(task.repeat),
+            leading: getPriorityIcon(task.priority),
             title: Text(
               task.memo,
               style: AppTextStyles.body,

@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
-import 'package:abeul_planner/core/utils/priority_utils.dart';
 import 'package:abeul_planner/core/utils/priority_icon.dart';
 import 'package:abeul_planner/features/weekly_planner/data/model/weekly_task_model.dart';
 import 'package:abeul_planner/features/weekly_planner/presentation/provider/weekly_task_provider.dart';
@@ -31,7 +30,11 @@ class WeeklySection extends ConsumerWidget {
       if (aTask.isCompleted != bTask.isCompleted) {
         return aTask.isCompleted ? 1 : -1;
       }
-      return priorityValue(aTask.priority).compareTo(priorityValue(bTask.priority));
+
+      int priorityA = aTask.priority == '중요' ? 0 : 1;
+      int priorityB = bTask.priority == '중요' ? 0 : 1;
+
+      return priorityA.compareTo(priorityB);
     });
 
     final displayTasks = allTasks.take(3).toList(); // 최대 3개만 표시

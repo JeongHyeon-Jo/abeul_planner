@@ -49,18 +49,23 @@ class DailyTaskTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          if (getPriorityIcon(task.priority) != null)
-            getPriorityIcon(task.priority)!,
-            SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  task.situation,
-                  style: AppTextStyles.body.copyWith(
-                    color: AppColors.text,
-                  ),
+                Row(
+                  children: [
+                    if (getPriorityIcon(task.priority) != null)...[
+                      getPriorityIcon(task.priority)!,
+                      SizedBox(width: 6.w),
+                    ],
+                    Text(
+                      task.situation,
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.text,
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(height: 4.h),
                 Text(

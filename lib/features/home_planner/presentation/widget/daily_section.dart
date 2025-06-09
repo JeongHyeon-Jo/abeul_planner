@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
-import 'package:abeul_planner/core/utils/priority_utils.dart';
 import 'package:abeul_planner/core/utils/priority_icon.dart';
 import 'package:abeul_planner/features/daily_planner/data/model/daily_task_model.dart';
 import 'package:abeul_planner/features/daily_planner/presentation/provider/daily_task_provider.dart';
@@ -52,7 +51,11 @@ class DailySection extends ConsumerWidget {
       if (a.isCompleted != b.isCompleted) {
         return a.isCompleted ? 1 : -1;
       }
-      return priorityValue(a.priority).compareTo(priorityValue(b.priority));
+
+      int priorityA = a.priority == '중요' ? 0 : 1;
+      int priorityB = b.priority == '중요' ? 0 : 1;
+
+      return priorityA.compareTo(priorityB);
     });
 
     final displayTasks = sortedTasks.take(5).toList();
