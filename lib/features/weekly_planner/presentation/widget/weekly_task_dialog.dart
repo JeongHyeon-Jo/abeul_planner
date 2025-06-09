@@ -1,9 +1,12 @@
 // weekly_task_dialog.dart
-import 'package:abeul_planner/core/utils/priority_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+// core
 import 'package:abeul_planner/core/styles/color.dart';
+import 'package:abeul_planner/core/styles/text_styles.dart';
+import 'package:abeul_planner/core/utils/priority_icon.dart';
+// feature
 import 'package:abeul_planner/features/weekly_planner/data/model/weekly_task_model.dart';
 import 'package:abeul_planner/features/weekly_planner/presentation/provider/weekly_task_provider.dart';
 import 'package:abeul_planner/features/weekly_planner/presentation/widget/weekly_delete_dialog.dart';
@@ -65,14 +68,30 @@ class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
               Center(
                 child: Text(
                   isEditMode ? '일정 수정' : '일정 추가',
-                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+                  style: AppTextStyles.headline,
                 ),
               ),
               SizedBox(height: 24.h),
 
               DropdownButtonFormField<String>(
                 value: _selectedDay,
-                decoration: const InputDecoration(labelText: '요일 선택'),
+                decoration: InputDecoration(
+                  labelText: '요일 선택',
+                  filled: true,
+                  fillColor: AppColors.cardBackground,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide(color: AppColors.primary, width: 2),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide(color: AppColors.primary, width: 2),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide(color: AppColors.highlight, width: 2),
+                  ),
+                ),
                 items: widget.days.map((day) {
                   return DropdownMenuItem(value: day, child: Text(day));
                 }).toList(),
@@ -84,24 +103,36 @@ class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
 
               TextField(
                 controller: _contentController,
-                decoration: const InputDecoration(labelText: '일정 내용'),
+                decoration: InputDecoration(
+                  labelText: '일정 내용',
+                  filled: true,
+                  fillColor: AppColors.cardBackground,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide(color: AppColors.primary, width: 2),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide(color: AppColors.primary, width: 2),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide(color: AppColors.highlight, width: 2),
+                  ),
+                ),
               ),
               SizedBox(height: 16.h),
 
-              // 중요도 체크박스
               Row(
                 children: [
                   Checkbox(
                     value: _isImportant,
                     onChanged: (val) => setState(() => _isImportant = val ?? false),
+                    activeColor: AppColors.primary,
                   ),
-                  if (_isImportant) ...[
-                    getPriorityIcon('중요') ?? SizedBox(),
-                    SizedBox(width: 6.w),
-                    Text('중요하게 표시', style: TextStyle(fontSize: 14.sp)),
-                  ] else ...[
-                    Text('보통 일정', style: TextStyle(fontSize: 14.sp)),
-                  ]
+                  Text('중요 일정', style: AppTextStyles.body),
+                  SizedBox(width: 6.w),
+                  getPriorityIcon('중요') ?? SizedBox(),
                 ],
               ),
               SizedBox(height: 12.h),
@@ -119,7 +150,10 @@ class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
                         ),
                       );
                     },
-                    child: Text('일정 제거', style: TextStyle(color: Colors.red, fontSize: 13.sp)),
+                    child: Text(
+                      '일정 제거',
+                      style: AppTextStyles.caption.copyWith(color: Colors.red),
+                    ),
                   ),
                 ),
 
@@ -128,6 +162,7 @@ class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  // 취소 버튼
                   ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: ElevatedButton.styleFrom(
@@ -139,9 +174,10 @@ class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
                     ),
                     child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                      child: Text('취소', style: TextStyle(fontSize: 14.sp)),
+                      child: Text('취소', style: AppTextStyles.body),
                     ),
                   ),
+                  // 저장 버튼
                   ElevatedButton(
                     onPressed: () {
                       final content = _contentController.text.trim();
@@ -177,7 +213,7 @@ class _WeeklyTaskDialogState extends ConsumerState<WeeklyTaskDialog> {
                     ),
                     child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                      child: Text('저장', style: TextStyle(fontSize: 14.sp)),
+                      child: Text('저장', style: AppTextStyles.body.copyWith(color: Colors.white)),
                     ),
                   ),
                 ],
