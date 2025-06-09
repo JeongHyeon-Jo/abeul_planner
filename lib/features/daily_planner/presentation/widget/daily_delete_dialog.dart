@@ -29,7 +29,7 @@ class DailyDeleteDialog extends ConsumerWidget {
             SizedBox(height: 12.h),
             Text(
               '정말 이 일정을 제거하시겠습니까?',
-              style: TextStyle(fontSize: 14.sp, color: AppColors.subText),
+              style: TextStyle(fontSize: 14.sp, color: AppColors.text),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 24.h),
