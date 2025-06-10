@@ -9,7 +9,6 @@ import 'package:abeul_planner/features/daily_planner/presentation/provider/daily
 import 'package:abeul_planner/features/auth/presentation/provider/user_provider.dart';
 // core
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
-import 'package:abeul_planner/core/utils/priority_icon.dart';
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
 // widget

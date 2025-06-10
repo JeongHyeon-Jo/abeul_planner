@@ -89,7 +89,7 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
                       margin: EdgeInsets.only(bottom: 8.h),
                       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                       decoration: BoxDecoration(
-                        color: AppColors.warning.withOpacity(0.15),
+                        color: AppColors.warning.withAlpha((0.15 * 255).toInt()),
                         borderRadius: BorderRadius.circular(12.r),
                         border: Border.all(color: AppColors.warning),
                       ),
