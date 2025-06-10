@@ -7,81 +7,47 @@ import 'package:abeul_planner/features/record/data/datasource/record/weekly_reco
 import 'package:abeul_planner/features/record/data/model/record/weekly_record_group.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// 상태 관리를 위한 Provider
-final weeklyTaskProvider =
-    StateNotifierProvider<WeeklyTaskNotifier, List<WeeklyTaskModel>>(
+final weeklyTaskProvider = StateNotifierProvider<WeeklyTaskNotifier, List<WeeklyTaskModel>>(
   (ref) => WeeklyTaskNotifier(),
 );
 
-// 요일 플래너 상태 관리 클래스
 class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
   WeeklyTaskNotifier() : super([]) {
     _init();
   }
 
-  // 초기화: 기록 먼저 저장한 뒤 완료 여부 초기화
+  // 초기화 함수
   Future<void> _init() async {
     final box = WeeklyTaskBox.box;
     final now = DateTime.now();
     final yesterday = now.subtract(const Duration(days: 1));
-
     final prefs = await SharedPreferences.getInstance();
     final lastSavedStr = prefs.getString('weekly_last_record_date');
     final lastSavedDate = lastSavedStr == null
         ? yesterday.subtract(const Duration(days: 1))
         : DateFormat('yyyy-MM-dd').parse(lastSavedStr);
 
-    final hasSundaySection =
-        WeeklyTaskBox.box.values.any((e) => e.day == '일');
-
-    bool sundayRecorded = false;
     bool initialized = false;
-
     DateTime current = lastSavedDate.add(const Duration(days: 1));
     while (!current.isAfter(yesterday)) {
-      final addedDays = await _saveWeeklyRecord(current, lastSavedDate);
-      if (!initialized && addedDays.contains('일')) {
-        sundayRecorded = true;
-        await _resetTasksIfNeeded(now);
+      final recorded = await _saveRecordForDate(current);
+      if (!initialized && current.weekday == DateTime.sunday && recorded) {
+        await _resetTasksForNewWeek(now);
         initialized = true;
       }
       current = current.add(const Duration(days: 1));
     }
 
-    final shouldInit =
-        !hasSundaySection || (hasSundaySection && sundayRecorded);
-
-    if (shouldInit) {
-      await prefs.setString(
-        'weekly_last_record_date',
-        DateFormat('yyyy-MM-dd').format(yesterday),
-      );
-
-      final currentWeekStart =
-          now.subtract(Duration(days: now.weekday - 1));
-
-      for (final model in box.values) {
-        for (final task in model.tasks) {
-          final lastChecked = task.lastCheckedWeek;
-          final isNewWeek = lastChecked == null ||
-              lastChecked.year != currentWeekStart.year ||
-              lastChecked.month != currentWeekStart.month ||
-              lastChecked.day != currentWeekStart.day;
-
-          if (isNewWeek) {
-            task.isCompleted = false;
-            task.lastCheckedWeek = currentWeekStart;
-          }
-        }
-        model.save();
-      }
-    }
+    await prefs.setString(
+      'weekly_last_record_date',
+      DateFormat('yyyy-MM-dd').format(yesterday),
+    );
 
     state = box.values.toList();
   }
 
-  // 필요에 따라 초기화
-  Future<void> _resetTasksIfNeeded(DateTime now) async {
+  // 주 단위 초기화 로직 (일요일 기록 시 실행)
+  Future<void> _resetTasksForNewWeek(DateTime now) async {
     final prefs = await SharedPreferences.getInstance();
     final currentWeekStart = now.subtract(Duration(days: now.weekday - 1));
 
@@ -107,48 +73,32 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
     );
   }
 
-  // 주간 플래너 기록 저장
-  Future<Set<String>> _saveWeeklyRecord(DateTime date, DateTime lastSavedDate) async {
-    final weekdayMap = {
-      '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6, '일': 7,
-    };
+  // 날짜 기준 기록 저장 함수
+  Future<bool> _saveRecordForDate(DateTime date) async {
+    final weekdayStr = DateFormat.E('ko_KR').format(date);
+    final targetDateStr = DateFormat('yyyy-MM-dd').format(date);
 
-    final dayLimit = date.weekday;
-    final lastSavedWeekday = lastSavedDate.weekday;
-    final baseWeekDate = date.subtract(Duration(days: date.weekday - 1));
+    final alreadyExists = WeeklyRecordBox.box.values.any((record) =>
+        DateFormat('yyyy-MM-dd').format(record.date) == targetDateStr &&
+        record.day == weekdayStr);
 
-    Set<String> addedDays = {};
+    if (!alreadyExists) {
+      for (final model in WeeklyTaskBox.box.values) {
+        if (model.day != weekdayStr || model.tasks.isEmpty) continue;
 
-    for (final model in WeeklyTaskBox.box.values) {
-      final modelDay = weekdayMap[model.day] ?? 0;
-
-      // 🔒 핵심 조건: 이미 기록한 요일은 제외, 오늘 이후 요일도 제외
-      if (model.tasks.isEmpty || modelDay <= lastSavedWeekday || modelDay > dayLimit) {
-        continue;
-      }
-
-      final targetDate = baseWeekDate.add(Duration(days: modelDay - 1));
-      final formattedTarget = DateFormat('yyyy-MM-dd').format(targetDate);
-
-      final alreadyExists = WeeklyRecordBox.box.values.any((record) =>
-          DateFormat('yyyy-MM-dd').format(record.date) == formattedTarget &&
-          record.day == model.day);
-
-      if (!alreadyExists) {
         final tasksCopy = model.tasks.map((task) => task.copyWith()).toList();
-
         final record = WeeklyRecordGroup(
-          date: targetDate,
+          date: date,
           day: model.day,
           tasks: tasksCopy,
         );
 
         await WeeklyRecordBox.box.add(record);
-        addedDays.add(model.day);
+        return true;
       }
     }
 
-    return addedDays;
+    return false;
   }
 
   // 일정 추가
@@ -178,7 +128,7 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
     }
   }
 
-  // 일정 수정 기능 추가
+  // 일정 수정
   void editTask(String day, int taskIndex, WeeklyTask updatedTask) {
     final index = state.indexWhere((element) => element.day == day);
     if (index != -1) {
@@ -189,7 +139,7 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
     }
   }
 
-  // 수행 여부 토글
+  // 완료 여부 토글
   void toggleTask(String day, int taskIndex) {
     final index = state.indexWhere((element) => element.day == day);
     if (index != -1) {
@@ -208,7 +158,7 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
     }
   }
 
-  // 순서 변경 함수
+  // 순서 변경
   void reorderTask(String day, int oldIndex, int newIndex) {
     final index = state.indexWhere((element) => element.day == day);
     if (index == -1) return;
@@ -226,7 +176,7 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
     state = [...state];
   }
 
-  // 요일 변경 포함한 수정
+  // 요일 이동 + 수정
   void moveAndEditTask({
     required String fromDay,
     required String toDay,
@@ -254,7 +204,7 @@ class WeeklyTaskNotifier extends StateNotifier<List<WeeklyTaskModel>> {
     state = [];
   }
 
-  // 특정 요일의 인덱스 삭제
+  // 특정 인덱스 삭제
   void deleteTask(String day, int index) {
     final dayIndex = state.indexWhere((e) => e.day == day);
     if (dayIndex != -1 && index >= 0 && index < state[dayIndex].tasks.length) {
