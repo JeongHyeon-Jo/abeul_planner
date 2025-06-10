@@ -1,4 +1,4 @@
-// calendar_grid.dart
+// calendar_grid.dart (기간 일정 지원 버전)
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -40,20 +40,49 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
     final paddedDays = allDays + List.generate(gridCount - allDays.length, (i) => end.add(Duration(days: i + 1)));
 
     final allTasks = ref.read(calendarTaskProvider);
+    final taskProvider = ref.read(calendarTaskProvider.notifier);
 
+    // 각 날짜별로 태스크 정보 매핑
     final Map<String, List<Map<String, dynamic>>> mappedTasks = {};
     for (final task in allTasks) {
-      final key = DateFormat('yyyy-MM-dd').format(task.date);
-      mappedTasks.putIfAbsent(key, () => []).add(<String, dynamic>{
-        'type': 'event',
-        'name': task.secret == true ? '' : task.memo,
-        'isSecret': task.secret == true,
-        'color': task.colorValue != null
-            ? Color(task.colorValue!)
-            : AppColors.accent.withAlpha((0.15 * 255).toInt()),
-        'isHoliday': false,
-        'priority': task.priority,
-      });
+      if (task.isPeriodTask) {
+        // 기간 일정의 경우 해당 기간의 모든 날짜에 추가
+        final startDay = DateTime(task.date.year, task.date.month, task.date.day);
+        final endDay = DateTime(task.endDate!.year, task.endDate!.month, task.endDate!.day);
+        
+        DateTime currentDay = startDay;
+        while (currentDay.isBefore(endDay) || currentDay.isAtSameMomentAs(endDay)) {
+          final key = DateFormat('yyyy-MM-dd').format(currentDay);
+          final displayType = taskProvider.getPeriodTaskDisplayType(task, currentDay);
+          
+          mappedTasks.putIfAbsent(key, () => []).add(<String, dynamic>{
+            'type': 'event',
+            'name': task.secret == true ? '' : task.memo,
+            'isSecret': task.secret == true,
+            'color': task.color,
+            'isHoliday': false,
+            'priority': task.priority,
+            'isPeriod': true,
+            'periodDisplayType': displayType,
+            'task': task,
+          });
+          
+          currentDay = currentDay.add(const Duration(days: 1));
+        }
+      } else {
+        // 일반 일정의 경우 해당 날짜에만 추가
+        final key = DateFormat('yyyy-MM-dd').format(task.date);
+        mappedTasks.putIfAbsent(key, () => []).add(<String, dynamic>{
+          'type': 'event',
+          'name': task.secret == true ? '' : task.memo,
+          'isSecret': task.secret == true,
+          'color': task.color,
+          'isHoliday': false,
+          'priority': task.priority,
+          'isPeriod': false,
+          'task': task,
+        });
+      }
     }
 
     return ListView.builder(
@@ -205,6 +234,7 @@ class CalendarTaskItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final isSecret = item['isSecret'] == true;
     final isHolidayItem = item['isHoliday'] == true;
+    final isPeriod = item['isPeriod'] == true;
     final name = item['name']?.toString() ?? '';
     final color = item['color'] as Color? ?? AppColors.accent.withAlpha((0.15 * 255).toInt());
     final isImportant = item['priority'] == '중요';
@@ -222,6 +252,64 @@ class CalendarTaskItem extends StatelessWidget {
       );
     }
 
+    // 기간 일정의 경우 특별한 스타일 적용
+    if (isPeriod && item['periodDisplayType'] != null) {
+      final displayType = item['periodDisplayType'] as PeriodTaskDisplayType;
+      return Padding(
+        padding: EdgeInsets.only(bottom: 1.2.h),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.2.h),
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: _getPeriodBorderRadius(displayType),
+          ),
+          child: Row(
+            children: [
+              if (!isHolidayItem && isImportant)
+                Padding(
+                  padding: EdgeInsets.only(right: 2.w),
+                  child: Icon(
+                    LucideIcons.alertTriangle,
+                    size: 12.sp,
+                    color: Colors.red,
+                  ),
+                ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: AppTextStyles.caption.copyWith(
+                        fontSize: 10.sp,
+                        color: isHolidayItem ? Colors.red : AppColors.text,
+                        fontWeight: displayType == PeriodTaskDisplayType.start ? FontWeight.bold : FontWeight.normal,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.fade,
+                      softWrap: false,
+                    ),
+                  ],
+                ),
+              ),
+              // 기간 일정 표시 아이콘
+              if (displayType == PeriodTaskDisplayType.start)
+                Icon(Icons.play_arrow, size: 12.sp, color: AppColors.text)
+              else if (displayType == PeriodTaskDisplayType.end)
+                Icon(Icons.stop, size: 12.sp, color: AppColors.text)
+              else if (displayType == PeriodTaskDisplayType.middle)
+                Container(
+                  width: 12.w,
+                  height: 2.h,
+                  color: AppColors.text.withAlpha((0.5 * 255).toInt()),
+                ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 일반 일정 표시
     return Padding(
       padding: EdgeInsets.only(bottom: 1.2.h),
       child: Container(
@@ -244,20 +332,45 @@ class CalendarTaskItem extends StatelessWidget {
                 ),
               ),
             Expanded(
-              child: Text(
-                name,
-                style: AppTextStyles.caption.copyWith(
-                  fontSize: 10.sp,
-                  color: isHolidayItem ? Colors.red : AppColors.text,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.fade,
-                softWrap: false,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: AppTextStyles.caption.copyWith(
+                      fontSize: 10.sp,
+                      color: isHolidayItem ? Colors.red : AppColors.text,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.fade,
+                    softWrap: false,
+                  ),
+                ],
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  
+BorderRadius _getPeriodBorderRadius(PeriodTaskDisplayType displayType) {
+    switch (displayType) {
+      case PeriodTaskDisplayType.start:
+        return BorderRadius.only(
+          topLeft: Radius.circular(4.r),
+          bottomLeft: Radius.circular(4.r),
+        );
+      case PeriodTaskDisplayType.end:
+        return BorderRadius.only(
+          topRight: Radius.circular(4.r),
+          bottomRight: Radius.circular(4.r),
+        );
+      case PeriodTaskDisplayType.middle:
+        return BorderRadius.zero;
+      case PeriodTaskDisplayType.single:
+        return BorderRadius.circular(4.r);
+    }
   }
 }

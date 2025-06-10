@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import 'package:intl/intl.dart';
 import 'package:klc/klc.dart';
 import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
+import 'package:abeul_planner/features/calendar_planner/data/model/task_type_model.dart'; // 추가
 import 'package:abeul_planner/features/calendar_planner/data/datasource/calendar_task_box.dart';
 import 'package:abeul_planner/features/record/data/datasource/record/calendar_record_box.dart';
 import 'package:abeul_planner/features/record/data/model/record/calendar_record_group.dart';
@@ -46,17 +47,26 @@ class CalendarTaskNotifier extends StateNotifier<List<CalendarTaskModel>> {
     }
   }
 
+  // 특정 날짜의 일정들 가져오기
   List<CalendarTaskModel> getTasksForDate(DateTime date) {
     return state.where((task) {
+      // 기간 일정인 경우 날짜 범위 체크
+      if (task.isPeriodTask) {
+        return task.containsDate(date);
+      }
+      // 일반 일정인 경우 정확한 날짜 매칭
       return task.date.year == date.year &&
              task.date.month == date.month &&
              task.date.day == date.day;
     }).toList();
   }
 
-  // 일정 추가 (반복 시 repeatId 부여)
+  // 일정 추가 (반복 시 repeatId 부여, 기간 일정 지원)
   void addTask(CalendarTaskModel task) {
-    if (task.repeat == '매년' || task.repeat == '매월' || task.repeat == '매주') {
+    // 기간 일정인 경우 반복 설정 무시
+    if ((task.taskType ?? TaskTypeModel.single) == TaskTypeModel.period) {
+      _box.add(task);
+    } else if (task.repeat == '매년' || task.repeat == '매월' || task.repeat == '매주') {
       final uuid = const Uuid();
       final repeatId = uuid.v4();
 
@@ -84,16 +94,9 @@ class CalendarTaskNotifier extends StateNotifier<List<CalendarTaskModel>> {
           break;
         }
 
-        _box.add(CalendarTaskModel(
-          memo: task.memo,
+        _box.add(task.copyWith(
           date: repeatedDate,
-          repeat: task.repeat,
-          isCompleted: task.isCompleted,
-          priority: task.priority,
           repeatId: repeatId,
-          endDate: task.endDate,
-          secret: task.secret,
-          colorValue: task.colorValue,
         ));
       }
     } else {
@@ -116,7 +119,8 @@ class CalendarTaskNotifier extends StateNotifier<List<CalendarTaskModel>> {
       t.priority == task.priority &&
       t.endDate == task.endDate &&
       t.secret == task.secret &&
-      t.colorValue == task.colorValue
+      t.colorValue == task.colorValue &&
+      (t.taskType ?? TaskTypeModel.single) == (task.taskType ?? TaskTypeModel.single)
     );
 
     if (index != -1) {
@@ -166,11 +170,7 @@ class CalendarTaskNotifier extends StateNotifier<List<CalendarTaskModel>> {
 
   // 특정 날짜의 일정 순서 변경
   void reorderTask(DateTime date, int oldIndex, int newIndex) {
-    final tasksForDate = state.where((task) =>
-      task.date.year == date.year &&
-      task.date.month == date.month &&
-      task.date.day == date.day
-    ).toList();
+    final tasksForDate = getTasksForDate(date);
 
     if (oldIndex < 0 || oldIndex >= tasksForDate.length || newIndex < 0) return;
     if (oldIndex < newIndex) newIndex -= 1;
@@ -179,10 +179,7 @@ class CalendarTaskNotifier extends StateNotifier<List<CalendarTaskModel>> {
     tasksForDate.insert(newIndex, movedTask);
 
     // 기존 state에서 해당 날짜의 task들 제거
-    final otherTasks = state.where((task) =>
-      !(task.date.year == date.year &&
-        task.date.month == date.month &&
-        task.date.day == date.day)).toList();
+    final otherTasks = state.where((task) => !_isTaskForDate(task, date)).toList();
 
     final updatedState = [...otherTasks, ...tasksForDate];
 
@@ -191,4 +188,43 @@ class CalendarTaskNotifier extends StateNotifier<List<CalendarTaskModel>> {
     _box.addAll(updatedState);
     state = updatedState;
   }
+
+  // 특정 날짜에 해당하는 태스크인지 확인하는 헬퍼 메서드
+  bool _isTaskForDate(CalendarTaskModel task, DateTime date) {
+    if (task.isPeriodTask) {
+      return task.containsDate(date);
+    }
+    return task.date.year == date.year &&
+           task.date.month == date.month &&
+           task.date.day == date.day;
+  }
+
+  // 기간 일정의 특정 날짜에서의 표시 유형 반환
+  PeriodTaskDisplayType getPeriodTaskDisplayType(CalendarTaskModel task, DateTime date) {
+    if (!task.isPeriodTask || task.endDate == null) {
+      return PeriodTaskDisplayType.single;
+    }
+
+    final startDay = DateTime(task.date.year, task.date.month, task.date.day);
+    final endDay = DateTime(task.endDate!.year, task.endDate!.month, task.endDate!.day);
+    final checkDay = DateTime(date.year, date.month, date.day);
+
+    if (checkDay.isAtSameMomentAs(startDay) && checkDay.isAtSameMomentAs(endDay)) {
+      return PeriodTaskDisplayType.single; // 시작일과 종료일이 같은 날
+    } else if (checkDay.isAtSameMomentAs(startDay)) {
+      return PeriodTaskDisplayType.start; // 시작일
+    } else if (checkDay.isAtSameMomentAs(endDay)) {
+      return PeriodTaskDisplayType.end; // 종료일
+    } else {
+      return PeriodTaskDisplayType.middle; // 중간일
+    }
+  }
+}
+
+// 기간 일정의 표시 유형
+enum PeriodTaskDisplayType {
+  single,  // 단일 일정 또는 하루짜리 기간 일정
+  start,   // 기간 일정 시작일
+  middle,  // 기간 일정 중간일
+  end,     // 기간 일정 종료일
 }

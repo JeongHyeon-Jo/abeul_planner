@@ -7,6 +7,7 @@ import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/core/utils/priority_icon.dart';
 import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
+import 'package:abeul_planner/features/calendar_planner/data/model/task_type_model.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/widget/calendar_delete_dialog.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
 
@@ -35,6 +36,7 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
   bool _isImportant = false;
   int? _selectedColorValue;
   String _selectedRepeat = '반복 없음';
+  TaskTypeModel _taskType = TaskTypeModel.single;
 
   final List<String> _repeatOptions = ['반복 없음', '매주', '매월', '매년'];
 
@@ -61,8 +63,10 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
     _memoController.text = widget.existingTask?.memo ?? '';
     _selectedRepeat = widget.existingTask?.repeat ?? '반복 없음';
     _isSecret = widget.existingTask?.secret ?? false;
-    _selectedColorValue = widget.existingTask?.colorValue ?? _colorStorageColors.first.value;
+    _selectedColorValue = widget.existingTask?.colorValue ?? _colorStorageColors.first.toARGB32();
     _isImportant = widget.existingTask?.priority == '중요';
+    _taskType = widget.existingTask?.taskType ?? TaskTypeModel.single;
+    _endDate = widget.existingTask?.endDate;
   }
 
   @override
@@ -73,14 +77,26 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
 
   void _submit() {
     if (_formKey.currentState!.validate()) {
+      // 기간 일정인 경우 종료일 필수 체크
+      if (_taskType == TaskTypeModel.period && _endDate == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('기간 일정은 종료일을 설정해야 합니다.')),
+        );
+        return;
+      }
+
       final newTask = CalendarTaskModel(
         memo: _memoController.text.trim(),
         date: _selectedDate,
         repeat: _selectedRepeat,
         priority: _isImportant ? '중요' : '보통',
-        endDate: _endDate,
+        endDate: _taskType == TaskTypeModel.period ? _endDate : null,
         secret: _isSecret,
         colorValue: _selectedColorValue,
+        taskType: _taskType,
+        startTime: null,
+        endTime: null,
+        isAllDay: true,
       );
 
       if (widget.existingTask == null) {
@@ -142,7 +158,7 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
+                                color: Colors.black.withAlpha((0.05 * 255).toInt()),
                                 blurRadius: 4,
                                 offset: Offset(0, 2),
                               ),
@@ -159,12 +175,81 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                   ),
                   SizedBox(height: 16.h),
 
-                  _buildDateField('날짜', _selectedDate, (picked) => setState(() => _selectedDate = picked)),
+                  // 일정 타입 선택
+                  if (!isEditMode) ... [
+                    Container(
+                      padding: EdgeInsets.all(12.w),
+                      decoration: BoxDecoration(
+                        color: AppColors.cardBackground,
+                        border: Border.all(color: AppColors.primary, width: 2.w),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Row(
+                        children: [
+                          Text('일정 형태', style: AppTextStyles.body),
+                          SizedBox(width: 16.w),
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Radio<TaskTypeModel>(
+                                  value: TaskTypeModel.single,
+                                  groupValue: _taskType,
+                                  onChanged: (value) => setState(() {
+                                    _taskType = value!;
+                                    if (_taskType != TaskTypeModel.period) {
+                                      _endDate = null;
+                                    }
+                                  }),
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                                GestureDetector(
+                                  onTap: () => setState(() {
+                                    _taskType = TaskTypeModel.single;
+                                    if (_taskType != TaskTypeModel.period) {
+                                      _endDate = null;
+                                    }
+                                  }),
+                                  child: Text('단일', style: AppTextStyles.bodySmall),
+                                ),
+                                SizedBox(width: 16.w),
+                                Radio<TaskTypeModel>(
+                                  value: TaskTypeModel.period,
+                                  groupValue: _taskType,
+                                  onChanged: (value) => setState(() => _taskType = value!),
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                                GestureDetector(
+                                  onTap: () => setState(() => _taskType = TaskTypeModel.period),
+                                  child: Text('기간', style: AppTextStyles.bodySmall),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 12.h),
+                  ],
+
+                  // 시작일
+                  _buildDateField('시작일', _selectedDate, (picked) => setState(() => _selectedDate = picked)),
                   SizedBox(height: 12.h),
 
-                  _buildDateField('종료일 (선택)', _endDate, (picked) => setState(() => _endDate = picked), firstDate: _selectedDate),
-                  SizedBox(height: 12.h),
+                  // 종료일 (기간 일정인 경우만 표시)
+                  if (_taskType == TaskTypeModel.period) ...[
+                    _buildDateField(
+                      '종료일', 
+                      _endDate, 
+                      (picked) => setState(() => _endDate = picked), 
+                      firstDate: _selectedDate,
+                      isRequired: true,
+                    ),
+                    SizedBox(height: 12.h),
+                  ],
 
+                  // 일정 내용
                   TextFormField(
                     controller: _memoController,
                     decoration: InputDecoration(
@@ -188,7 +273,8 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                   ),
                   SizedBox(height: 16.h),
 
-                  if (!isEditMode) ... [
+                  // 반복 설정 (단일 일정이고 새 일정인 경우만)
+                  if (!isEditMode && _taskType == TaskTypeModel.single) ...[
                     DropdownButtonFormField<String>(
                       value: _selectedRepeat,
                       items: _repeatOptions.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
@@ -213,6 +299,8 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                     ),
                     SizedBox(height: 16.h),
                   ],
+
+                  // 중요도 설정
                   GestureDetector(
                     onTap: () => setState(() => _isImportant = !_isImportant),
                     child: Container(
@@ -241,6 +329,7 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                   ),
                   SizedBox(height: 16.h),
 
+                  // 색상 선택
                   Container(
                     padding: EdgeInsets.all(12.w),
                     decoration: BoxDecoration(
@@ -256,10 +345,10 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                         Wrap(
                           spacing: 8.w,
                           children: List.generate(_colorStorageColors.length, (index) {
-                            final bool isSelected = _selectedColorValue == _colorStorageColors[index].value;
+                            final bool isSelected = _selectedColorValue == _colorStorageColors[index].toARGB32();
 
                             return GestureDetector(
-                              onTap: () => setState(() => _selectedColorValue = _colorStorageColors[index].value),
+                              onTap: () => setState(() => _selectedColorValue = _colorStorageColors[index].toARGB32()),
                               child: Container(
                                 width: 28.w,
                                 height: 28.w,
@@ -279,6 +368,7 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                   ),
                   SizedBox(height: 20.h),
 
+                  // 삭제 버튼들 (편집 모드일 때)
                   if (isEditMode)
                     Align(
                       alignment: Alignment.centerRight,
@@ -326,6 +416,7 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
                     ),
                   SizedBox(height: 16.h),
 
+                  // 저장/취소 버튼
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -368,7 +459,7 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
     );
   }
 
-  Widget _buildDateField(String label, DateTime? date, Function(DateTime) onPick, {DateTime? firstDate}) {
+  Widget _buildDateField(String label, DateTime? date, Function(DateTime) onPick, {DateTime? firstDate, bool isRequired = false}) {
     final controller = TextEditingController(
       text: date != null ? DateFormat('yyyy년 M월 d일 (E)', 'ko_KR').format(date) : '',
     );
@@ -388,8 +479,14 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
         );
         if (picked != null) onPick(picked);
       },
+      validator: isRequired ? (value) {
+        if (value == null || value.isEmpty) {
+          return '$label을 선택해주세요';
+        }
+        return null;
+      } : null,
       decoration: InputDecoration(
-        labelText: label,
+        labelText: label + (isRequired ? ' *' : ''),
         filled: true,
         fillColor: AppColors.cardBackground,
         border: OutlineInputBorder(

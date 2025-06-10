@@ -1,23 +1,46 @@
 // calendar_task_box.dart
 import 'package:hive/hive.dart';
 import 'package:abeul_planner/features/calendar_planner/data/model/calendar_task_model.dart';
+import 'package:abeul_planner/features/calendar_planner/data/model/task_type_model.dart';
+import 'package:abeul_planner/features/calendar_planner/data/model/timeofday_model.dart';
 
-// 캘린더 일정(Task)을 저장할 Hive Box를 관리하는 클래스
 class CalendarTaskBox {
-  // Box의 고유 이름 (이 이름으로 Box를 열거나 접근함)
   static const String boxName = 'calendar_tasks';
+  static late Box<CalendarTaskModel> _box;
 
-  // Hive 어댑터 등록 함수
-  // 앱 시작 시 1번만 호출되어야 하며, 보통 main 함수나 초기화 단계에서 사용
+  // 어댑터 등록
   static Future<void> registerAdapters() async {
-    Hive.registerAdapter(CalendarTaskModelAdapter());
+    // CalendarTaskModel 어댑터 등록
+    if (!Hive.isAdapterRegistered(1)) {
+      Hive.registerAdapter(CalendarTaskModelAdapter());
+    }
+    
+    // TaskTypeModel 어댑터 등록
+    if (!Hive.isAdapterRegistered(12)) {
+      Hive.registerAdapter(TaskTypeModelAdapter());
+    }
+    
+    // TimeOfDayModel 어댑터 등록
+    if (!Hive.isAdapterRegistered(11)) {
+      Hive.registerAdapter(TimeOfDayModelAdapter());
+    }
   }
 
-  // Box 열기 함수 (읽기/쓰기 위해 반드시 필요)
-  static Future<Box<CalendarTaskModel>> openBox() async {
-    return await Hive.openBox<CalendarTaskModel>(boxName);
+  // 박스 열기
+  static Future<void> openBox() async {
+    _box = await Hive.openBox<CalendarTaskModel>(boxName);
   }
 
-  // 현재 열린 박스를 가져오는 getter
-  static Box<CalendarTaskModel> get box => Hive.box<CalendarTaskModel>(boxName);
+  // 박스 가져오기
+  static Box<CalendarTaskModel> get box => _box;
+
+  // 박스 닫기
+  static Future<void> closeBox() async {
+    await _box.close();
+  }
+
+  // 박스 삭제
+  static Future<void> deleteBox() async {
+    await Hive.deleteBoxFromDisk(boxName);
+  }
 }

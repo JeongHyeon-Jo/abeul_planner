@@ -26,13 +26,17 @@ class CalendarTaskModelAdapter extends TypeAdapter<CalendarTaskModel> {
       endDate: fields[6] as DateTime?,
       secret: fields[7] as bool?,
       colorValue: fields[8] as int?,
+      taskType: fields[9] as TaskTypeModel?,
+      startTime: fields[10] as TimeOfDayModel?,
+      endTime: fields[11] as TimeOfDayModel?,
+      isAllDay: fields[12] as bool?,
     );
   }
 
   @override
   void write(BinaryWriter writer, CalendarTaskModel obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(13)
       ..writeByte(0)
       ..write(obj.memo)
       ..writeByte(1)
@@ -50,7 +54,15 @@ class CalendarTaskModelAdapter extends TypeAdapter<CalendarTaskModel> {
       ..writeByte(7)
       ..write(obj.secret)
       ..writeByte(8)
-      ..write(obj.colorValue);
+      ..write(obj.colorValue)
+      ..writeByte(9)
+      ..write(obj.taskType)
+      ..writeByte(10)
+      ..write(obj.startTime)
+      ..writeByte(11)
+      ..write(obj.endTime)
+      ..writeByte(12)
+      ..write(obj.isAllDay);
   }
 
   @override
