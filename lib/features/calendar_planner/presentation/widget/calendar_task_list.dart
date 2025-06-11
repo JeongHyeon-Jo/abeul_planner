@@ -240,18 +240,20 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
                                   children: [
                                     Row(
                                       children: [
-                                        Text(
-                                          task.endDate != null
-                                              ? '${DateFormat('yyyy.MM.dd').format(task.date)} ~ ${DateFormat('yyyy.MM.dd').format(task.endDate!)}'
-                                              : DateFormat('yyyy.MM.dd').format(task.date),
-                                          style: AppTextStyles.caption,
+                                        Flexible(
+                                          child: Text(
+                                            task.endDate != null
+                                                ? '${DateFormat('yyyy.MM.dd').format(task.date)} ~ ${DateFormat('yyyy.MM.dd').format(task.endDate!)}'
+                                                : DateFormat('yyyy.MM.dd').format(task.date),
+                                            style: AppTextStyles.caption,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
                                         if (task.secret == true)
                                           Padding(
                                             padding: EdgeInsets.only(left: 4.w),
                                             child: Icon(Icons.lock, size: 16.sp, color: AppColors.subText),
                                           ),
-                                        // 기간 일정 표시 배지
                                         if (task.isPeriodTask)
                                           Padding(
                                             padding: EdgeInsets.only(left: 4.w),
