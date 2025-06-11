@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:abeul_planner/core/styles/color.dart';
 
-/// 앱 전체에서 재사용 가능한 커스텀 앱바
+// 앱 전체에서 재사용 가능한 커스텀 앱바
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Widget title; // 앱바 타이틀을 위젯으로 변경
   final Widget? leading; // 왼쪽 위젯 (필요할 경우 직접 지정)

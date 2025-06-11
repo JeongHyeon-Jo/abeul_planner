@@ -406,7 +406,7 @@ class CalendarDayCell extends StatelessWidget {
             if (overflowCount > 0)
               Text(
                 '+$overflowCount',
-                style: AppTextStyles.caption.copyWith(fontSize: 11.sp),
+                style: AppTextStyles.caption.copyWith(fontSize: 10.sp),
               ),
           ],
         ),
@@ -437,14 +437,14 @@ class CalendarTaskItem extends StatelessWidget {
     final isImportant = item['priority'] == '중요';
 
     // 통일된 패딩과 높이 설정
-    final unifiedPadding = EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.2.h);
+    final unifiedPadding = EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h);
     final unifiedMargin = EdgeInsets.only(bottom: 1.2.h);
 
     if (isSecret) {
       return Padding(
         padding: unifiedMargin,
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 7.h), // 원래 비밀 일정의 패딩
+          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 7.5.h), // 원래 비밀 일정의 패딩
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(4.r),

@@ -42,18 +42,21 @@ class SettingsScreen extends ConsumerWidget {
           ),
           child: Column(
             children: [
-              SwitchListTile(
-                title: Row(
-                  children: [
-                    Icon(Icons.check_circle_outline, color: AppColors.accent, size: 24.sp),
-                    SizedBox(width: 15.w),
-                    Text('완료된 일정 아래로 정렬', style: AppTextStyles.body),
-                  ],
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 2.h),
+                child: SwitchListTile(
+                  title: Row(
+                    children: [
+                      Icon(Icons.check_circle_outline, color: AppColors.accent, size: 24.sp),
+                      SizedBox(width: 15.w),
+                      Text('완료된 일정 아래로 정렬', style: AppTextStyles.body),
+                    ],
+                  ),
+                  value: user.autoSortCompleted,
+                  onChanged: userNotifier.toggleAutoSortCompleted,
+                  activeColor: AppColors.accent,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
                 ),
-                value: user.autoSortCompleted,
-                onChanged: userNotifier.toggleAutoSortCompleted,
-                activeColor: AppColors.accent,
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
               ),
               Divider(height: 1.2.h, color: AppColors.primary),
               SettingsTile(
