@@ -23,6 +23,7 @@ class MidnightRefresher {
         await Future.delayed(const Duration(milliseconds: 300));
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (context.mounted) {
+            debugPrint('[midnight_refresher.dart] 앱이 새로고침되었습니다');
             Phoenix.rebirth(context);
           }
         });
@@ -31,11 +32,20 @@ class MidnightRefresher {
   }
 
   static Future<void> _showMidnightDialog(BuildContext context) async {
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const MidnightDialog(),
-    );
+    final completer = Completer<void>();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (context.mounted) {
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => const MidnightDialog(),
+        );
+      }
+      completer.complete();
+    });
+
+    return completer.future;
   }
 
   static void cancel() {

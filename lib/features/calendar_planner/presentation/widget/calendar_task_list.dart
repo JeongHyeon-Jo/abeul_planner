@@ -21,7 +21,7 @@ class CalendarTaskList extends ConsumerStatefulWidget {
 }
 
 class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
-  bool _isEditing = false;
+  bool _isReordering = false;
 
   Color getDisplayColor(Color color) {
     if (color == AppColors.accent.withAlpha((0.15 * 255).toInt())) {
@@ -41,11 +41,12 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(userProvider);
-    final allTasks = ref.watch(calendarTaskProvider)
-        .where((task) => isSameDay(task.date, widget.selectedDate))
-        .toList();
+    final taskProvider = ref.read(calendarTaskProvider.notifier);
+    
+    // getTasksForDate 메서드를 사용하여 기간 일정도 포함된 일정 목록 가져오기
+    final allTasks = taskProvider.getTasksForDate(widget.selectedDate);
 
-    final tasks = _isEditing || !user.autoSortCompleted
+    final tasks = _isReordering || !user.autoSortCompleted
         ? allTasks
         : [...allTasks.where((t) => !t.isCompleted), ...allTasks.where((t) => t.isCompleted)];
 
@@ -64,16 +65,40 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
               Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      DateFormat('yyyy년 MM월 dd일').format(widget.selectedDate),
-                      style: AppTextStyles.title,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          DateFormat('yyyy년 MM월 dd일').format(widget.selectedDate),
+                          style: AppTextStyles.title,
+                        ),
+                        Builder(
+                          builder: (context) {
+                            final taskProvider = ref.read(calendarTaskProvider.notifier);
+                            final lunarText = taskProvider.getLunarDateText(widget.selectedDate);
+                            if (lunarText.isNotEmpty) {
+                              return Padding(
+                                padding: EdgeInsets.only(top: 4.h),
+                                child: Text(
+                                  lunarText,
+                                  style: AppTextStyles.captionSmall.copyWith(
+                                    color: AppColors.subText,
+                                    fontSize: 12.sp,
+                                  ),
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                      ],
                     ),
                   ),
-                  IconButton(
-                    icon: Icon(_isEditing ? Icons.check : Icons.edit_calendar,
-                        color: _isEditing ? AppColors.success : AppColors.text),
-                    onPressed: () => setState(() => _isEditing = !_isEditing),
-                  ),
+                  if (_isReordering)
+                    IconButton(
+                      icon: Icon(Icons.check, color: AppColors.success),
+                      onPressed: () => setState(() => _isReordering = false),
+                    ),
                   IconButton(
                     icon: Icon(Icons.add, color: AppColors.accent),
                     onPressed: () => showDialog(
@@ -100,109 +125,215 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
               if (tasks.isEmpty && holidayNames.isEmpty)
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 20.h),
-                  child: Text('등록된 일정이 없습니다.', style: AppTextStyles.body),
+                  child: Column(
+                    children: [
+                      Text('등록된 일정이 없습니다.', style: AppTextStyles.body),
+                      if (_isReordering)
+                        Padding(
+                          padding: EdgeInsets.only(top: 8.h),
+                          child: Text(
+                            '일정을 길게 눌러서 순서를 변경하세요',
+                            style: AppTextStyles.caption.copyWith(color: AppColors.subText),
+                          ),
+                        ),
+                    ],
+                  ),
                 )
               else
-                ReorderableListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  buildDefaultDragHandles: false,
-                  itemCount: tasks.length,
-                  onReorder: (oldIndex, newIndex) => ref
-                      .read(calendarTaskProvider.notifier)
-                      .reorderTask(widget.selectedDate, oldIndex, newIndex),
-                  itemBuilder: (context, index) {
-                    final task = tasks[index];
-                    final lunarText = ref.read(calendarTaskProvider.notifier).getLunarDateText(task.date);
-                    return Container(
-                      key: ValueKey('${task.memo}-${task.date}'),
-                      margin: EdgeInsets.only(bottom: 8.h),
-                      padding: EdgeInsets.all(12.w),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(color: AppColors.primary),
-                      ),
-                      child: Row(
-                        children: [
-                          Column(
-                            children: [
-                              Container(
-                                width: 18.w,
-                                height: 18.w,
-                                margin: EdgeInsets.only(bottom: 6.h),
-                                decoration: BoxDecoration(
-                                  color: getDisplayColor(task.color),
-                                  shape: BoxShape.circle,
-                                ),
+                Column(
+                  children: [
+                    if (_isReordering)
+                      Container(
+                        margin: EdgeInsets.only(bottom: 8.h),
+                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent.withAlpha((0.1 * 255).toInt()),
+                          borderRadius: BorderRadius.circular(8.r),
+                          border: Border.all(color: AppColors.accent.withAlpha((0.3 * 255).toInt())),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.info_outline, size: 16.sp, color: AppColors.accent),
+                            SizedBox(width: 8.w),
+                            Expanded(
+                              child: Text(
+                                '드래그하여 순서를 변경하세요',
+                                style: AppTextStyles.caption.copyWith(color: AppColors.accent),
                               ),
-                            ],
-                          ),
-                          SizedBox(width: 12.w),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ReorderableListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      buildDefaultDragHandles: false,
+                      itemCount: tasks.length,
+                      onReorder: (oldIndex, newIndex) => ref
+                          .read(calendarTaskProvider.notifier)
+                          .reorderTask(widget.selectedDate, oldIndex, newIndex),
+                      itemBuilder: (context, index) {
+                        final task = tasks[index];
+                        final lunarText = ref.read(calendarTaskProvider.notifier).getLunarDateText(task.date);
+                        
+                        // 기간 일정인 경우 현재 날짜에서의 표시 타입 확인
+                        final periodDisplayType = task.isPeriodTask 
+                            ? taskProvider.getPeriodTaskDisplayType(task, widget.selectedDate)
+                            : null;
+                    
+                    return GestureDetector(
+                      key: ValueKey('${task.memo}-${task.date}'),
+                      onTap: () {
+                        if (!_isReordering) {
+                          showDialog(
+                            context: context,
+                            builder: (_) => CalendarTaskDialog(
+                              existingTask: task,
+                              selectedDate: widget.selectedDate,
+                            ),
+                          );
+                        }
+                      },
+                      onLongPress: () {
+                        if (!_isReordering) {
+                          setState(() => _isReordering = true);
+                        }
+                      },
+                      child: Container(
+                        margin: EdgeInsets.only(bottom: 8.h),
+                        padding: EdgeInsets.all(12.w),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(color: AppColors.primary),
+                        ),
+                        child: Row(
+                          children: [
+                            Column(
                               children: [
-                                Row(
+                                Container(
+                                  width: 18.w,
+                                  height: 18.w,
+                                  margin: EdgeInsets.only(bottom: 6.h),
+                                  decoration: BoxDecoration(
+                                    color: getDisplayColor(task.color),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                // 기간 일정 표시 아이콘
+                                if (task.isPeriodTask && periodDisplayType != null)
+                                  _buildPeriodIndicator(periodDisplayType),
+                              ],
+                            ),
+                            SizedBox(width: 12.w),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (!_isReordering) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (_) => CalendarTaskDialog(
+                                        existingTask: task,
+                                        selectedDate: widget.selectedDate,
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      task.endDate != null
-                                          ? '${DateFormat('yyyy.MM.dd').format(task.date)} ~ ${DateFormat('yyyy.MM.dd').format(task.endDate!)}'
-                                          : DateFormat('yyyy.MM.dd').format(task.date),
-                                      style: AppTextStyles.caption,
+                                    Row(
+                                      children: [
+                                        Text(
+                                          task.endDate != null
+                                              ? '${DateFormat('yyyy.MM.dd').format(task.date)} ~ ${DateFormat('yyyy.MM.dd').format(task.endDate!)}'
+                                              : DateFormat('yyyy.MM.dd').format(task.date),
+                                          style: AppTextStyles.caption,
+                                        ),
+                                        if (task.secret == true)
+                                          Padding(
+                                            padding: EdgeInsets.only(left: 4.w),
+                                            child: Icon(Icons.lock, size: 16.sp, color: AppColors.subText),
+                                          ),
+                                        // 기간 일정 표시 배지
+                                        if (task.isPeriodTask)
+                                          Padding(
+                                            padding: EdgeInsets.only(left: 4.w),
+                                            child: Container(
+                                              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                                              decoration: BoxDecoration(
+                                                color: AppColors.accent.withAlpha((0.2 * 255).toInt()),
+                                                borderRadius: BorderRadius.circular(4.r),
+                                              ),
+                                              child: Text(
+                                                '기간',
+                                                style: AppTextStyles.captionSmall.copyWith(
+                                                  color: AppColors.accent,
+                                                  fontSize: 10.sp,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                      ],
                                     ),
-                                    if (task.secret == true)
+                                    if (lunarText.isNotEmpty && !task.isPeriodTask)
                                       Padding(
-                                        padding: EdgeInsets.only(left: 4.w),
-                                        child: Icon(Icons.lock, size: 16.sp, color: AppColors.subText),
+                                        padding: EdgeInsets.only(top: 2.h),
+                                        child: Text(
+                                          lunarText,
+                                          style: AppTextStyles.captionSmall.copyWith(color: AppColors.subText),
+                                        ),
+                                      ),
+                                    SizedBox(height: 4.h),
+                                    Row(
+                                      children: [
+                                        if (getPriorityIcon(task.priority) != null) ... [
+                                          getPriorityIcon(task.priority)!,
+                                          SizedBox(width: 4.w),
+                                        ],
+                                        Expanded(
+                                          child: Text(
+                                            task.memo,
+                                            style: AppTextStyles.body,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    // 기간 일정의 경우 현재 날짜 위치 표시
+                                    if (task.isPeriodTask && periodDisplayType != null)
+                                      Padding(
+                                        padding: EdgeInsets.only(top: 4.h),
+                                        child: Text(
+                                          _getPeriodStatusText(periodDisplayType),
+                                          style: AppTextStyles.captionSmall.copyWith(
+                                            color: AppColors.subText,
+                                            fontStyle: FontStyle.italic,
+                                          ),
+                                        ),
                                       ),
                                   ],
                                 ),
-                                if (lunarText.isNotEmpty)
-                                  Padding(
-                                    padding: EdgeInsets.only(top: 2.h),
-                                    child: Text(
-                                      lunarText,
-                                      style: AppTextStyles.captionSmall.copyWith(color: AppColors.subText),
-                                    ),
-                                  ),
-                                SizedBox(height: 4.h),
-                                Row(
-                                  children: [
-                                    if (getPriorityIcon(task.priority) != null) ... [
-                                      getPriorityIcon(task.priority)!,
-                                      SizedBox(width: 4.w),
-                                    ],
-                                    Text(task.memo, style: AppTextStyles.body),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (_isEditing) ...[
-                            IconButton(
-                              icon: Icon(Icons.edit, size: 20.sp, color: AppColors.subText),
-                              onPressed: () => showDialog(
-                                context: context,
-                                builder: (_) => CalendarTaskDialog(
-                                  existingTask: task,
-                                  selectedDate: widget.selectedDate,
-                                ),
                               ),
                             ),
-                            ReorderableDragStartListener(
-                              index: index,
-                              child: Icon(Icons.drag_handle, color: AppColors.subText),
-                            ),
-                          ] else
-                            Checkbox(
-                              value: task.isCompleted,
-                              onChanged: (_) => ref.read(calendarTaskProvider.notifier).toggleTask(task),
-                            ),
-                        ],
+                            if (_isReordering)
+                              ReorderableDragStartListener(
+                                index: index,
+                                child: Icon(Icons.drag_handle, color: AppColors.subText),
+                              )
+                            else
+                              Checkbox(
+                                value: task.isCompleted,
+                                onChanged: (_) => ref.read(calendarTaskProvider.notifier).toggleTask(task),
+                              ),
+                          ],
+                        ),
                       ),
                     );
-                  },
+                      },
+                    ),
+                  ],
                 ),
               SizedBox(height: 16.h),
               Align(
@@ -217,6 +348,45 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
         ),
       ),
     );
+  }
+
+  Widget _buildPeriodIndicator(PeriodTaskDisplayType displayType) {
+    IconData iconData;
+    Color iconColor = AppColors.accent;
+
+    switch (displayType) {
+      case PeriodTaskDisplayType.start:
+        iconData = Icons.play_arrow;
+        break;
+      case PeriodTaskDisplayType.end:
+        iconData = Icons.stop;
+        break;
+      case PeriodTaskDisplayType.middle:
+        iconData = Icons.remove;
+        break;
+      case PeriodTaskDisplayType.single:
+        iconData = Icons.circle;
+        break;
+    }
+
+    return Icon(
+      iconData,
+      size: 12.sp,
+      color: iconColor,
+    );
+  }
+
+  String _getPeriodStatusText(PeriodTaskDisplayType displayType) {
+    switch (displayType) {
+      case PeriodTaskDisplayType.start:
+        return '시작일';
+      case PeriodTaskDisplayType.end:
+        return '종료일';
+      case PeriodTaskDisplayType.middle:
+        return '진행 중';
+      case PeriodTaskDisplayType.single:
+        return '당일 완료';
+    }
   }
 
   bool isSameDay(DateTime d1, DateTime d2) => d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;
