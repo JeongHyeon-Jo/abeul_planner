@@ -1,4 +1,4 @@
-// 개선된 calendar_task_list.dart
+// calendar_task_list.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -41,10 +41,10 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(userProvider);
+    final allTasks = ref.watch(calendarTaskProvider)
+      .where((t) => t.containsDate(widget.selectedDate))
+      .toList();
     final taskProvider = ref.read(calendarTaskProvider.notifier);
-    
-    // getTasksForDate 메서드를 사용하여 기간 일정도 포함된 일정 목록 가져오기
-    final allTasks = taskProvider.getTasksForDate(widget.selectedDate);
 
     final tasks = _isReordering || !user.autoSortCompleted
         ? allTasks
@@ -174,7 +174,6 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
                           .reorderTask(widget.selectedDate, oldIndex, newIndex),
                       itemBuilder: (context, index) {
                         final task = tasks[index];
-                        final lunarText = ref.read(calendarTaskProvider.notifier).getLunarDateText(task.date);
                         
                         // 기간 일정인 경우 현재 날짜에서의 표시 타입 확인
                         final periodDisplayType = task.isPeriodTask 
@@ -220,9 +219,6 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
                                     shape: BoxShape.circle,
                                   ),
                                 ),
-                                // 기간 일정 표시 아이콘
-                                if (task.isPeriodTask && periodDisplayType != null)
-                                  _buildPeriodIndicator(periodDisplayType),
                               ],
                             ),
                             SizedBox(width: 12.w),
@@ -276,14 +272,6 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
                                           ),
                                       ],
                                     ),
-                                    if (lunarText.isNotEmpty && !task.isPeriodTask)
-                                      Padding(
-                                        padding: EdgeInsets.only(top: 2.h),
-                                        child: Text(
-                                          lunarText,
-                                          style: AppTextStyles.captionSmall.copyWith(color: AppColors.subText),
-                                        ),
-                                      ),
                                     SizedBox(height: 4.h),
                                     Row(
                                       children: [
@@ -347,32 +335,6 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildPeriodIndicator(PeriodTaskDisplayType displayType) {
-    IconData iconData;
-    Color iconColor = AppColors.accent;
-
-    switch (displayType) {
-      case PeriodTaskDisplayType.start:
-        iconData = Icons.play_arrow;
-        break;
-      case PeriodTaskDisplayType.end:
-        iconData = Icons.stop;
-        break;
-      case PeriodTaskDisplayType.middle:
-        iconData = Icons.remove;
-        break;
-      case PeriodTaskDisplayType.single:
-        iconData = Icons.circle;
-        break;
-    }
-
-    return Icon(
-      iconData,
-      size: 12.sp,
-      color: iconColor,
     );
   }
 

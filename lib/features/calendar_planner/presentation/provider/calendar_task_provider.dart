@@ -147,6 +147,7 @@ class CalendarTaskNotifier extends StateNotifier<List<CalendarTaskModel>> {
     state = [];
   }
 
+  // 체크 박스
   void toggleTask(CalendarTaskModel task) {
     final index = state.indexOf(task);
     if (index != -1) {
