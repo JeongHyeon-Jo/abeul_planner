@@ -76,23 +76,49 @@ class CalendarSection extends ConsumerWidget {
             borderRadius: BorderRadius.circular(12.r),
             side: BorderSide(color: AppColors.primary, width: 1.2.w),
           ),
-          child: ListTile(
-            leading: getPriorityIcon(task.priority),
-            title: Text(
-              task.memo,
-              style: AppTextStyles.body,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // 중요도 + 비밀 아이콘을 좌측에 나란히
+                if (getPriorityIcon(task.priority) != null || task.secret == true)
+                  Padding(
+                    padding: EdgeInsets.only(right: 8.w),
+                    child: Row(
+                      children: [
+                        if (getPriorityIcon(task.priority) != null)
+                          getPriorityIcon(task.priority)!,
+                        if (task.secret == true)
+                          Padding(
+                            padding: EdgeInsets.only(left: 4.w),
+                            child: Icon(Icons.lock, size: 20.sp, color: AppColors.subText),
+                          ),
+                      ],
+                    ),
+                  ),
+
+                // 텍스트 (비밀 일정 또는 일반 메모)
+                Expanded(
+                  child: Text(
+                    task.secret == true ? '비밀 일정' : task.memo,
+                    style: AppTextStyles.body,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+
+                // 체크박스
+                Checkbox(
+                  value: task.isCompleted,
+                  onChanged: (value) {
+                    if (value != null) {
+                      ref.read(calendarTaskProvider.notifier).toggleTask(task);
+                    }
+                  },
+                ),
+              ],
             ),
-            trailing: Checkbox(
-              value: task.isCompleted,
-              onChanged: (value) {
-                if (value != null) {
-                  ref.read(calendarTaskProvider.notifier).toggleTask(task);
-                }
-              },
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
           ),
         );
       }).toList(),

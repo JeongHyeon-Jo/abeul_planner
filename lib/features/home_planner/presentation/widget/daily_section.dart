@@ -69,30 +69,52 @@ class DailySection extends ConsumerWidget {
             borderRadius: BorderRadius.circular(12.r),
             side: BorderSide(color: AppColors.primary, width: 1.2.w),
           ),
-          child: ListTile(
-            leading: getPriorityIcon(task.priority),
-            title: Text(
-              task.situation,
-              style: AppTextStyles.body,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // 중요 아이콘 (있으면)
+                if (getPriorityIcon(task.priority) != null)
+                  Padding(
+                    padding: EdgeInsets.only(right: 8.w),
+                    child: getPriorityIcon(task.priority),
+                  ),
+
+                // 텍스트 영역
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        task.situation,
+                        style: AppTextStyles.body,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        task.action,
+                        style: AppTextStyles.bodySmall,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // 체크박스
+                Checkbox(
+                  value: task.isCompleted,
+                  onChanged: (_) {
+                    final originalIndex = ref.read(dailyTaskProvider).indexOf(task);
+                    if (originalIndex != -1) {
+                      ref.read(dailyTaskProvider.notifier).toggleTask(originalIndex);
+                    }
+                  },
+                ),
+              ],
             ),
-            subtitle: Text(
-              task.action,
-              style: AppTextStyles.caption,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            trailing: Checkbox(
-              value: task.isCompleted,
-              onChanged: (_) {
-                final originalIndex = ref.read(dailyTaskProvider).indexOf(task);
-                if (originalIndex != -1) {
-                  ref.read(dailyTaskProvider.notifier).toggleTask(originalIndex);
-                }
-              },
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
           ),
         );
       }).toList(),

@@ -73,6 +73,7 @@ class WeeklySection extends ConsumerWidget {
     return Column(
       children: displayTasks.map((entry) {
         final (day, task) = entry;
+
         return Card(
           color: Colors.white,
           margin: EdgeInsets.symmetric(vertical: 6.h),
@@ -80,25 +81,41 @@ class WeeklySection extends ConsumerWidget {
             borderRadius: BorderRadius.circular(12.r),
             side: BorderSide(color: AppColors.primary, width: 1.2.w),
           ),
-          child: ListTile(
-            leading: getPriorityIcon(task.priority),
-            title: Text(
-              task.content,
-              style: AppTextStyles.body,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // 중요 아이콘 (있을 경우)
+                if (getPriorityIcon(task.priority) != null)
+                  Padding(
+                    padding: EdgeInsets.only(right: 8.w),
+                    child: getPriorityIcon(task.priority),
+                  ),
+
+                // 텍스트 (내용)
+                Expanded(
+                  child: Text(
+                    task.content,
+                    style: AppTextStyles.body,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+
+                // 체크박스
+                Checkbox(
+                  value: task.isCompleted,
+                  onChanged: (_) {
+                    final todayModel = ref.watch(weeklyTaskProvider).firstWhere((model) => model.day == day);
+                    final taskIndex = todayModel.tasks.indexOf(task);
+                    if (taskIndex != -1) {
+                      ref.read(weeklyTaskProvider.notifier).toggleTask(day, taskIndex);
+                    }
+                  },
+                ),
+              ],
             ),
-            trailing: Checkbox(
-              value: task.isCompleted,
-              onChanged: (_) {
-                final todayModel = ref.watch(weeklyTaskProvider).firstWhere((model) => model.day == day);
-                final taskIndex = todayModel.tasks.indexOf(task);
-                if (taskIndex != -1) {
-                  ref.read(weeklyTaskProvider.notifier).toggleTask(day, taskIndex);
-                }
-              },
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
           ),
         );
       }).toList(),
