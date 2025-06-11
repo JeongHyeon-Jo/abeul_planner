@@ -67,7 +67,7 @@ class WeeklyTaskList extends ConsumerWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: AppColors.primary),
+            border: Border.all(color: AppColors.primary, width: 1.2.w),
           ),
           child: Row(
             children: [

@@ -38,7 +38,7 @@ class DailyTaskTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.primary, width: 1.w),
+        border: Border.all(color: AppColors.primary, width: 1.2.w),
         boxShadow: [
           BoxShadow(
             color: Colors.black12,

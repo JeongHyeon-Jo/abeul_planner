@@ -67,7 +67,7 @@ class DailySection extends ConsumerWidget {
           margin: EdgeInsets.symmetric(vertical: 6.h),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),
-            side: BorderSide(color: AppColors.primary, width: 1.w),
+            side: BorderSide(color: AppColors.primary, width: 1.2.w),
           ),
           child: ListTile(
             leading: getPriorityIcon(task.priority),

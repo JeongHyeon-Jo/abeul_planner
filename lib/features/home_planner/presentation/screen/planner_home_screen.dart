@@ -16,6 +16,7 @@ import 'package:abeul_planner/features/daily_planner/presentation/provider/daily
 import 'package:abeul_planner/features/home_planner/presentation/widget/calendar_section.dart';
 import 'package:abeul_planner/features/home_planner/presentation/widget/weekly_section.dart';
 import 'package:abeul_planner/features/home_planner/presentation/widget/daily_section.dart';
+import 'package:abeul_planner/features/home_planner/presentation/widget/expandable_section.dart';
 
 class PlannerHomeScreen extends ConsumerWidget {
   const PlannerHomeScreen({super.key});
@@ -43,105 +44,27 @@ class PlannerHomeScreen extends ConsumerWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // 달력 플래너
-              SizedBox(
-                child: _buildSectionContainer(
-                  context,
-                  title: '달력 플래너',
-                  route: '/calendar',
-                  child: SingleChildScrollView(
-                    child: CalendarSection(now: now, calendarTasks: calendarTasks),
-                  ),
-                ),
+              ExpandableSection(
+                title: '달력 플래너',
+                route: '/calendar',
+                child: CalendarSection(now: now, calendarTasks: calendarTasks),
               ),
               SizedBox(height: 16.h),
-
-              // 주간 플래너
-              SizedBox(
-                child: _buildSectionContainer(
-                  context,
-                  title: '주간 플래너',
-                  route: '/weekly',
-                  child: SingleChildScrollView(
-                    child: WeeklySection(weekday: weekday, weeklyTasks: weeklyTasks),
-                  ),
-                ),
+              ExpandableSection(
+                title: '주간 플래너',
+                route: '/weekly',
+                child: WeeklySection(weekday: weekday, weeklyTasks: weeklyTasks),
               ),
               SizedBox(height: 16.h),
-
-              // 일상 플래너
-              SizedBox(
-                child: _buildSectionContainer(
-                  context,
-                  title: '일상 플래너',
-                  route: '/daily',
-                  child: SingleChildScrollView(
-                    child: DailySection(dailyTasks: dailyTasks),
-                  ),
-                ),
+              ExpandableSection(
+                title: '일상 플래너',
+                route: '/daily',
+                child: DailySection(dailyTasks: dailyTasks),
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  /// 공통 섹션 컨테이너 위젯
-  Widget _buildSectionContainer(
-    BuildContext context, {
-    required String title,
-    required String route,
-    required Widget child,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.primary, width: 1.w),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4.r,
-            offset: Offset(0, 2.h),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-            child: _buildSectionTitle(context, title, route),
-          ),
-          const Divider(
-            color: AppColors.primary,
-            height: 0,
-            thickness: 1,
-          ),
-          Padding(
-            padding: EdgeInsets.all(16.0.w),
-            child: child,
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 공통 섹션 타이틀 위젯
-  Widget _buildSectionTitle(BuildContext context, String title, String route) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(title, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
-        IconButton(
-          icon: const Icon(Icons.chevron_right),
-          color: AppColors.subText,
-          onPressed: () {
-            context.go(route);
-          },
-        ),
-      ],
     );
   }
 }
