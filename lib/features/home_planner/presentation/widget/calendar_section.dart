@@ -90,10 +90,15 @@ class CalendarSection extends ConsumerWidget {
                         if (getPriorityIcon(task.priority) != null)
                           getPriorityIcon(task.priority)!,
                         if (task.secret == true)
-                          Padding(
-                            padding: EdgeInsets.only(left: 4.w),
-                            child: Icon(Icons.lock, size: 20.sp, color: AppColors.subText),
-                          ),
+                          if(getPriorityIcon(task.priority) != null) ... [
+                            Padding(
+                              padding: EdgeInsets.only(left: 4.w),
+                              child: Icon(Icons.lock, size: 20.sp, color: AppColors.subText),
+                            ),
+                          ]
+                          else ... [
+                            Icon(Icons.lock, size: 20.sp, color: AppColors.subText),
+                          ]
                       ],
                     ),
                   ),

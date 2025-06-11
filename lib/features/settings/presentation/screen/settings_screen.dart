@@ -20,18 +20,18 @@ class SettingsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: CustomAppBar(
         title: Text(
-          '설정',
+          '메뉴',
           style: AppTextStyles.title.copyWith(color: AppColors.text),
         ),
         isTransparent: true,
       ),
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: AppColors.primary, width: 1.w),
+            border: Border.all(color: AppColors.primary, width: 1.2.w),
             boxShadow: [
               BoxShadow(
                 color: Colors.black12,
@@ -55,13 +55,13 @@ class SettingsScreen extends ConsumerWidget {
                 activeColor: AppColors.accent,
                 contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
               ),
-              Divider(height: 1.h, color: AppColors.primary),
+              Divider(height: 1.2.h, color: AppColors.primary),
               SettingsTile(
                 icon: Icons.history,
                 title: '기록 보기',
                 onTap: () => context.push('/records/select'),
               ),
-              Divider(height: 1.h, color: AppColors.primary),
+              Divider(height: 1.2.h, color: AppColors.primary),
               SettingsTile(
                 icon: Icons.info,
                 title: '앱 정보',

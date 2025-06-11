@@ -19,7 +19,7 @@ class CalendarGrid extends ConsumerStatefulWidget {
   final DateTime monthDate;
   final DateTime selectedDay;
   final Function(DateTime) onDaySelected;
-  final Function(bool)? onDragStateChanged; // 드래그 상태 변경 콜백
+  final Function(bool)? onDragStateChanged;
 
   const CalendarGrid({
     super.key,
@@ -52,19 +52,16 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
     final gridCount = (allDays.length / 7).ceil() * 7;
     _paddedDays = allDays + List.generate(gridCount - allDays.length, (i) => end.add(Duration(days: i + 1)));
 
-    // 각 날짜에 대한 GlobalKey 생성
     for (final day in _paddedDays) {
       _dayKeys.putIfAbsent(day, () => GlobalKey());
     }
 
-    final allTasks = ref.read(calendarTaskProvider);
+    final allTasks = ref.watch(calendarTaskProvider);
     final taskProvider = ref.read(calendarTaskProvider.notifier);
 
-    // 각 날짜별로 태스크 정보 매핑
     final Map<String, List<Map<String, dynamic>>> mappedTasks = {};
     for (final task in allTasks) {
       if (task.isPeriodTask) {
-        // 기간 일정의 경우 해당 기간의 모든 날짜에 추가
         final startDay = DateTime(task.date.year, task.date.month, task.date.day);
         final endDay = DateTime(task.endDate!.year, task.endDate!.month, task.endDate!.day);
         
@@ -88,7 +85,6 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
           currentDay = currentDay.add(const Duration(days: 1));
         }
       } else {
-        // 일반 일정의 경우 해당 날짜에만 추가
         final key = DateFormat('yyyy-MM-dd').format(task.date);
         mappedTasks.putIfAbsent(key, () => []).add(<String, dynamic>{
           'type': 'event',
@@ -117,55 +113,65 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
             padding: EdgeInsets.symmetric(horizontal: 8.w),
             child: Column(
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: week.map((day) {
-                    final dateKey = DateFormat('yyyy-MM-dd').format(day);
-                    final holidayNames = koreanHolidays[dateKey];
-                    final isHoliday = holidayNames != null && holidayNames.isNotEmpty;
-                    final isToday = DateTime.now().year == day.year && DateTime.now().month == day.month && DateTime.now().day == day.day;
-                    final isSelected = widget.selectedDay.year == day.year && widget.selectedDay.month == day.month && widget.selectedDay.day == day.day;
-                    final isCurrentMonth = day.month == widget.monthDate.month;
-                    final isDragSelected = _selectedDates.any((date) => _isSameDay(date, day));
+                // 드래그 선택 오버레이를 위한 Stack
+                Stack(
+                  children: [
+                    // 드래그 선택 배경
+                    if (_isDragging && _selectedDates.isNotEmpty)
+                      _buildDragSelectionOverlay(week),
+                    // 실제 달력 셀들
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: week.map((day) {
+                        final dateKey = DateFormat('yyyy-MM-dd').format(day);
+                        final holidayNames = koreanHolidays[dateKey];
+                        final isHoliday = holidayNames != null && holidayNames.isNotEmpty;
+                        final isToday = DateTime.now().year == day.year && DateTime.now().month == day.month && DateTime.now().day == day.day;
+                        final isSelected = widget.selectedDay.year == day.year && widget.selectedDay.month == day.month && widget.selectedDay.day == day.day;
+                        final isCurrentMonth = day.month == widget.monthDate.month;
+                        final isDragSelected = _selectedDates.any((date) => _isSameDay(date, day));
 
-                    final List<Map<String, dynamic>> allItems = [
-                      if (holidayNames is List<String>)
-                        ...holidayNames.map((e) => <String, dynamic>{
-                              'type': 'holiday',
-                              'name': e,
-                              'isHoliday': true,
-                            }),
-                      ...(mappedTasks[dateKey] ?? []),
-                    ];
+                        final List<Map<String, dynamic>> allItems = [
+                          if (holidayNames is List<String>)
+                            ...holidayNames.map((e) => <String, dynamic>{
+                                  'type': 'holiday',
+                                  'name': e,
+                                  'isHoliday': true,
+                                }),
+                          ...(mappedTasks[dateKey] ?? []),
+                        ];
 
-                    final List<Map<String, dynamic>> visibleItems = allItems.length > 4 ? allItems.take(3).toList() : allItems;
-                    final overflowCount = allItems.length > 4 ? allItems.length - 3 : 0;
+                        final List<Map<String, dynamic>> visibleItems = allItems.length > 4 ? allItems.take(3).toList() : allItems;
+                        final overflowCount = allItems.length > 4 ? allItems.length - 3 : 0;
 
-                    return Expanded(
-                      child: CalendarDayCell(
-                        key: _dayKeys[day],
-                        day: day,
-                        isToday: isToday,
-                        isSelected: isSelected,
-                        isCurrentMonth: isCurrentMonth,
-                        isHoliday: isHoliday,
-                        visibleItems: visibleItems,
-                        overflowCount: overflowCount,
-                        isDragSelected: isDragSelected,
-                        isDragging: _isDragging,
-                        onTap: () {
-                          if (!_isDragging && !_isLongPressActive) {
-                            widget.onDaySelected(day);
-                            showDialog(
-                              context: context,
-                              builder: (_) => CalendarTaskList(selectedDate: day),
-                            );
-                          }
-                        },
-                        onLongPressStart: (details) => _onLongPressStart(day),
-                      ),
-                    );
-                  }).toList(),
+                        return Expanded(
+                          child: CalendarDayCell(
+                            key: _dayKeys[day],
+                            day: day,
+                            isToday: isToday,
+                            isSelected: isSelected,
+                            isCurrentMonth: isCurrentMonth,
+                            isHoliday: isHoliday,
+                            visibleItems: visibleItems,
+                            overflowCount: overflowCount,
+                            isDragSelected: isDragSelected,
+                            isDragging: _isDragging,
+                            weekIndex: week.indexOf(day),
+                            onTap: () {
+                              if (!_isDragging && !_isLongPressActive) {
+                                widget.onDaySelected(day);
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => CalendarTaskList(selectedDate: day),
+                                );
+                              }
+                            },
+                            onLongPressStart: (details) => _onLongPressStart(day),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
                 ),
                 if (weekIndex < (_paddedDays.length / 7).ceil() - 1)
                   Padding(
@@ -176,6 +182,44 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildDragSelectionOverlay(List<DateTime> week) {
+    return Positioned.fill(
+      child: Row(
+        children: week.map((day) {
+          final isDragSelected = _selectedDates.any((date) => _isSameDay(date, day));
+          final dayIndex = week.indexOf(day);
+          final isFirstSelected = isDragSelected && (dayIndex == 0 || !_selectedDates.any((date) => _isSameDay(date, week[dayIndex - 1])));
+          final isLastSelected = isDragSelected && (dayIndex == 6 || !_selectedDates.any((date) => _isSameDay(date, week[dayIndex + 1])));
+          
+          return Expanded(
+            child: isDragSelected
+                ? Container(
+                    height: 90.h,
+                    margin: EdgeInsets.only(
+                      left: isFirstSelected ? 2.w : 0,
+                      right: isLastSelected ? 2.w : 0,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withAlpha((0.2 * 255).toInt()),
+                      border: Border.all(
+                        color: AppColors.accent,
+                        width: 1.5.w,
+                      ),
+                      borderRadius: BorderRadius.only(
+                        topLeft: isFirstSelected ? Radius.circular(8.r) : Radius.zero,
+                        bottomLeft: isFirstSelected ? Radius.circular(8.r) : Radius.zero,
+                        topRight: isLastSelected ? Radius.circular(8.r) : Radius.zero,
+                        bottomRight: isLastSelected ? Radius.circular(8.r) : Radius.zero,
+                      ),
+                    ),
+                  )
+                : const SizedBox(),
+          );
+        }).toList(),
       ),
     );
   }
@@ -293,6 +337,7 @@ class CalendarDayCell extends StatelessWidget {
   final int overflowCount;
   final bool isDragSelected;
   final bool isDragging;
+  final int weekIndex; // 주에서의 인덱스 (0-6)
   final VoidCallback onTap;
   final Function(LongPressStartDetails) onLongPressStart;
 
@@ -307,6 +352,7 @@ class CalendarDayCell extends StatelessWidget {
     required this.overflowCount,
     required this.isDragSelected,
     required this.isDragging,
+    required this.weekIndex,
     required this.onTap,
     required this.onLongPressStart,
   });
@@ -321,55 +367,42 @@ class CalendarDayCell extends StatelessWidget {
         padding: EdgeInsets.only(top: 4.h, left: 4.w, right: 4.w, bottom: 2.h),
         constraints: BoxConstraints(minHeight: 90.h),
         decoration: BoxDecoration(
-          color: isDragSelected 
-              ? AppColors.accent.withAlpha((0.3 * 255).toInt())
-              : isToday 
-                  ? AppColors.highlight.withAlpha((0.2 * 255).toInt()) 
-                  : null,
+          color: isToday 
+              ? AppColors.highlight.withAlpha((0.15 * 255).toInt()) 
+              : null,
           border: Border.all(
-            color: isDragSelected 
-                ? AppColors.accent
-                : isSelected 
-                    ? AppColors.accent 
-                    : Colors.transparent,
-            width: isDragSelected ? 2.0.w : 1.5.w,
+            color: isSelected 
+                ? AppColors.accent 
+                : Colors.transparent,
+            width: 1.5.w,
           ),
           borderRadius: BorderRadius.circular(8.r),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Text(
-                  '${day.day}',
-                  style: AppTextStyles.body.copyWith(
-                    fontSize: 14.sp,
-                    color: isHoliday
-                        ? Colors.red
-                        : isCurrentMonth
-                            ? (day.weekday == DateTime.sunday
-                                ? Colors.red
-                                : day.weekday == DateTime.saturday
-                                    ? Colors.blue
-                                    : AppColors.text)
-                            : AppColors.subText,
-                    fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                  ),
-                ),
-                if (isDragSelected && isDragging)
-                  Padding(
-                    padding: EdgeInsets.only(left: 4.w),
-                    child: Icon(
-                      Icons.circle,
-                      size: 8.sp,
-                      color: AppColors.accent,
-                    ),
-                  ),
-              ],
+            Text(
+              '${day.day}',
+              style: AppTextStyles.body.copyWith(
+                fontSize: 14.sp,
+                color: isHoliday
+                    ? Colors.red
+                    : isCurrentMonth
+                        ? (day.weekday == DateTime.sunday
+                            ? Colors.red
+                            : day.weekday == DateTime.saturday
+                                ? Colors.blue
+                                : AppColors.text)
+                        : AppColors.subText,
+                fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+              ),
             ),
             SizedBox(height: 1.h),
-            ...visibleItems.map((item) => CalendarTaskItem(item: item)),
+            ...visibleItems.map((item) => CalendarTaskItem(
+              item: item, 
+              weekIndex: weekIndex,
+              totalItemsInWeek: visibleItems.length,
+            )),
             if (overflowCount > 0)
               Text(
                 '+$overflowCount',
@@ -384,10 +417,14 @@ class CalendarDayCell extends StatelessWidget {
 
 class CalendarTaskItem extends StatelessWidget {
   final Map<String, dynamic> item;
+  final int weekIndex;
+  final int totalItemsInWeek;
 
   const CalendarTaskItem({
     super.key,
     required this.item,
+    required this.weekIndex,
+    required this.totalItemsInWeek,
   });
 
   @override
@@ -399,11 +436,15 @@ class CalendarTaskItem extends StatelessWidget {
     final color = item['color'] as Color? ?? AppColors.accent.withAlpha((0.15 * 255).toInt());
     final isImportant = item['priority'] == '중요';
 
+    // 통일된 패딩과 높이 설정
+    final unifiedPadding = EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.2.h);
+    final unifiedMargin = EdgeInsets.only(bottom: 1.2.h);
+
     if (isSecret) {
       return Padding(
-        padding: EdgeInsets.only(bottom: 1.2.h),
+        padding: unifiedMargin,
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 7.h),
+          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 7.h), // 원래 비밀 일정의 패딩
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(4.r),
@@ -412,68 +453,57 @@ class CalendarTaskItem extends StatelessWidget {
       );
     }
 
-    // 기간 일정의 경우 특별한 스타일 적용
     if (isPeriod && item['periodDisplayType'] != null) {
       final displayType = item['periodDisplayType'] as PeriodTaskDisplayType;
       return Padding(
-        padding: EdgeInsets.only(bottom: 1.2.h),
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.2.h),
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: _getPeriodBorderRadius(displayType),
-          ),
-          child: Row(
-            children: [
-              if (!isHolidayItem && isImportant)
-                Padding(
-                  padding: EdgeInsets.only(right: 2.w),
-                  child: Icon(
-                    LucideIcons.alertTriangle,
-                    size: 12.sp,
-                    color: Colors.red,
+        padding: unifiedMargin,
+        child: Transform.translate(
+          offset: _getOffsetForPeriodDisplay(displayType),
+          child: Container(
+            width: _getWidthForPeriodDisplay(context, displayType),
+            padding: unifiedPadding,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: _getPeriodBorderRadius(displayType),
+            ),
+            child: Row(
+              children: [
+                if (!isHolidayItem && isImportant && displayType == PeriodTaskDisplayType.start)
+                  Padding(
+                    padding: EdgeInsets.only(right: 2.w),
+                    child: Icon(
+                      LucideIcons.alertTriangle,
+                      size: 10.sp,
+                      color: Colors.red,
+                    ),
+                  ),
+                Expanded(
+                  child: Text(
+                    displayType == PeriodTaskDisplayType.start || displayType == PeriodTaskDisplayType.single 
+                        ? name 
+                        : '', // 시작일에만 텍스트 표시
+                    style: AppTextStyles.caption.copyWith(
+                      fontSize: 10.sp,
+                      color: isHolidayItem ? Colors.red : AppColors.text,
+                      fontWeight: FontWeight.normal,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.fade,
+                    softWrap: false,
                   ),
                 ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      style: AppTextStyles.caption.copyWith(
-                        fontSize: 10.sp,
-                        color: isHolidayItem ? Colors.red : AppColors.text,
-                        fontWeight: displayType == PeriodTaskDisplayType.start ? FontWeight.bold : FontWeight.normal,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.fade,
-                      softWrap: false,
-                    ),
-                  ],
-                ),
-              ),
-              // 기간 일정 표시 아이콘
-              if (displayType == PeriodTaskDisplayType.start)
-                Icon(Icons.play_arrow, size: 12.sp, color: AppColors.text)
-              else if (displayType == PeriodTaskDisplayType.end)
-                Icon(Icons.stop, size: 12.sp, color: AppColors.text)
-              else if (displayType == PeriodTaskDisplayType.middle)
-                Container(
-                  width: 12.w,
-                  height: 2.h,
-                  color: AppColors.text.withAlpha((0.5 * 255).toInt()),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       );
     }
 
-    // 일반 일정 표시
+    // 일반 일정 표시 (공휴일 포함)
     return Padding(
-      padding: EdgeInsets.only(bottom: 1.2.h),
+      padding: unifiedMargin,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.2.h),
+        padding: unifiedPadding,
         decoration: BoxDecoration(
           color: isHolidayItem
               ? AppColors.warning.withAlpha((0.2 * 255).toInt())
@@ -487,31 +517,56 @@ class CalendarTaskItem extends StatelessWidget {
                 padding: EdgeInsets.only(right: 2.w),
                 child: Icon(
                   LucideIcons.alertTriangle,
-                  size: 12.sp,
+                  size: 10.sp,
                   color: Colors.red,
                 ),
               ),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: AppTextStyles.caption.copyWith(
-                      fontSize: 10.sp,
-                      color: isHolidayItem ? Colors.red : AppColors.text,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.fade,
-                    softWrap: false,
-                  ),
-                ],
+              child: Text(
+                name,
+                style: AppTextStyles.caption.copyWith(
+                  fontSize: 10.sp,
+                  color: isHolidayItem ? Colors.red : AppColors.text,
+                  fontWeight: FontWeight.normal,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.fade,
+                softWrap: false,
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Offset _getOffsetForPeriodDisplay(PeriodTaskDisplayType displayType) {
+    switch (displayType) {
+      case PeriodTaskDisplayType.start:
+        return Offset(0, 0);
+      case PeriodTaskDisplayType.middle:
+        return Offset(-2.w, 0);
+      case PeriodTaskDisplayType.end:
+        return Offset(-2.w, 0);
+      case PeriodTaskDisplayType.single:
+        return Offset(0, 0);
+    }
+  }
+
+  double _getWidthForPeriodDisplay(BuildContext context, PeriodTaskDisplayType displayType) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final baseWidth = (screenWidth - 32.w) / 7;
+    
+    switch (displayType) {
+      case PeriodTaskDisplayType.start:
+        return baseWidth + 2.w;
+      case PeriodTaskDisplayType.middle:
+        return baseWidth + 4.w;
+      case PeriodTaskDisplayType.end:
+        return baseWidth + 2.w;
+      case PeriodTaskDisplayType.single:
+        return baseWidth;
+    }
   }
 
   BorderRadius _getPeriodBorderRadius(PeriodTaskDisplayType displayType) {

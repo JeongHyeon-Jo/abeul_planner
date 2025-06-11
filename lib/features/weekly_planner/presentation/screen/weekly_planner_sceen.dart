@@ -129,7 +129,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
                         bottom: 0,
                         child: Container(
                           width: 1.w,
-                          color: AppColors.highlight,
+                          color: AppColors.primary,
                         ),
                       );
                     }),
