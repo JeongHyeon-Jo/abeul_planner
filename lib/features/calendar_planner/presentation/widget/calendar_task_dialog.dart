@@ -15,12 +15,16 @@ class CalendarTaskDialog extends ConsumerStatefulWidget {
   final CalendarTaskModel? existingTask;
   final int? index;
   final DateTime selectedDate;
+  final DateTime? initialEndDate; // 드래그로 선택된 종료일
+  final TaskTypeModel? initialTaskType; // 초기 태스크 타입
 
   const CalendarTaskDialog({
     super.key,
     this.existingTask,
     this.index,
     required this.selectedDate,
+    this.initialEndDate,
+    this.initialTaskType,
   });
 
   @override
@@ -65,8 +69,10 @@ class _CalendarTaskDialogState extends ConsumerState<CalendarTaskDialog> {
     _isSecret = widget.existingTask?.secret ?? false;
     _selectedColorValue = widget.existingTask?.colorValue ?? _colorStorageColors.first.toARGB32();
     _isImportant = widget.existingTask?.priority == '중요';
-    _taskType = widget.existingTask?.taskType ?? TaskTypeModel.single;
-    _endDate = widget.existingTask?.endDate;
+    
+    // 드래그로 선택된 경우 초기값 설정
+    _taskType = widget.existingTask?.taskType ?? widget.initialTaskType ?? TaskTypeModel.single;
+    _endDate = widget.existingTask?.endDate ?? widget.initialEndDate;
   }
 
   @override
