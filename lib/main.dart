@@ -90,7 +90,7 @@ class _MyAppState extends ConsumerState<MyApp> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        MidnightRefresher.start(context);
+        MidnightRefresher.start();
       }
     });
   }

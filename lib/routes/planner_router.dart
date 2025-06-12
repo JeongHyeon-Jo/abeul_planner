@@ -1,5 +1,6 @@
 // planner_router.dart
 import 'package:go_router/go_router.dart';
+import 'package:abeul_planner/core/utils/global_navigator_key.dart';
 // 플래너 화면
 import 'package:abeul_planner/features/home_planner/presentation/screen/planner_home_screen.dart';
 import 'package:abeul_planner/features/home_planner/presentation/widget/planner_scaffold.dart';
@@ -16,6 +17,7 @@ import 'package:abeul_planner/features/record/presentation/screen/calendar_recor
 import 'package:abeul_planner/features/record/presentation/screen/record_select_screen.dart';
 
 final GoRouter router = GoRouter(
+  navigatorKey: globalNavigatorKey,
   initialLocation: '/home',
   routes: [
     ShellRoute(
