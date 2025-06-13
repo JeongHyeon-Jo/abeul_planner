@@ -1,4 +1,4 @@
-// planner_home_screen.dart
+// features/home_planner/presentation/screen/planner_home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -7,6 +7,8 @@ import 'package:intl/intl.dart';
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/core/styles/color.dart';
+import 'package:abeul_planner/core/onboarding/onboarding_mixin.dart';
+import 'package:abeul_planner/core/onboarding/onboarding_overlay.dart';
 // provider
 import 'package:abeul_planner/features/calendar_planner/presentation/provider/calendar_task_provider.dart';
 import 'package:abeul_planner/features/weekly_planner/presentation/provider/weekly_task_provider.dart';
@@ -17,11 +19,51 @@ import 'package:abeul_planner/features/home_planner/presentation/widget/weekly_s
 import 'package:abeul_planner/features/home_planner/presentation/widget/daily_section.dart';
 import 'package:abeul_planner/features/home_planner/presentation/widget/expandable_section.dart';
 
-class PlannerHomeScreen extends ConsumerWidget {
+class PlannerHomeScreen extends ConsumerStatefulWidget {
   const PlannerHomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PlannerHomeScreen> createState() => _PlannerHomeScreenState();
+}
+
+class _PlannerHomeScreenState extends ConsumerState<PlannerHomeScreen> with OnboardingMixin {
+  // 온보딩을 위한 GlobalKey들
+  final GlobalKey _calendarSectionKey = GlobalKey();
+  final GlobalKey _weeklySectionKey = GlobalKey();
+  final GlobalKey _dailySectionKey = GlobalKey();
+
+  @override
+  String get onboardingKey => 'home';
+
+  @override
+  List<OnboardingStep> get onboardingSteps => [
+    OnboardingStep(
+      title: '달력 플래너',
+      description: '특정 날짜에 할 일을 등록하고 관리할 수 있습니다.\n중요한 일정과 비밀 일정도 설정 가능해요!',
+      targetKey: _calendarSectionKey,
+    ),
+    OnboardingStep(
+      title: '주간 플래너',
+      description: '요일별로 반복되는 루틴이나 할 일을 관리할 수 있습니다.\n매주 규칙적으로 해야 할 일들을 등록해보세요!',
+      targetKey: _weeklySectionKey,
+    ),
+    OnboardingStep(
+      title: '일상 플래너',
+      description: '일상적인 상황과 행동을 기록하고 관리할 수 있습니다.\n상황별로 어떤 행동을 취할지 미리 계획해보세요!',
+      targetKey: _dailySectionKey,
+    ),
+    const OnboardingStep(
+      title: '네비게이션 바',
+      description: '하단의 탭으로 각 플래너 간에 쉽게 이동할 수 있습니다.\n가운데 홈 버튼을 누르면 언제든 이 화면으로 돌아올 수 있어요!',
+    ),
+    const OnboardingStep(
+      title: '종합 플래너 완료!',
+      description: '이제 모든 플래너를 한 곳에서 확인할 수 있습니다.\n각 섹션을 클릭하여 자세한 관리 화면으로 이동하거나,\n제목을 터치하여 섹션을 접고 펼칠 수 있어요!',
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
     final calendarTasks = ref.watch(calendarTaskProvider);
     final weeklyTasks = ref.watch(weeklyTaskProvider);
     final dailyTasks = ref.watch(dailyTaskProvider);
@@ -30,7 +72,7 @@ class PlannerHomeScreen extends ConsumerWidget {
     final appBarTitle = DateFormat('yyyy년 M월 d일 (E)', 'ko_KR').format(now);
     final weekday = DateFormat('E', 'ko_KR').format(now);
 
-    return Scaffold(
+    final mainContent = Scaffold(
       appBar: CustomAppBar(
         title: Text(
           appBarTitle,
@@ -38,24 +80,28 @@ class PlannerHomeScreen extends ConsumerWidget {
         ),
         isTransparent: true,
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0.w),
-        child: SingleChildScrollView(
+      body: SingleChildScrollView(
+        controller: scrollController,
+        child: Padding(
+          padding: EdgeInsets.all(16.0.w),
           child: Column(
             children: [
               ExpandableSection(
+                key: _calendarSectionKey,
                 title: '달력 플래너',
                 route: '/calendar',
                 child: CalendarSection(now: now, calendarTasks: calendarTasks),
               ),
               SizedBox(height: 16.h),
               ExpandableSection(
+                key: _weeklySectionKey,
                 title: '주간 플래너',
                 route: '/weekly',
                 child: WeeklySection(weekday: weekday, weeklyTasks: weeklyTasks),
               ),
               SizedBox(height: 16.h),
               ExpandableSection(
+                key: _dailySectionKey,
                 title: '일상 플래너',
                 route: '/daily',
                 child: DailySection(dailyTasks: dailyTasks),
@@ -65,5 +111,7 @@ class PlannerHomeScreen extends ConsumerWidget {
         ),
       ),
     );
+
+    return buildWithOnboarding(mainContent);
   }
 }
