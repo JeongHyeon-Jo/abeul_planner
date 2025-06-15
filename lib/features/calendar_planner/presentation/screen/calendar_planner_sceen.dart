@@ -6,6 +6,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
+import 'package:abeul_planner/core/onboarding/onboarding_mixin.dart';
+import 'package:abeul_planner/core/onboarding/onboarding_overlay.dart';
 // feature
 import 'package:abeul_planner/features/calendar_planner/presentation/screen/calendar_all_task_screen.dart';
 import 'package:abeul_planner/features/calendar_planner/presentation/screen/search_task_screen.dart';
@@ -19,10 +21,47 @@ class CalendarPlannerScreen extends ConsumerStatefulWidget {
   ConsumerState<CalendarPlannerScreen> createState() => _CalendarPlannerScreenState();
 }
 
-class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
+class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> with OnboardingMixin {
   late PageController _pageController;
   final int initialPage = 1000;
   DateTime _selectedDay = DateTime.now();
+
+  // 온보딩을 위한 GlobalKey들
+  final GlobalKey _menuButtonKey = GlobalKey();
+  final GlobalKey _searchButtonKey = GlobalKey();
+  final GlobalKey _monthYearKey = GlobalKey();
+  final GlobalKey _calendarGridKey = GlobalKey();
+
+  @override
+  String get onboardingKey => 'calendar';
+
+  @override
+  List<OnboardingStep> get onboardingSteps => [
+    OnboardingStep(
+      title: '일정 목록',
+      description: '좌측 상단의 메뉴 버튼을 눌러\n등록된 모든 일정을 확인할 수 있습니다!',
+      targetKey: _menuButtonKey,
+    ),
+    OnboardingStep(
+      title: '일정 검색',
+      description: '우측 상단의 검색 버튼을 눌러\n원하는 일정을 빠르게 찾을 수 있습니다.\n키워드로 쉽게 검색해보세요!',
+      targetKey: _searchButtonKey,
+    ),
+    OnboardingStep(
+      title: '년도/월 변경',
+      description: '상단의 년도/월 부분을 눌러\n원하는 년도와 월로 이동할 수 있습니다.\n미래나 과거 일정도 확인해보세요!',
+      targetKey: _monthYearKey,
+    ),
+    OnboardingStep(
+      title: '일정 추가',
+      description: '달력의 날짜를 눌러 일정을 추가하거나\n날짜를 길게 눌러 드래그하면\n기간 일정을 쉽게 만들 수 있습니다!',
+      targetKey: _calendarGridKey,
+    ),
+    const OnboardingStep(
+      title: '달력 플래너 완료!',
+      description: '이제 달력을 통해 일정을\n체계적으로 관리할 수 있습니다.\n중요한 약속과 일정을 놓치지 마세요!',
+    ),
+  ];
 
   @override
   void initState() {
@@ -38,7 +77,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final mainContent = Scaffold(
       appBar: CustomAppBar(
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -51,6 +90,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
             ),
             SizedBox(width: 4.w),
             GestureDetector(
+              key: _monthYearKey,
               onTap: () async {
                 final picked = await showMonthYearPickerDialog(context, DateTime.now());
                 if (picked != null) {
@@ -80,6 +120,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
         ),
         isTransparent: true,
         leading: IconButton(
+          key: _menuButtonKey,
           icon: Icon(Icons.menu, color: AppColors.text, size: 22.sp),
           onPressed: () {
             Navigator.of(context).push(
@@ -89,6 +130,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
         ),
         actions: [
           IconButton(
+            key: _searchButtonKey,
             icon: Icon(Icons.search, color: AppColors.text, size: 22.sp),
             onPressed: () {
               Navigator.of(context).push(
@@ -107,12 +149,14 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
           return LayoutBuilder(
             builder: (context, constraints) {
               return SingleChildScrollView(
+                controller: scrollController,
                 child: ConstrainedBox(
                   constraints: BoxConstraints(minHeight: constraints.maxHeight),
                   child: Column(
                     children: [
                       _buildWeekHeader(),
                       CalendarGrid(
+                        key: _calendarGridKey,
                         monthDate: date,
                         selectedDay: _selectedDay,
                         onDaySelected: (selectedDay) {
@@ -130,6 +174,8 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> {
         },
       ),
     );
+
+    return buildWithOnboarding(mainContent);
   }
 
   Widget _buildWeekHeader() {
