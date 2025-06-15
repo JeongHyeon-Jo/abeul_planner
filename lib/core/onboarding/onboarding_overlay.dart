@@ -112,9 +112,6 @@ class _OnboardingOverlayState extends State<OnboardingOverlay> {
         // 하이라이트 테두리
         if (_targetRect != null) _buildHighlightBorder(),
         
-        // 우측 상단 X 버튼
-        _buildCloseButton(),
-        
         // 고정 위치 설명 박스 (별도의 Material로 감싸서 elevation 적용)
         _buildFixedDescriptionBox(step, isFirstStep, isLastStep),
       ],
@@ -137,24 +134,12 @@ class _OnboardingOverlayState extends State<OnboardingOverlay> {
     );
   }
 
-  Widget _buildCloseButton() {
-    return Positioned(
-      top: MediaQuery.of(context).padding.top + 16.h,
-      right: 16.w,
-      child: GestureDetector(
-        onTap: widget.onSkip,
-        child: Icon(
-          Icons.close,
-          size: 30.sp,
-          color: Colors.grey[600],
-        ),
-      ),
-    );
-  }
-
   Widget _buildFixedDescriptionBox(OnboardingStep step, bool isFirstStep, bool isLastStep) {
+    // 종합 플래너 // 일상 플래너 단계일 때만 다이얼로그를 위로 올리기
     final isDailyPlannerStep = step.title == '일상 플래너';
-    final bottomPosition = isDailyPlannerStep ? 350.h : 100.h;
+    // 일상 플래너 // 일정 추가하기 단계일 때도 다이얼로그를 위로 올리기
+    final isAddTaskStep = step.title == '일정 추가하기';
+    final bottomPosition = isDailyPlannerStep ? 350.h : isAddTaskStep ? 160.h : 100.h;
     
     return Positioned(
       left: 16.w,

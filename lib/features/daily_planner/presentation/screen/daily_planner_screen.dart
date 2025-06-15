@@ -11,6 +11,8 @@ import 'package:abeul_planner/features/auth/presentation/provider/user_provider.
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
+import 'package:abeul_planner/core/onboarding/onboarding_mixin.dart';
+import 'package:abeul_planner/core/onboarding/onboarding_overlay.dart';
 // widget
 import 'package:abeul_planner/features/daily_planner/presentation/widget/daily_task_tile.dart';
 import 'package:abeul_planner/features/daily_planner/presentation/widget/daily_task_dialog.dart';
@@ -24,11 +26,36 @@ class DailyPlannerScreen extends ConsumerStatefulWidget {
   ConsumerState<DailyPlannerScreen> createState() => _DailyPlannerScreenState();
 }
 
-class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
+class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> with OnboardingMixin {
   final TextEditingController _situationController = TextEditingController(); // 상황 입력
   final TextEditingController _actionController = TextEditingController(); // 행동 입력
   final appBarTitle = DateFormat('yyyy년 M월 d일 (E)', 'ko_KR').format(DateTime.now());
   bool _isEditing = false; // 편집 모드 여부
+
+  // 온보딩을 위한 GlobalKey들
+  final GlobalKey _editButtonKey = GlobalKey();
+  final GlobalKey _fabKey = GlobalKey();
+
+  @override
+  String get onboardingKey => 'daily';
+
+  @override
+  List<OnboardingStep> get onboardingSteps => [
+    OnboardingStep(
+      title: '일정 추가하기',
+      description: '우측 하단의 + 버튼을 눌러\n새로운 일정을 추가할 수 있습니다.\n언제, 어떤 행동을 할지 미리 계획해보세요!',
+      targetKey: _fabKey,
+    ),
+    OnboardingStep(
+      title: '편집 모드',
+      description: '우측 상단의 편집 버튼을 눌러\n일정을 수정, 삭제가 가능합니다.\n일정의 순서를 바꿀 수도 있습니다!',
+      targetKey: _editButtonKey,
+    ),
+    const OnboardingStep(
+      title: '일상 플래너 완료!',
+      description: '이제 언제 어떤 행동을 할지\n미리 계획하고 관리할 수 있습니다.\n상황별 행동 계획을 세워\n더 체계적인 일상을 만들어보세요!',
+    ),
+  ];
 
   @override
   void dispose() {
@@ -83,7 +110,7 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
             ...tasks.where((task) => task.isCompleted),
           ];
 
-    return Scaffold(
+    final mainContent = Scaffold(
       appBar: CustomAppBar(
         title: Text(
           appBarTitle,
@@ -92,6 +119,7 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
         isTransparent: true,
         actions: [
           IconButton(
+            key: _editButtonKey,
             icon: Icon(
               _isEditing ? Icons.check : Icons.edit_calendar,
               color: _isEditing ? AppColors.success : AppColors.text,
@@ -111,6 +139,7 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
                 child: sortedTasks.isEmpty
                     ? Center(child: Text('등록된 일정이 없습니다.', style: AppTextStyles.body))
                     : ReorderableListView.builder(
+                        scrollController: scrollController,
                         padding: EdgeInsets.only(bottom: 80.h),
                         buildDefaultDragHandles: false,
                         itemCount: sortedTasks.length,
@@ -140,11 +169,14 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> {
       floatingActionButton: Transform.translate(
         offset: Offset(-6.w, -6.h),
         child: FloatingActionButton(
+          key: _fabKey,
           onPressed: () => _showTaskDialog(),
           backgroundColor: AppColors.accent,
           child: Icon(Icons.add, size: 24.sp),
         ),
       ),
     );
+
+    return buildWithOnboarding(mainContent);
   }
 }
