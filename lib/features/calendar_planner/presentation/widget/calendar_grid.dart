@@ -39,7 +39,6 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
   bool _isDragging = false;
   bool _isLongPressActive = false;
   Set<DateTime> _selectedDates = {};
-  final Map<DateTime, GlobalKey> _dayKeys = {};
   late List<DateTime> _paddedDays;
 
   @override
@@ -52,52 +51,11 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
     final gridCount = (allDays.length / 7).ceil() * 7;
     _paddedDays = allDays + List.generate(gridCount - allDays.length, (i) => end.add(Duration(days: i + 1)));
 
-    for (final day in _paddedDays) {
-      _dayKeys.putIfAbsent(day, () => GlobalKey());
-    }
-
     final allTasks = ref.watch(calendarTaskProvider);
     final taskProvider = ref.read(calendarTaskProvider.notifier);
 
-    final Map<String, List<Map<String, dynamic>>> mappedTasks = {};
-    for (final task in allTasks) {
-      if (task.isPeriodTask) {
-        final startDay = DateTime(task.date.year, task.date.month, task.date.day);
-        final endDay = DateTime(task.endDate!.year, task.endDate!.month, task.endDate!.day);
-        
-        DateTime currentDay = startDay;
-        while (currentDay.isBefore(endDay) || currentDay.isAtSameMomentAs(endDay)) {
-          final key = DateFormat('yyyy-MM-dd').format(currentDay);
-          final displayType = taskProvider.getPeriodTaskDisplayType(task, currentDay);
-          
-          mappedTasks.putIfAbsent(key, () => []).add(<String, dynamic>{
-            'type': 'event',
-            'name': task.secret == true ? '' : task.memo,
-            'isSecret': task.secret == true,
-            'color': task.color,
-            'isHoliday': false,
-            'priority': task.priority,
-            'isPeriod': true,
-            'periodDisplayType': displayType,
-            'task': task,
-          });
-          
-          currentDay = currentDay.add(const Duration(days: 1));
-        }
-      } else {
-        final key = DateFormat('yyyy-MM-dd').format(task.date);
-        mappedTasks.putIfAbsent(key, () => []).add(<String, dynamic>{
-          'type': 'event',
-          'name': task.secret == true ? '' : task.memo,
-          'isSecret': task.secret == true,
-          'color': task.color,
-          'isHoliday': false,
-          'priority': task.priority,
-          'isPeriod': false,
-          'task': task,
-        });
-      }
-    }
+    // 일정 데이터 처리
+    final processedData = _processTaskData(allTasks, taskProvider);
 
     return Listener(
       onPointerMove: _onPointerMove,
@@ -108,71 +66,12 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
         itemCount: (_paddedDays.length / 7).ceil(),
         itemBuilder: (context, weekIndex) {
           final week = _paddedDays.skip(weekIndex * 7).take(7).toList();
-
+          
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: 8.w),
             child: Column(
               children: [
-                // 드래그 선택 오버레이를 위한 Stack
-                Stack(
-                  children: [
-                    // 드래그 선택 배경
-                    if (_isDragging && _selectedDates.isNotEmpty)
-                      _buildDragSelectionOverlay(week),
-                    // 실제 달력 셀들
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: week.map((day) {
-                        final dateKey = DateFormat('yyyy-MM-dd').format(day);
-                        final holidayNames = koreanHolidays[dateKey];
-                        final isHoliday = holidayNames != null && holidayNames.isNotEmpty;
-                        final isToday = DateTime.now().year == day.year && DateTime.now().month == day.month && DateTime.now().day == day.day;
-                        final isSelected = widget.selectedDay.year == day.year && widget.selectedDay.month == day.month && widget.selectedDay.day == day.day;
-                        final isCurrentMonth = day.month == widget.monthDate.month;
-                        final isDragSelected = _selectedDates.any((date) => _isSameDay(date, day));
-
-                        final List<Map<String, dynamic>> allItems = [
-                          if (holidayNames is List<String>)
-                            ...holidayNames.map((e) => <String, dynamic>{
-                                  'type': 'holiday',
-                                  'name': e,
-                                  'isHoliday': true,
-                                }),
-                          ...(mappedTasks[dateKey] ?? []),
-                        ];
-
-                        final List<Map<String, dynamic>> visibleItems = allItems.length > 4 ? allItems.take(3).toList() : allItems;
-                        final overflowCount = allItems.length > 4 ? allItems.length - 3 : 0;
-
-                        return Expanded(
-                          child: CalendarDayCell(
-                            key: _dayKeys[day],
-                            day: day,
-                            isToday: isToday,
-                            isSelected: isSelected,
-                            isCurrentMonth: isCurrentMonth,
-                            isHoliday: isHoliday,
-                            visibleItems: visibleItems,
-                            overflowCount: overflowCount,
-                            isDragSelected: isDragSelected,
-                            isDragging: _isDragging,
-                            weekIndex: week.indexOf(day),
-                            onTap: () {
-                              if (!_isDragging && !_isLongPressActive) {
-                                widget.onDaySelected(day);
-                                showDialog(
-                                  context: context,
-                                  builder: (_) => CalendarTaskList(selectedDate: day),
-                                );
-                              }
-                            },
-                            onLongPressStart: (details) => _onLongPressStart(day),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
+                _buildWeekSizedBox(week, processedData, weekIndex),
                 if (weekIndex < (_paddedDays.length / 7).ceil() - 1)
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 3.h, horizontal: 2.w),
@@ -186,44 +85,658 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
     );
   }
 
-  Widget _buildDragSelectionOverlay(List<DateTime> week) {
-    return Positioned.fill(
+  Widget _buildWeekSizedBox(List<DateTime> week, ProcessedTaskData taskData, int weekIndex) {
+    final containerHeight = 110.h;
+
+    return SizedBox(
+      height: containerHeight,
+      child: Stack(
+        children: [
+          // 기본 날짜 셀들 (배경 + 날짜)
+          _buildDateCellsLayer(week),
+          
+          // 기간 일정 레이어들 (우선 표시)
+          ..._buildPeriodLayers(week, taskData.periodTasks),
+          
+          // 단일 일정 레이어들 (기간 일정과 함께 5개 제한)
+          ..._buildRegularTaskLayers(week, taskData),
+          
+          // 드래그 선택 오버레이
+          if (_isDragging && _selectedDates.isNotEmpty)
+            _buildContinuousDragOverlay(week),
+          
+          // 터치 감지 레이어 (최상단)
+          _buildTouchLayer(week),
+        ],
+      ),
+    );
+  }
+
+  // 특정 날짜의 기간 일정들 가져오기
+  List<PeriodTaskSegment> _getPeriodTasksForDay(DateTime day, List<PeriodTaskGroup> periodTasks) {
+    final List<PeriodTaskSegment> dayPeriodTasks = [];
+    for (final group in periodTasks) {
+      for (final period in group.periods) {
+        if (period.dates.contains(day)) {
+          dayPeriodTasks.add(period);
+        }
+      }
+    }
+    return dayPeriodTasks;
+  }
+
+  // 두 기간 일정이 겹치는지 확인
+  bool _periodsOverlap(PeriodTaskSegment period1, PeriodTaskSegment period2) {
+    for (final date1 in period1.dates) {
+      if (period2.dates.contains(date1)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // 기본 날짜 셀 레이어
+  Widget _buildDateCellsLayer(List<DateTime> week) {
+    return Row(
+      children: week.map((day) {
+        final isToday = _isToday(day);
+        final isSelected = _isSelected(day);
+        final isCurrentMonth = day.month == widget.monthDate.month;
+        final isHoliday = _isHoliday(day);
+
+        return Expanded(
+          child: Container(
+            height: 110.h,
+            margin: EdgeInsets.symmetric(horizontal: 1.w),
+            decoration: BoxDecoration(
+              color: isToday ? AppColors.highlight.withAlpha((0.15 * 255).toInt()) : null,
+              border: Border.all(
+                color: isSelected ? AppColors.accent : Colors.transparent,
+                width: 1.5.w,
+              ),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            alignment: Alignment.topLeft,
+            padding: EdgeInsets.only(top: 2.h, left: 6.w, right: 6.w, bottom: 2.h),
+            child: Text(
+              '${day.day}',
+              style: AppTextStyles.body.copyWith(
+                fontSize: 14.sp,
+                color: _getDayTextColor(day, isCurrentMonth, isHoliday),
+                fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  // 기간 일정 레이어들 생성
+  List<Widget> _buildPeriodLayers(List<DateTime> week, List<PeriodTaskGroup> periodTasks) {
+    final List<Widget> layers = [];
+    
+    final weekPeriods = <PeriodTaskSegment>[];
+    for (final group in periodTasks) {
+      for (final period in group.periods) {
+        if (week.any((day) => period.dates.contains(day))) {
+          weekPeriods.add(period);
+        }
+      }
+    }
+    
+    if (weekPeriods.isEmpty) return layers;
+    
+    final periodLayers = <List<PeriodTaskSegment>>[];
+    
+    for (final period in weekPeriods) {
+      bool placed = false;
+      for (final layer in periodLayers) {
+        bool canPlace = true;
+        for (final existingPeriod in layer) {
+          if (_periodsOverlap(period, existingPeriod)) {
+            canPlace = false;
+            break;
+          }
+        }
+        if (canPlace) {
+          layer.add(period);
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) {
+        periodLayers.add([period]);
+      }
+    }
+    
+    for (int layerIndex = 0; layerIndex < periodLayers.length; layerIndex++) {
+      final layer = periodLayers[layerIndex];
+      layers.add(_buildPeriodLayer(week, layer, layerIndex));
+    }
+    
+    return layers;
+  }
+
+  Widget _buildPeriodLayer(List<DateTime> week, List<PeriodTaskSegment> periods, int layerIndex) {
+    return Positioned(
+      top: 30.h + (layerIndex * 14.h),
+      left: 2.w,
+      right: 2.w,
+      height: 12.h,
+      child: Stack(
+        children: periods.map((period) {
+          return _buildSinglePeriodBar(week, period);
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildSinglePeriodBar(List<DateTime> week, PeriodTaskSegment period) {
+    int? startIndex;
+    int? endIndex;
+    
+    for (int i = 0; i < week.length; i++) {
+      if (period.dates.contains(week[i])) {
+        startIndex ??= i;
+        endIndex = i;
+      }
+    }
+    
+    if (startIndex == null || endIndex == null) {
+      return const SizedBox.shrink();
+    }
+    
+    final isStart = period.dates.first == week[startIndex];
+    final isEnd = period.dates.last == week[endIndex];
+    final isSingle = startIndex == endIndex;
+    
+    final totalWidth = MediaQuery.of(context).size.width - 20.w;
+    final cellWidth = totalWidth / 7;
+    final startOffset = startIndex * cellWidth;
+    final width = (endIndex - startIndex + 1) * cellWidth;
+    
+    final shouldShowText = isStart || _shouldShowTextInMiddleWeek(period, week);
+    
+    return Positioned(
+      left: startOffset,
+      width: width,
+      top: 0,
+      height: 12.h,
+      child: Container(
+        width: width,
+        height: 12.h,
+        decoration: BoxDecoration(
+          color: period.color,
+          borderRadius: BorderRadius.only(
+            topLeft: (isStart || isSingle) ? Radius.circular(6.r) : Radius.zero,
+            bottomLeft: (isStart || isSingle) ? Radius.circular(6.r) : Radius.zero,
+            topRight: (isEnd || isSingle) ? Radius.circular(6.r) : Radius.zero,
+            bottomRight: (isEnd || isSingle) ? Radius.circular(6.r) : Radius.zero,
+          ),
+        ),
+        child: shouldShowText ? Padding(
+          padding: EdgeInsets.symmetric(horizontal: 3.w),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (period.isImportant)
+                Padding(
+                  padding: EdgeInsets.only(right: 1.w),
+                  child: Icon(
+                    LucideIcons.alertTriangle,
+                    size: 7.sp,
+                    color: Colors.red,
+                  ),
+                ),
+              Flexible(
+                child: Text(
+                  period.displayText,
+                  style: AppTextStyles.caption.copyWith(
+                    fontSize: 8.sp,
+                    color: AppColors.text,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.clip,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+        ) : null,
+      ),
+    );
+  }
+
+  // 일반 일정 레이어들 생성 (기간 일정과 함께 5개 제한)
+  List<Widget> _buildRegularTaskLayers(List<DateTime> week, ProcessedTaskData taskData) {
+    final List<Widget> layers = [];
+    
+    // 최대 5개 슬롯까지만 표시
+    for (int slotIndex = 0; slotIndex < 5; slotIndex++) {
+      layers.add(_buildTaskSlot(week, taskData, slotIndex));
+    }
+    
+    return layers;
+  }
+
+  Widget _buildTaskSlot(List<DateTime> week, ProcessedTaskData taskData, int slotIndex) {
+    final topPosition = 30.h + (slotIndex * 14.h);
+    return Positioned(
+      top: topPosition,
+      left: 2.w,
+      right: 2.w,
+      height: 12.h,
       child: Row(
         children: week.map((day) {
-          final isDragSelected = _selectedDates.any((date) => _isSameDay(date, day));
-          final dayIndex = week.indexOf(day);
-          final isFirstSelected = isDragSelected && (dayIndex == 0 || !_selectedDates.any((date) => _isSameDay(date, week[dayIndex - 1])));
-          final isLastSelected = isDragSelected && (dayIndex == 6 || !_selectedDates.any((date) => _isSameDay(date, week[dayIndex + 1])));
+          final dateKey = DateFormat('yyyy-MM-dd').format(day);
+          final dayTasks = taskData.regularTasks[dateKey] ?? [];
+          final dayPeriodTasks = _getPeriodTasksForDay(day, taskData.periodTasks);
+          
+          // 기간 일정과 단일 일정의 총 개수
+          final periodTaskCount = dayPeriodTasks.length;
+          final regularTaskCount = dayTasks.length;
+          final totalTaskCount = periodTaskCount + regularTaskCount;
+          
+          Widget taskWidget;
+          
+          // 기간 일정이 5개 이상인 경우
+          if (periodTaskCount >= 5) {
+            // 기간 일정 4개만 표시하고 5번째 슬롯에 +N 표시
+            if (slotIndex <= 3) {
+              // 해당 슬롯에 기간 일정이 있는지 확인
+              final hasPeriodTaskAtSlot = _hasPeriodTaskAtSlot(day, taskData.periodTasks, slotIndex);
+              taskWidget = hasPeriodTaskAtSlot ? const SizedBox.shrink() : const SizedBox.shrink();
+            } else if (slotIndex == 4) {
+              // 5번째 슬롯에 남은 모든 일정(기간+단일) +N 표시
+              final remainingCount = totalTaskCount - 4;
+              taskWidget = _buildOverflowWidget(remainingCount);
+            } else {
+              taskWidget = const SizedBox.shrink();
+            }
+          }
+          // 기간 일정이 4개 이하인 경우
+          else {
+            // 해당 슬롯에 기간 일정이 있는지 확인
+            final hasPeriodTaskAtSlot = _hasPeriodTaskAtSlot(day, taskData.periodTasks, slotIndex);
+            
+            if (hasPeriodTaskAtSlot) {
+              // 해당 슬롯에 기간 일정이 있으면 비워둠 (기간 일정이 별도 레이어에서 표시됨)
+              taskWidget = const SizedBox.shrink();
+            } else {
+              // 해당 슬롯에 기간 일정이 없으면 단일 일정 처리
+              // 해당 슬롯보다 위쪽 슬롯들에서 사용된 기간 일정 개수 계산
+              int usedPeriodSlots = 0;
+              for (int i = 0; i < slotIndex; i++) {
+                if (_hasPeriodTaskAtSlot(day, taskData.periodTasks, i)) {
+                  usedPeriodSlots++;
+                }
+              }
+              
+              // 단일 일정에서의 실제 인덱스 계산
+              final regularSlotIndex = slotIndex - usedPeriodSlots;
+              
+              // 총 5개 슬롯에서 기간 일정이 차지하는 슬롯을 제외한 사용 가능한 슬롯 수
+              int availableRegularSlots = 0;
+              for (int i = 0; i < 5; i++) {
+                if (!_hasPeriodTaskAtSlot(day, taskData.periodTasks, i)) {
+                  availableRegularSlots++;
+                }
+              }
+              
+              if (totalTaskCount <= 5) {
+                // 총 일정이 5개 이하면 모든 일정 표시
+                if (regularSlotIndex >= 0 && regularSlotIndex < regularTaskCount) {
+                  taskWidget = _buildRegularTaskWidget(dayTasks[regularSlotIndex]);
+                } else {
+                  taskWidget = const SizedBox.shrink();
+                }
+              } else {
+                // 총 일정이 5개 초과하면 마지막 사용 가능한 슬롯에 +N 표시
+                final isLastAvailableSlot = _isLastAvailableRegularSlot(day, taskData.periodTasks, slotIndex);
+                
+                if (isLastAvailableSlot) {
+                  // 마지막 사용 가능한 슬롯에 +N 표시
+                  final displayedTasks = 4; // 총 4개까지 표시
+                  final remainingCount = totalTaskCount - displayedTasks;
+                  taskWidget = _buildOverflowWidget(remainingCount);
+                } else if (regularSlotIndex >= 0 && regularSlotIndex < availableRegularSlots - 1) {
+                  // 마지막 슬롯이 아니면 일정 표시
+                  taskWidget = _buildRegularTaskWidget(dayTasks[regularSlotIndex]);
+                } else {
+                  taskWidget = const SizedBox.shrink();
+                }
+              }
+            }
+          }
           
           return Expanded(
-            child: isDragSelected
-                ? Container(
-                    height: 90.h,
-                    margin: EdgeInsets.only(
-                      left: isFirstSelected ? 2.w : 0,
-                      right: isLastSelected ? 2.w : 0,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.accent.withAlpha((0.2 * 255).toInt()),
-                      border: Border.all(
-                        color: AppColors.accent,
-                        width: 1.5.w,
-                      ),
-                      borderRadius: BorderRadius.only(
-                        topLeft: isFirstSelected ? Radius.circular(8.r) : Radius.zero,
-                        bottomLeft: isFirstSelected ? Radius.circular(8.r) : Radius.zero,
-                        topRight: isLastSelected ? Radius.circular(8.r) : Radius.zero,
-                        bottomRight: isLastSelected ? Radius.circular(8.r) : Radius.zero,
-                      ),
-                    ),
-                  )
-                : const SizedBox(),
+            child: Container(
+              height: 12.h,
+              margin: EdgeInsets.symmetric(horizontal: 1.w),
+              child: taskWidget,
+            ),
           );
         }).toList(),
       ),
     );
   }
 
+  // 특정 날짜의 특정 슬롯에 기간 일정이 있는지 확인
+  bool _hasPeriodTaskAtSlot(DateTime day, List<PeriodTaskGroup> periodTasks, int slotIndex) {
+    final dayPeriodTasks = _getPeriodTasksForDay(day, periodTasks);
+    
+    if (dayPeriodTasks.isEmpty) return false;
+    
+    // 기간 일정들을 레이어별로 분리하여 해당 슬롯에 일정이 있는지 확인
+    final periodLayers = <List<PeriodTaskSegment>>[];
+    
+    for (final period in dayPeriodTasks) {
+      bool placed = false;
+      for (final layer in periodLayers) {
+        bool canPlace = true;
+        for (final existingPeriod in layer) {
+          if (_periodsOverlap(period, existingPeriod)) {
+            canPlace = false;
+            break;
+          }
+        }
+        if (canPlace) {
+          layer.add(period);
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) {
+        periodLayers.add([period]);
+      }
+    }
+    
+    return slotIndex < periodLayers.length;
+  }
+
+  // 해당 슬롯이 단일 일정을 위한 마지막 사용 가능한 슬롯인지 확인
+  bool _isLastAvailableRegularSlot(DateTime day, List<PeriodTaskGroup> periodTasks, int currentSlotIndex) {
+    // 현재 슬롯부터 마지막 슬롯까지 확인하여 기간 일정이 없는 마지막 슬롯인지 판단
+    for (int i = currentSlotIndex + 1; i < 5; i++) {
+      if (!_hasPeriodTaskAtSlot(day, periodTasks, i)) {
+        return false; // 뒤에 더 사용 가능한 슬롯이 있음
+      }
+    }
+    return true; // 마지막 사용 가능한 슬롯임
+  }
+
+  // "+N" 오버플로우 위젯
+  Widget _buildOverflowWidget(int remainingCount) {
+    return Container(
+      width: double.infinity,
+      height: 12.h,
+      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 1.h),
+      decoration: BoxDecoration(
+        color: AppColors.subText.withAlpha((0.2 * 255).toInt()),
+        borderRadius: BorderRadius.circular(3.r),
+      ),
+      child: Center(
+        child: Text(
+          '+$remainingCount',
+          style: AppTextStyles.caption.copyWith(
+            fontSize: 8.sp,
+            color: AppColors.subText,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 기간 일정이 중간 주에서 텍스트를 표시해야 하는지 결정
+  bool _shouldShowTextInMiddleWeek(PeriodTaskSegment period, List<DateTime> week) {
+    if (period.dates.length <= 7) return false;
+    
+    final startDate = period.dates.first;
+    final endDate = period.dates.last;
+    final weekStart = week.first;
+    final weekEnd = week.last;
+    
+    final isMiddleWeek = startDate.isBefore(weekStart) && endDate.isAfter(weekEnd);
+    return isMiddleWeek;
+  }
+
+  // 연속적인 드래그 오버레이
+  Widget _buildContinuousDragOverlay(List<DateTime> week) {
+    final List<DateRange> ranges = _getSelectedDateRanges(week);
+    
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: Stack(
+        children: ranges.map((range) {
+          final totalWidth = MediaQuery.of(context).size.width - 20.w;
+          final cellWidth = totalWidth / 7;
+          final startOffset = range.startIndex * cellWidth + 2.w;
+          final width = (range.endIndex - range.startIndex + 1) * cellWidth - 4.w;
+          
+          return Positioned(
+            left: startOffset,
+            width: width,
+            top: 2.h,
+            bottom: 2.h,
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.accent.withAlpha((0.2 * 255).toInt()),
+                border: Border.all(
+                  color: AppColors.accent,
+                  width: 2.w,
+                ),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  // 선택된 날짜들의 연속 구간들 찾기
+  List<DateRange> _getSelectedDateRanges(List<DateTime> week) {
+    final List<DateRange> ranges = [];
+    final selectedIndices = <int>[];
+    
+    for (int i = 0; i < week.length; i++) {
+      if (_selectedDates.any((date) => _isSameDay(date, week[i]))) {
+        selectedIndices.add(i);
+      }
+    }
+    
+    if (selectedIndices.isEmpty) return ranges;
+    
+    int rangeStart = selectedIndices.first;
+    int rangeEnd = selectedIndices.first;
+    
+    for (int i = 1; i < selectedIndices.length; i++) {
+      if (selectedIndices[i] == rangeEnd + 1) {
+        rangeEnd = selectedIndices[i];
+      } else {
+        ranges.add(DateRange(rangeStart, rangeEnd));
+        rangeStart = selectedIndices[i];
+        rangeEnd = selectedIndices[i];
+      }
+    }
+    
+    ranges.add(DateRange(rangeStart, rangeEnd));
+    return ranges;
+  }
+
+  // 터치 감지 레이어
+  Widget _buildTouchLayer(List<DateTime> week) {
+    return Row(
+      children: week.map((day) {
+        return Expanded(
+          child: GestureDetector(
+            onTap: () {
+              if (!_isDragging && !_isLongPressActive) {
+                if (_isSameDay(widget.selectedDay, day)) {
+                  showDialog(
+                    context: context,
+                    builder: (_) => CalendarTaskList(selectedDate: day),
+                  );
+                } else {
+                  widget.onDaySelected(day);
+                }
+              }
+            },
+            onLongPressStart: (details) => _onLongPressStart(day),
+            child: Container(
+              color: Colors.transparent,
+              child: const SizedBox.expand(),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  // 일반 일정 위젯
+  Widget _buildRegularTaskWidget(TaskItem task) {
+    return Container(
+      width: double.infinity,
+      height: 12.h,
+      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 1.h),
+      decoration: BoxDecoration(
+        color: task.color,
+        borderRadius: BorderRadius.circular(3.r),
+      ),
+      child: task.isSecret ? Container() : Row(
+        children: [
+          if (task.isImportant)
+            Padding(
+              padding: EdgeInsets.only(right: 1.w),
+              child: Icon(
+                LucideIcons.alertTriangle,
+                size: 7.sp,
+                color: Colors.red,
+              ),
+            ),
+          Flexible(
+            child: Text(
+              task.name,
+              style: AppTextStyles.caption.copyWith(
+                fontSize: 8.sp,
+                color: task.isHoliday ? Colors.red : AppColors.text,
+                height: 1.2,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.clip,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 데이터 처리 메서드
+  ProcessedTaskData _processTaskData(List<dynamic> allTasks, dynamic taskProvider) {
+    final Map<String, List<TaskItem>> regularTasks = {};
+    final List<PeriodTaskGroup> periodTaskGroups = [];
+    
+    // 공휴일 추가
+    for (final day in _paddedDays) {
+      final dateKey = DateFormat('yyyy-MM-dd').format(day);
+      final holidayNames = koreanHolidays[dateKey];
+      if (holidayNames != null && holidayNames.isNotEmpty) {
+        regularTasks.putIfAbsent(dateKey, () => []);
+        for (final holiday in holidayNames) {
+          regularTasks[dateKey]!.add(TaskItem(
+            name: holiday,
+            color: AppColors.warning.withAlpha((0.2 * 255).toInt()),
+            isHoliday: true,
+            isSecret: false,
+            isImportant: false,
+          ));
+        }
+      }
+    }
+    
+    // 일정 분류
+    final List<PeriodTaskSegment> allPeriodSegments = [];
+    
+    for (final task in allTasks) {
+      if (task.isPeriodTask) {
+        // 기간 일정 처리
+        final startDay = DateTime(task.date.year, task.date.month, task.date.day);
+        final endDay = DateTime(task.endDate!.year, task.endDate!.month, task.endDate!.day);
+        
+        final datesInPeriod = <DateTime>[];
+        DateTime currentDay = startDay;
+        
+        while (currentDay.isBefore(endDay) || currentDay.isAtSameMomentAs(endDay)) {
+          datesInPeriod.add(currentDay);
+          currentDay = currentDay.add(const Duration(days: 1));
+        }
+        
+        allPeriodSegments.add(PeriodTaskSegment(
+          dates: datesInPeriod,
+          name: task.memo,
+          color: task.color,
+          isSecret: task.secret == true,
+          isImportant: task.priority == '중요',
+        ));
+      } else {
+        // 일반 일정 처리 (기간 일정이 아닌 모든 일정)
+        final dateKey = DateFormat('yyyy-MM-dd').format(task.date);
+        regularTasks.putIfAbsent(dateKey, () => []);
+        regularTasks[dateKey]!.add(TaskItem(
+          name: task.secret == true ? '' : task.memo,
+          color: task.color,
+          isHoliday: false,
+          isSecret: task.secret == true,
+          isImportant: task.priority == '중요',
+          isPeriod: false, // 단일 일정
+        ));
+      }
+    }
+    
+    // 기간 일정을 레이어별로 그룹화
+    if (allPeriodSegments.isNotEmpty) {
+      periodTaskGroups.add(PeriodTaskGroup(periods: allPeriodSegments));
+    }
+    
+    return ProcessedTaskData(
+      regularTasks: regularTasks,
+      periodTasks: periodTaskGroups,
+    );
+  }
+
+  // 헬퍼 메서드들
+  bool _isToday(DateTime day) {
+    final now = DateTime.now();
+    return now.year == day.year && now.month == day.month && now.day == day.day;
+  }
+
+  bool _isSelected(DateTime day) {
+    return widget.selectedDay.year == day.year && 
+           widget.selectedDay.month == day.month && 
+           widget.selectedDay.day == day.day;
+  }
+
+  bool _isHoliday(DateTime day) {
+    final dateKey = DateFormat('yyyy-MM-dd').format(day);
+    final holidayNames = koreanHolidays[dateKey];
+    return holidayNames != null && holidayNames.isNotEmpty;
+  }
+
+  Color _getDayTextColor(DateTime day, bool isCurrentMonth, bool isHoliday) {
+    if (isHoliday) return Colors.red;
+    if (!isCurrentMonth) return AppColors.subText;
+    if (day.weekday == DateTime.sunday) return Colors.red;
+    if (day.weekday == DateTime.saturday) return Colors.blue;
+    return AppColors.text;
+  }
+
+  // 터치 이벤트 핸들러들
   void _onLongPressStart(DateTime day) {
     setState(() {
       _isLongPressActive = true;
@@ -233,10 +746,7 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
       _selectedDates = {day};
     });
     
-    // 부모에게 드래그 상태 변경 알림
     widget.onDragStateChanged?.call(true);
-    
-    // 햅틱 피드백
     HapticFeedback.mediumImpact();
   }
 
@@ -257,7 +767,6 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
       final startDate = _dragStartDate!.isBefore(_dragEndDate!) ? _dragStartDate! : _dragEndDate!;
       final endDate = _dragStartDate!.isBefore(_dragEndDate!) ? _dragEndDate! : _dragStartDate!;
       
-      // 기간이 1일 이상인 경우에만 기간 일정 다이얼로그 열기
       if (!_isSameDay(startDate, endDate)) {
         showDialog(
           context: context,
@@ -268,7 +777,6 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
           ),
         );
       } else {
-        // 단일 날짜인 경우 일반 다이얼로그 열기
         showDialog(
           context: context,
           builder: (_) => CalendarTaskDialog(selectedDate: startDate),
@@ -284,26 +792,35 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
       _selectedDates.clear();
     });
     
-    // 부모에게 드래그 상태 변경 알림
     widget.onDragStateChanged?.call(false);
   }
 
   DateTime? _getDayAtPosition(Offset globalPosition) {
-    for (final entry in _dayKeys.entries) {
-      final key = entry.value;
-      final day = entry.key;
-      
-      final renderBox = key.currentContext?.findRenderObject() as RenderBox?;
-      if (renderBox != null) {
-        final localPosition = renderBox.globalToLocal(globalPosition);
-        final size = renderBox.size;
-        
-        if (localPosition.dx >= 0 && localPosition.dx <= size.width &&
-            localPosition.dy >= 0 && localPosition.dy <= size.height) {
-          return day;
-        }
-      }
+    final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox == null) return null;
+    
+    final localPosition = renderBox.globalToLocal(globalPosition);
+    
+    final calendarStartX = 8.w;
+    final calendarWidth = MediaQuery.of(context).size.width - 16.w;
+    final cellWidth = calendarWidth / 7;
+    
+    final relativeX = localPosition.dx - calendarStartX;
+    if (relativeX < 0 || relativeX > calendarWidth) return null;
+    
+    final cellIndex = (relativeX / cellWidth).floor();
+    if (cellIndex < 0 || cellIndex >= 7) return null;
+    
+    final relativeY = localPosition.dy;
+    final weekHeight = 125.h;
+    final weekIndex = (relativeY / weekHeight).floor();
+    
+    final dayIndex = weekIndex * 7 + cellIndex;
+    
+    if (dayIndex >= 0 && dayIndex < _paddedDays.length) {
+      return _paddedDays[dayIndex];
     }
+    
     return null;
   }
 
@@ -327,264 +844,71 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
   }
 }
 
-class CalendarDayCell extends StatelessWidget {
-  final DateTime day;
-  final bool isToday;
-  final bool isSelected;
-  final bool isCurrentMonth;
-  final bool isHoliday;
-  final List<Map<String, dynamic>> visibleItems;
-  final int overflowCount;
-  final bool isDragSelected;
-  final bool isDragging;
-  final int weekIndex; // 주에서의 인덱스 (0-6)
-  final VoidCallback onTap;
-  final Function(LongPressStartDetails) onLongPressStart;
+// 데이터 클래스들
+class ProcessedTaskData {
+  final Map<String, List<TaskItem>> regularTasks;
+  final List<PeriodTaskGroup> periodTasks;
 
-  const CalendarDayCell({
-    super.key,
-    required this.day,
-    required this.isToday,
-    required this.isSelected,
-    required this.isCurrentMonth,
-    required this.isHoliday,
-    required this.visibleItems,
-    required this.overflowCount,
-    required this.isDragSelected,
-    required this.isDragging,
-    required this.weekIndex,
-    required this.onTap,
-    required this.onLongPressStart,
+  ProcessedTaskData({
+    required this.regularTasks,
+    required this.periodTasks,
   });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      onLongPressStart: onLongPressStart,
-      child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 2.w),
-        padding: EdgeInsets.only(top: 4.h, left: 4.w, right: 4.w, bottom: 2.h),
-        constraints: BoxConstraints(minHeight: 90.h),
-        decoration: BoxDecoration(
-          color: isToday 
-              ? AppColors.highlight.withAlpha((0.15 * 255).toInt()) 
-              : null,
-          border: Border.all(
-            color: isSelected 
-                ? AppColors.accent 
-                : Colors.transparent,
-            width: 1.5.w,
-          ),
-          borderRadius: BorderRadius.circular(8.r),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${day.day}',
-              style: AppTextStyles.body.copyWith(
-                fontSize: 14.sp,
-                color: isHoliday
-                    ? Colors.red
-                    : isCurrentMonth
-                        ? (day.weekday == DateTime.sunday
-                            ? Colors.red
-                            : day.weekday == DateTime.saturday
-                                ? Colors.blue
-                                : AppColors.text)
-                        : AppColors.subText,
-                fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-            SizedBox(height: 1.h),
-            ...visibleItems.map((item) => CalendarTaskItem(
-              item: item, 
-              weekIndex: weekIndex,
-              totalItemsInWeek: visibleItems.length,
-            )),
-            if (overflowCount > 0)
-              Text(
-                '+$overflowCount',
-                style: AppTextStyles.caption.copyWith(fontSize: 10.sp),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
-class CalendarTaskItem extends StatelessWidget {
-  final Map<String, dynamic> item;
-  final int weekIndex;
-  final int totalItemsInWeek;
+class TaskItem {
+  final String name;
+  final Color color;
+  final bool isHoliday;
+  final bool isSecret;
+  final bool isImportant;
+  final bool isPeriod;
 
-  const CalendarTaskItem({
-    super.key,
-    required this.item,
-    required this.weekIndex,
-    required this.totalItemsInWeek,
+  TaskItem({
+    required this.name,
+    required this.color,
+    required this.isHoliday,
+    required this.isSecret,
+    required this.isImportant,
+    this.isPeriod = false,
+  });
+}
+
+class PeriodTaskGroup {
+  final List<PeriodTaskSegment> periods;
+
+  PeriodTaskGroup({required this.periods});
+}
+
+class PeriodTaskSegment {
+  final List<DateTime> dates;
+  final String name;
+  final Color color;
+  final bool isSecret;
+  final bool isImportant;
+
+  PeriodTaskSegment({
+    required this.dates,
+    required this.name,
+    required this.color,
+    required this.isSecret,
+    required this.isImportant,
   });
 
-  @override
-  Widget build(BuildContext context) {
-    final isSecret = item['isSecret'] == true;
-    final isHolidayItem = item['isHoliday'] == true;
-    final isPeriod = item['isPeriod'] == true;
-    final name = item['name']?.toString() ?? '';
-    final color = item['color'] as Color? ?? AppColors.accent.withAlpha((0.15 * 255).toInt());
-    final isImportant = item['priority'] == '중요';
+  String get displayText => isSecret ? '' : name;
+  bool get isEmpty => dates.isEmpty;
 
-    // 통일된 패딩과 높이 설정
-    final unifiedPadding = EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h);
-    final unifiedMargin = EdgeInsets.only(bottom: 1.2.h);
+  factory PeriodTaskSegment.empty() => PeriodTaskSegment(
+    dates: [],
+    name: '',
+    color: Colors.transparent,
+    isSecret: false,
+    isImportant: false,
+  );
+}
 
-    if (isSecret) {
-      return Padding(
-        padding: unifiedMargin,
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 7.5.h), // 원래 비밀 일정의 패딩
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(4.r),
-          ),
-        ),
-      );
-    }
+class DateRange {
+  final int startIndex;
+  final int endIndex;
 
-    if (isPeriod && item['periodDisplayType'] != null) {
-      final displayType = item['periodDisplayType'] as PeriodTaskDisplayType;
-      return Padding(
-        padding: unifiedMargin,
-        child: Transform.translate(
-          offset: _getOffsetForPeriodDisplay(displayType),
-          child: Container(
-            width: _getWidthForPeriodDisplay(context, displayType),
-            padding: unifiedPadding,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: _getPeriodBorderRadius(displayType),
-            ),
-            child: Row(
-              children: [
-                if (!isHolidayItem && isImportant && displayType == PeriodTaskDisplayType.start)
-                  Padding(
-                    padding: EdgeInsets.only(right: 2.w),
-                    child: Icon(
-                      LucideIcons.alertTriangle,
-                      size: 10.sp,
-                      color: Colors.red,
-                    ),
-                  ),
-                Expanded(
-                  child: Text(
-                    displayType == PeriodTaskDisplayType.start || displayType == PeriodTaskDisplayType.single 
-                        ? name 
-                        : '', // 시작일에만 텍스트 표시
-                    style: AppTextStyles.caption.copyWith(
-                      fontSize: 10.sp,
-                      color: isHolidayItem ? Colors.red : AppColors.text,
-                      fontWeight: FontWeight.normal,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.fade,
-                    softWrap: false,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    // 일반 일정 표시 (공휴일 포함)
-    return Padding(
-      padding: unifiedMargin,
-      child: Container(
-        padding: unifiedPadding,
-        decoration: BoxDecoration(
-          color: isHolidayItem
-              ? AppColors.warning.withAlpha((0.2 * 255).toInt())
-              : color,
-          borderRadius: BorderRadius.circular(4.r),
-        ),
-        child: Row(
-          children: [
-            if (!isHolidayItem && isImportant)
-              Padding(
-                padding: EdgeInsets.only(right: 2.w),
-                child: Icon(
-                  LucideIcons.alertTriangle,
-                  size: 10.sp,
-                  color: Colors.red,
-                ),
-              ),
-            Expanded(
-              child: Text(
-                name,
-                style: AppTextStyles.caption.copyWith(
-                  fontSize: 10.sp,
-                  color: isHolidayItem ? Colors.red : AppColors.text,
-                  fontWeight: FontWeight.normal,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.fade,
-                softWrap: false,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Offset _getOffsetForPeriodDisplay(PeriodTaskDisplayType displayType) {
-    switch (displayType) {
-      case PeriodTaskDisplayType.start:
-        return Offset(0, 0);
-      case PeriodTaskDisplayType.middle:
-        return Offset(-2.w, 0);
-      case PeriodTaskDisplayType.end:
-        return Offset(-2.w, 0);
-      case PeriodTaskDisplayType.single:
-        return Offset(0, 0);
-    }
-  }
-
-  double _getWidthForPeriodDisplay(BuildContext context, PeriodTaskDisplayType displayType) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final baseWidth = (screenWidth - 32.w) / 7;
-    
-    switch (displayType) {
-      case PeriodTaskDisplayType.start:
-        return baseWidth + 2.w;
-      case PeriodTaskDisplayType.middle:
-        return baseWidth + 4.w;
-      case PeriodTaskDisplayType.end:
-        return baseWidth + 2.w;
-      case PeriodTaskDisplayType.single:
-        return baseWidth;
-    }
-  }
-
-  BorderRadius _getPeriodBorderRadius(PeriodTaskDisplayType displayType) {
-    switch (displayType) {
-      case PeriodTaskDisplayType.start:
-        return BorderRadius.only(
-          topLeft: Radius.circular(4.r),
-          bottomLeft: Radius.circular(4.r),
-        );
-      case PeriodTaskDisplayType.end:
-        return BorderRadius.only(
-          topRight: Radius.circular(4.r),
-          bottomRight: Radius.circular(4.r),
-        );
-      case PeriodTaskDisplayType.middle:
-        return BorderRadius.zero;
-      case PeriodTaskDisplayType.single:
-        return BorderRadius.circular(4.r);
-    }
-  }
+  DateRange(this.startIndex, this.endIndex);
 }

@@ -53,16 +53,25 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
     final dateKey = DateFormat('yyyy-MM-dd').format(widget.selectedDate);
     final holidayNames = koreanHolidays[dateKey] ?? [];
 
+    // 화면 크기 계산
+    final screenHeight = MediaQuery.of(context).size.height;
+    final maxDialogHeight = screenHeight * 0.85;
+
     return Dialog(
-      insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+      insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 40.h),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
-      child: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(20.w),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: maxDialogHeight, // 최대 높이 제한
+          maxWidth: double.infinity,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 고정 헤더
+            Container(
+              padding: EdgeInsets.all(20.w),
+              child: Row(
                 children: [
                   Expanded(
                     child: Column(
@@ -108,122 +117,99 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
                   ),
                 ],
               ),
-              SizedBox(height: 12.h),
-              if (holidayNames.isNotEmpty)
-                ...holidayNames.map((h) => Container(
-                      margin: EdgeInsets.only(bottom: 8.h),
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                      decoration: BoxDecoration(
-                        color: AppColors.warning.withAlpha((0.15 * 255).toInt()),
-                        borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(color: AppColors.warning),
-                      ),
-                      child: Row(
-                        children: [Expanded(child: Text(h, style: AppTextStyles.body.copyWith(color: Colors.red)))]
-                      ),
-                    )),
-              if (tasks.isEmpty && holidayNames.isEmpty)
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20.h),
-                  child: Column(
-                    children: [
-                      Text('등록된 일정이 없습니다.', style: AppTextStyles.body),
-                      if (_isReordering)
-                        Padding(
-                          padding: EdgeInsets.only(top: 8.h),
-                          child: Text(
-                            '일정을 길게 눌러서 순서를 변경하세요',
-                            style: AppTextStyles.caption.copyWith(color: AppColors.subText),
-                          ),
-                        ),
-                    ],
-                  ),
-                )
-              else
-                Column(
+            ),
+            
+            // 스크롤 가능한 컨텐츠 영역
+            Flexible(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 12.w),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (_isReordering)
-                      Container(
-                        margin: EdgeInsets.only(bottom: 8.h),
-                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                        decoration: BoxDecoration(
-                          color: AppColors.accent.withAlpha((0.1 * 255).toInt()),
-                          borderRadius: BorderRadius.circular(8.r),
-                          border: Border.all(color: AppColors.accent.withAlpha((0.3 * 255).toInt())),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.info_outline, size: 16.sp, color: AppColors.accent),
-                            SizedBox(width: 8.w),
-                            Expanded(
-                              child: Text(
-                                '드래그하여 순서를 변경하세요',
-                                style: AppTextStyles.caption.copyWith(color: AppColors.accent),
-                              ),
+                    // 공휴일 표시
+                    if (holidayNames.isNotEmpty)
+                      ...holidayNames.map((h) => Container(
+                            margin: EdgeInsets.only(bottom: 8.h),
+                            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                            decoration: BoxDecoration(
+                              color: AppColors.warning.withAlpha((0.15 * 255).toInt()),
+                              borderRadius: BorderRadius.circular(12.r),
+                              border: Border.all(color: AppColors.warning),
                             ),
+                            child: Row(
+                              children: [Expanded(child: Text(h, style: AppTextStyles.body.copyWith(color: Colors.red)))]
+                            ),
+                          )),
+                    
+                    // 일정이 없는 경우
+                    if (tasks.isEmpty && holidayNames.isEmpty)
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20.h),
+                        child: Column(
+                          children: [
+                            Text('등록된 일정이 없습니다.', style: AppTextStyles.body),
+                            if (_isReordering)
+                              Padding(
+                                padding: EdgeInsets.only(top: 8.h),
+                                child: Text(
+                                  '일정을 길게 눌러서 순서를 변경하세요',
+                                  style: AppTextStyles.caption.copyWith(color: AppColors.subText),
+                                ),
+                              ),
                           ],
                         ),
-                      ),
-                    ReorderableListView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      buildDefaultDragHandles: false,
-                      itemCount: tasks.length,
-                      onReorder: (oldIndex, newIndex) => ref
-                          .read(calendarTaskProvider.notifier)
-                          .reorderTask(widget.selectedDate, oldIndex, newIndex),
-                      itemBuilder: (context, index) {
-                        final task = tasks[index];
-                        
-                        // 기간 일정인 경우 현재 날짜에서의 표시 타입 확인
-                        final periodDisplayType = task.isPeriodTask 
-                            ? taskProvider.getPeriodTaskDisplayType(task, widget.selectedDate)
-                            : null;
-                    
-                    return GestureDetector(
-                      key: ValueKey('${task.memo}-${task.date}'),
-                      onTap: () {
-                        if (!_isReordering) {
-                          showDialog(
-                            context: context,
-                            builder: (_) => CalendarTaskDialog(
-                              existingTask: task,
-                              selectedDate: widget.selectedDate,
-                            ),
-                          );
-                        }
-                      },
-                      onLongPress: () {
-                        if (!_isReordering) {
-                          setState(() => _isReordering = true);
-                        }
-                      },
-                      child: Container(
-                        margin: EdgeInsets.only(bottom: 8.h),
-                        padding: EdgeInsets.all(12.w),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12.r),
-                          border: Border.all(color: AppColors.primary, width: 1.2.w),
-                        ),
-                        child: Row(
-                          children: [
-                            Column(
-                              children: [
-                                Container(
-                                  width: 18.w,
-                                  height: 18.w,
-                                  margin: EdgeInsets.only(bottom: 6.h),
-                                  decoration: BoxDecoration(
-                                    color: getDisplayColor(task.color),
-                                    shape: BoxShape.circle,
+                      )
+                    // 일정 목록
+                    else
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // 재정렬 안내 메시지
+                          if (_isReordering)
+                            Container(
+                              margin: EdgeInsets.only(bottom: 8.h),
+                              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                              decoration: BoxDecoration(
+                                color: AppColors.accent.withAlpha((0.1 * 255).toInt()),
+                                borderRadius: BorderRadius.circular(8.r),
+                                border: Border.all(color: AppColors.accent.withAlpha((0.3 * 255).toInt())),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.info_outline, size: 16.sp, color: AppColors.accent),
+                                  SizedBox(width: 8.w),
+                                  Expanded(
+                                    child: Text(
+                                      '드래그하여 순서를 변경하세요',
+                                      style: AppTextStyles.caption.copyWith(color: AppColors.accent),
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                            SizedBox(width: 12.w),
-                            Expanded(
-                              child: GestureDetector(
+                          
+                          // 일정 리스트
+                          ReorderableListView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            buildDefaultDragHandles: false,
+                            itemCount: tasks.length,
+                            onReorder: (oldIndex, newIndex) => ref
+                                .read(calendarTaskProvider.notifier)
+                                .reorderTask(widget.selectedDate, oldIndex, newIndex),
+                            itemBuilder: (context, index) {
+                              final task = tasks[index];
+                              
+                              // 기간 일정인 경우 현재 날짜에서의 표시 타입 확인
+                              final periodDisplayType = task.isPeriodTask 
+                                  ? taskProvider.getPeriodTaskDisplayType(task, widget.selectedDate)
+                                  : null;
+                          
+                              // 고유한 키 생성 - 더 구체적으로 만들어 중복 방지
+                              final uniqueKey = '${task.memo}_${task.date.millisecondsSinceEpoch}_${task.hashCode}_$index';
+                          
+                              return GestureDetector(
+                                key: ValueKey(uniqueKey), // 더 고유한 키 사용
                                 onTap: () {
                                   if (!_isReordering) {
                                     showDialog(
@@ -235,106 +221,155 @@ class _CalendarTaskListState extends ConsumerState<CalendarTaskList> {
                                     );
                                   }
                                 },
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Flexible(
-                                          child: Text(
-                                            task.endDate != null
-                                                ? '${DateFormat('yyyy.MM.dd').format(task.date)} ~ ${DateFormat('yyyy.MM.dd').format(task.endDate!)}'
-                                                : DateFormat('yyyy.MM.dd').format(task.date),
-                                            style: AppTextStyles.caption,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        if (task.secret == true)
-                                          Padding(
-                                            padding: EdgeInsets.only(left: 4.w),
-                                            child: Icon(Icons.lock, size: 16.sp, color: AppColors.subText),
-                                          ),
-                                        if (task.isPeriodTask)
-                                          Padding(
-                                            padding: EdgeInsets.only(left: 4.w),
-                                            child: Container(
-                                              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                                              decoration: BoxDecoration(
-                                                color: AppColors.accent.withAlpha((0.2 * 255).toInt()),
-                                                borderRadius: BorderRadius.circular(4.r),
-                                              ),
-                                              child: Text(
-                                                '기간',
-                                                style: AppTextStyles.captionSmall.copyWith(
-                                                  color: AppColors.accent,
-                                                  fontSize: 10.sp,
-                                                ),
-                                              ),
+                                onLongPress: () {
+                                  if (!_isReordering) {
+                                    setState(() => _isReordering = true);
+                                  }
+                                },
+                                child: Container(
+                                  margin: EdgeInsets.only(bottom: 8.h),
+                                  padding: EdgeInsets.all(12.w),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12.r),
+                                    border: Border.all(color: AppColors.primary, width: 1.2.w),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Column(
+                                        children: [
+                                          Container(
+                                            width: 18.w,
+                                            height: 18.w,
+                                            margin: EdgeInsets.only(bottom: 6.h),
+                                            decoration: BoxDecoration(
+                                              color: getDisplayColor(task.color),
+                                              shape: BoxShape.circle,
                                             ),
                                           ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 4.h),
-                                    Row(
-                                      children: [
-                                        if (getPriorityIcon(task.priority) != null) ... [
-                                          getPriorityIcon(task.priority)!,
-                                          SizedBox(width: 4.w),
                                         ],
-                                        Expanded(
-                                          child: Text(
-                                            task.memo,
-                                            style: AppTextStyles.body,
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    // 기간 일정의 경우 현재 날짜 위치 표시
-                                    if (task.isPeriodTask && periodDisplayType != null)
-                                      Padding(
-                                        padding: EdgeInsets.only(top: 4.h),
-                                        child: Text(
-                                          _getPeriodStatusText(periodDisplayType),
-                                          style: AppTextStyles.captionSmall.copyWith(
-                                            color: AppColors.subText,
-                                            fontStyle: FontStyle.italic,
+                                      ),
+                                      SizedBox(width: 12.w),
+                                      Expanded(
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            if (!_isReordering) {
+                                              showDialog(
+                                                context: context,
+                                                builder: (_) => CalendarTaskDialog(
+                                                  existingTask: task,
+                                                  selectedDate: widget.selectedDate,
+                                                ),
+                                              );
+                                            }
+                                          },
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Flexible(
+                                                    child: Text(
+                                                      task.endDate != null
+                                                          ? '${DateFormat('yyyy.MM.dd').format(task.date)} ~ ${DateFormat('yyyy.MM.dd').format(task.endDate!)}'
+                                                          : DateFormat('yyyy.MM.dd').format(task.date),
+                                                      style: AppTextStyles.caption,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                  if (task.secret == true)
+                                                    Padding(
+                                                      padding: EdgeInsets.only(left: 4.w),
+                                                      child: Icon(Icons.lock, size: 16.sp, color: AppColors.subText),
+                                                    ),
+                                                  if (task.isPeriodTask)
+                                                    Padding(
+                                                      padding: EdgeInsets.only(left: 4.w),
+                                                      child: Container(
+                                                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                                                        decoration: BoxDecoration(
+                                                          color: AppColors.accent.withAlpha((0.2 * 255).toInt()),
+                                                          borderRadius: BorderRadius.circular(4.r),
+                                                        ),
+                                                        child: Text(
+                                                          '기간',
+                                                          style: AppTextStyles.captionSmall.copyWith(
+                                                            color: AppColors.accent,
+                                                            fontSize: 10.sp,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                ],
+                                              ),
+                                              SizedBox(height: 4.h),
+                                              Row(
+                                                children: [
+                                                  if (getPriorityIcon(task.priority) != null) ... [
+                                                    getPriorityIcon(task.priority)!,
+                                                    SizedBox(width: 4.w),
+                                                  ],
+                                                  Expanded(
+                                                    child: Text(
+                                                      task.memo,
+                                                      style: AppTextStyles.body,
+                                                      maxLines: 2,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              // 기간 일정의 경우 현재 날짜 위치 표시
+                                              if (task.isPeriodTask && periodDisplayType != null)
+                                                Padding(
+                                                  padding: EdgeInsets.only(top: 4.h),
+                                                  child: Text(
+                                                    _getPeriodStatusText(periodDisplayType),
+                                                    style: AppTextStyles.captionSmall.copyWith(
+                                                      color: AppColors.subText,
+                                                      fontStyle: FontStyle.italic,
+                                                    ),
+                                                  ),
+                                                ),
+                                            ],
                                           ),
                                         ),
                                       ),
-                                  ],
+                                      if (_isReordering)
+                                        ReorderableDragStartListener(
+                                          index: index,
+                                          child: Icon(Icons.drag_handle, color: AppColors.subText),
+                                        )
+                                      else
+                                        Checkbox(
+                                          value: task.isCompleted,
+                                          onChanged: (_) => ref.read(calendarTaskProvider.notifier).toggleTask(task),
+                                        ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ),
-                            if (_isReordering)
-                              ReorderableDragStartListener(
-                                index: index,
-                                child: Icon(Icons.drag_handle, color: AppColors.subText),
-                              )
-                            else
-                              Checkbox(
-                                value: task.isCompleted,
-                                onChanged: (_) => ref.read(calendarTaskProvider.notifier).toggleTask(task),
-                              ),
-                          ],
-                        ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
-                    );
-                      },
-                    ),
                   ],
                 ),
-              SizedBox(height: 16.h),
-              Align(
+              ),
+            ),
+            
+            // 고정 하단 버튼
+            Container(
+              padding: EdgeInsets.fromLTRB(20.w, 8.w, 20.w, 20.w),
+              child: Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () => Navigator.of(context).pop(),
                   child: Text('닫기', style: AppTextStyles.body),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

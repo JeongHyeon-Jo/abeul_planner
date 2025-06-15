@@ -156,7 +156,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> w
                     children: [
                       _buildWeekHeader(),
                       CalendarGrid(
-                        key: _calendarGridKey,
+                        key: ValueKey('calendar_grid_${date.year}_${date.month}'), // 고유한 키 추가
                         monthDate: date,
                         selectedDay: _selectedDay,
                         onDaySelected: (selectedDay) {
