@@ -145,7 +145,7 @@ class _OnboardingOverlayState extends State<OnboardingOverlay> {
         onTap: widget.onSkip,
         child: Icon(
           Icons.close,
-          size: 24.sp,
+          size: 30.sp,
           color: Colors.grey[600],
         ),
       ),
@@ -153,10 +153,13 @@ class _OnboardingOverlayState extends State<OnboardingOverlay> {
   }
 
   Widget _buildFixedDescriptionBox(OnboardingStep step, bool isFirstStep, bool isLastStep) {
+    final isDailyPlannerStep = step.title == '일상 플래너';
+    final bottomPosition = isDailyPlannerStep ? 350.h : 100.h;
+    
     return Positioned(
       left: 16.w,
       right: 16.w,
-      bottom: 100.h,
+      bottom: bottomPosition,
       child: Material(
         elevation: 12, // 설명 박스만 elevation 적용
         borderRadius: BorderRadius.circular(16.r),

@@ -39,26 +39,26 @@ class _PlannerHomeScreenState extends ConsumerState<PlannerHomeScreen> with Onbo
   List<OnboardingStep> get onboardingSteps => [
     OnboardingStep(
       title: '달력 플래너',
-      description: '특정 날짜에 할 일을 등록하고 관리할 수 있습니다.\n중요한 일정과 비밀 일정도 설정 가능해요!',
+      description: '날짜에 일정을 등록하고 관리할 수 있습니다.\n달력을 기반으로 일정을 계획해보세요!',
       targetKey: _calendarSectionKey,
     ),
     OnboardingStep(
       title: '주간 플래너',
-      description: '요일별로 반복되는 루틴이나 할 일을 관리할 수 있습니다.\n매주 규칙적으로 해야 할 일들을 등록해보세요!',
+      description: '요일별로 반복되는 일정을 관리할 수 있습니다.\n매주 규칙적으로 해야 할 일들을 계획해보세요!',
       targetKey: _weeklySectionKey,
     ),
     OnboardingStep(
       title: '일상 플래너',
-      description: '일상적인 상황과 행동을 기록하고 관리할 수 있습니다.\n상황별로 어떤 행동을 취할지 미리 계획해보세요!',
+      description: '매일 반복하는 일정을 관리할 수 있습니다.\n언제 어떤 행동을 취할지 미리 계획해보세요!',
       targetKey: _dailySectionKey,
     ),
     const OnboardingStep(
       title: '네비게이션 바',
-      description: '하단의 탭으로 각 플래너 간에 쉽게 이동할 수 있습니다.\n가운데 홈 버튼을 누르면 언제든 이 화면으로 돌아올 수 있어요!',
+      description: '각 플래너로 쉽게 이동할 수 있습니다.\n홈 버튼을 눌러 이 화면으로 돌아올 수 있어요!',
     ),
     const OnboardingStep(
       title: '종합 플래너 완료!',
-      description: '이제 모든 플래너를 한 곳에서 확인할 수 있습니다.\n각 섹션을 클릭하여 자세한 관리 화면으로 이동하거나,\n제목을 터치하여 섹션을 접고 펼칠 수 있어요!',
+      description: '모든 플래너를 화면에서 확인할 수 있습니다.\n각 섹션을 클릭하여 플래너로 이동하거나,\n제목을 터치하여 섹션을 접고 펼칠 수 있어요!',
     ),
   ];
 
