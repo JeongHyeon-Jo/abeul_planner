@@ -25,6 +25,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> w
   late PageController _pageController;
   final int initialPage = 1000;
   DateTime _selectedDay = DateTime.now();
+  int _currentPageIndex = 1000; // 현재 페이지 인덱스 추가
 
   // 온보딩을 위한 GlobalKey들
   final GlobalKey _menuButtonKey = GlobalKey();
@@ -67,12 +68,18 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> w
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: initialPage);
+    _currentPageIndex = initialPage;
   }
 
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  // 현재 표시되는 날짜 계산
+  DateTime get _currentDisplayDate {
+    return DateTime(DateTime.now().year, DateTime.now().month + (_currentPageIndex - initialPage));
   }
 
   @override
@@ -85,35 +92,41 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> w
             IconButton(
               icon: Icon(Icons.chevron_left, color: AppColors.text, size: 24.sp),
               onPressed: () {
-                _pageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.ease);
+                _pageController.previousPage(
+                  duration: const Duration(milliseconds: 300), 
+                  curve: Curves.ease,
+                );
               },
             ),
             SizedBox(width: 4.w),
             GestureDetector(
               key: _monthYearKey,
               onTap: () async {
-                final picked = await showMonthYearPickerDialog(context, DateTime.now());
+                final picked = await showMonthYearPickerDialog(context, _currentDisplayDate);
                 if (picked != null) {
                   final diff = (picked.year - DateTime.now().year) * 12 + picked.month - DateTime.now().month;
-                  _pageController.jumpToPage(initialPage + diff);
+                  final targetPage = initialPage + diff;
+                  
+                  setState(() {
+                    _currentPageIndex = targetPage;
+                  });
+                  
+                  _pageController.jumpToPage(targetPage);
                 }
               },
-              child: Consumer(
-                builder: (context, ref, _) {
-                  final index = _pageController.hasClients ? _pageController.page?.round() ?? initialPage : initialPage;
-                  final date = DateTime(DateTime.now().year, DateTime.now().month + (index - initialPage));
-                  return Text(
-                    '${date.year}년 ${date.month}월',
-                    style: AppTextStyles.title.copyWith(color: AppColors.text),
-                  );
-                },
+              child: Text(
+                '${_currentDisplayDate.year}년 ${_currentDisplayDate.month}월',
+                style: AppTextStyles.title.copyWith(color: AppColors.text),
               ),
             ),
             SizedBox(width: 4.w),
             IconButton(
               icon: Icon(Icons.chevron_right, color: AppColors.text, size: 24.sp),
               onPressed: () {
-                _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.ease);
+                _pageController.nextPage(
+                  duration: const Duration(milliseconds: 300), 
+                  curve: Curves.ease,
+                );
               },
             ),
           ],
@@ -143,6 +156,12 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> w
       body: PageView.builder(
         controller: _pageController,
         physics: const ClampingScrollPhysics(),
+        onPageChanged: (index) {
+          // 페이지가 변경될 때마다 현재 페이지 인덱스 업데이트
+          setState(() {
+            _currentPageIndex = index;
+          });
+        },
         itemBuilder: (context, index) {
           final date = DateTime(DateTime.now().year, DateTime.now().month + (index - initialPage));
           
@@ -156,7 +175,7 @@ class _CalendarPlannerScreenState extends ConsumerState<CalendarPlannerScreen> w
                     children: [
                       _buildWeekHeader(),
                       CalendarGrid(
-                        key: ValueKey('calendar_grid_${date.year}_${date.month}'), // 고유한 키 추가
+                        key: index == 0 ? _calendarGridKey : ValueKey('calendar_grid_${date.year}_${date.month}'),
                         monthDate: date,
                         selectedDay: _selectedDay,
                         onDaySelected: (selectedDay) {

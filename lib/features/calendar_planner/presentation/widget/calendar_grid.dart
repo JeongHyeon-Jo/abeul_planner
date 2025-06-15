@@ -149,9 +149,15 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
             height: 110.h,
             margin: EdgeInsets.symmetric(horizontal: 1.w),
             decoration: BoxDecoration(
-              color: isToday ? AppColors.highlight.withAlpha((0.15 * 255).toInt()) : null,
+              // 드래그 중이 아닐 때만 하이라이트 표시
+              color: (!_isDragging && isToday) 
+                  ? AppColors.highlight.withAlpha((0.15 * 255).toInt()) 
+                  : null,
               border: Border.all(
-                color: isSelected ? AppColors.accent : Colors.transparent,
+                // 드래그 중이 아닐 때만 선택 테두리 표시
+                color: (!_isDragging && isSelected) 
+                    ? AppColors.accent 
+                    : Colors.transparent,
                 width: 1.5.w,
               ),
               borderRadius: BorderRadius.circular(8.r),
@@ -163,7 +169,10 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
               style: AppTextStyles.body.copyWith(
                 fontSize: 14.sp,
                 color: _getDayTextColor(day, isCurrentMonth, isHoliday),
-                fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                // 드래그 중이 아닐 때만 오늘 날짜 볼드 처리
+                fontWeight: (!_isDragging && isToday) 
+                    ? FontWeight.bold 
+                    : FontWeight.normal,
               ),
             ),
           ),
@@ -275,36 +284,46 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
             bottomRight: (isEnd || isSingle) ? Radius.circular(6.r) : Radius.zero,
           ),
         ),
-        child: shouldShowText ? Padding(
-          padding: EdgeInsets.symmetric(horizontal: 3.w),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (period.isImportant)
-                Padding(
-                  padding: EdgeInsets.only(right: 1.w),
-                  child: Icon(
-                    LucideIcons.alertTriangle,
-                    size: 7.sp,
-                    color: Colors.red,
-                  ),
-                ),
-              Flexible(
-                child: Text(
-                  period.displayText,
-                  style: AppTextStyles.caption.copyWith(
-                    fontSize: 8.sp,
-                    color: AppColors.text,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.clip,
-                  textAlign: TextAlign.center,
-                ),
+        child: shouldShowText
+          ? Padding(
+              padding: EdgeInsets.symmetric(horizontal: 3.w),
+              child: Center(
+                child: period.isSecret
+                    ? Icon(
+                        Icons.lock,
+                        size: 9.sp,
+                        color: AppColors.subText.withAlpha((0.3 * 255).toInt()),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (period.isImportant)
+                            Padding(
+                              padding: EdgeInsets.only(right: 1.w),
+                              child: Icon(
+                                LucideIcons.alertTriangle,
+                                size: 7.sp,
+                                color: Colors.red,
+                              ),
+                            ),
+                          Flexible(
+                            child: Text(
+                              period.displayText,
+                              style: AppTextStyles.caption.copyWith(
+                                fontSize: 8.sp,
+                                color: AppColors.text,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.clip,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
+                      ),
               ),
-            ],
-          ),
-        ) : null,
+            )
+          : null,
       ),
     );
   }
@@ -321,8 +340,73 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
     return layers;
   }
 
+  Map<String, Set<int>> _getUsedSlotsByDate(List<DateTime> week, List<PeriodTaskGroup> periodTasks) {
+    final Map<String, Set<int>> usedSlots = {};
+    
+    // 각 날짜 초기화
+    for (final day in week) {
+      final dateKey = DateFormat('yyyy-MM-dd').format(day);
+      usedSlots[dateKey] = <int>{};
+    }
+    
+    // 기간 일정들이 사용하는 슬롯 추적
+    final weekPeriods = <PeriodTaskSegment>[];
+    for (final group in periodTasks) {
+      for (final period in group.periods) {
+        if (week.any((day) => period.dates.contains(day))) {
+          weekPeriods.add(period);
+        }
+      }
+    }
+    
+    if (weekPeriods.isNotEmpty) {
+      final periodLayers = <List<PeriodTaskSegment>>[];
+      
+      // 기간 일정들을 레이어별로 분류
+      for (final period in weekPeriods) {
+        bool placed = false;
+        for (final layer in periodLayers) {
+          bool canPlace = true;
+          for (final existingPeriod in layer) {
+            if (_periodsOverlap(period, existingPeriod)) {
+              canPlace = false;
+              break;
+            }
+          }
+          if (canPlace) {
+            layer.add(period);
+            placed = true;
+            break;
+          }
+        }
+        if (!placed) {
+          periodLayers.add([period]);
+        }
+      }
+      
+      // 각 레이어의 기간 일정들이 사용하는 슬롯 기록
+      for (int layerIndex = 0; layerIndex < periodLayers.length; layerIndex++) {
+        final layer = periodLayers[layerIndex];
+        for (final period in layer) {
+          for (final day in week) {
+            if (period.dates.contains(day)) {
+              final dateKey = DateFormat('yyyy-MM-dd').format(day);
+              usedSlots[dateKey]!.add(layerIndex);
+            }
+          }
+        }
+      }
+    }
+    
+    return usedSlots;
+  }
+
   Widget _buildTaskSlot(List<DateTime> week, ProcessedTaskData taskData, int slotIndex) {
     final topPosition = 30.h + (slotIndex * 14.h);
+    
+    // 각 날짜별로 사용된 슬롯 정보 가져오기
+    final usedSlotsByDate = _getUsedSlotsByDate(week, taskData.periodTasks);
+    
     return Positioned(
       top: topPosition,
       left: 2.w,
@@ -333,80 +417,62 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
           final dateKey = DateFormat('yyyy-MM-dd').format(day);
           final dayTasks = taskData.regularTasks[dateKey] ?? [];
           final dayPeriodTasks = _getPeriodTasksForDay(day, taskData.periodTasks);
+          final usedSlots = usedSlotsByDate[dateKey] ?? <int>{};
           
-          // 기간 일정과 단일 일정의 총 개수
-          final periodTaskCount = dayPeriodTasks.length;
-          final regularTaskCount = dayTasks.length;
-          final totalTaskCount = periodTaskCount + regularTaskCount;
+          // 현재 슬롯이 기간 일정에 의해 사용되고 있는지 확인
+          final isSlotUsedByPeriod = usedSlots.contains(slotIndex);
           
           Widget taskWidget;
           
-          // 기간 일정이 5개 이상인 경우
-          if (periodTaskCount >= 5) {
-            // 기간 일정 4개만 표시하고 5번째 슬롯에 +N 표시
-            if (slotIndex <= 3) {
-              // 해당 슬롯에 기간 일정이 있는지 확인
-              final hasPeriodTaskAtSlot = _hasPeriodTaskAtSlot(day, taskData.periodTasks, slotIndex);
-              taskWidget = hasPeriodTaskAtSlot ? const SizedBox.shrink() : const SizedBox.shrink();
-            } else if (slotIndex == 4) {
-              // 5번째 슬롯에 남은 모든 일정(기간+단일) +N 표시
-              final remainingCount = totalTaskCount - 4;
-              taskWidget = _buildOverflowWidget(remainingCount);
-            } else {
-              taskWidget = const SizedBox.shrink();
-            }
-          }
-          // 기간 일정이 4개 이하인 경우
-          else {
-            // 해당 슬롯에 기간 일정이 있는지 확인
-            final hasPeriodTaskAtSlot = _hasPeriodTaskAtSlot(day, taskData.periodTasks, slotIndex);
+          if (isSlotUsedByPeriod) {
+            // 해당 슬롯이 기간 일정에 의해 사용되고 있으면 비워둠
+            taskWidget = const SizedBox.shrink();
+          } else {
+            // 해당 슬롯이 기간 일정에 의해 사용되지 않는 경우 단일 일정 처리
             
-            if (hasPeriodTaskAtSlot) {
-              // 해당 슬롯에 기간 일정이 있으면 비워둠 (기간 일정이 별도 레이어에서 표시됨)
-              taskWidget = const SizedBox.shrink();
-            } else {
-              // 해당 슬롯에 기간 일정이 없으면 단일 일정 처리
-              // 해당 슬롯보다 위쪽 슬롯들에서 사용된 기간 일정 개수 계산
-              int usedPeriodSlots = 0;
-              for (int i = 0; i < slotIndex; i++) {
-                if (_hasPeriodTaskAtSlot(day, taskData.periodTasks, i)) {
-                  usedPeriodSlots++;
-                }
+            // 현재 슬롯보다 낮은 인덱스 중에서 기간 일정에 의해 사용되지 않는 슬롯들의 개수
+            int availableSlotsBefore = 0;
+            for (int i = 0; i < slotIndex; i++) {
+              if (!usedSlots.contains(i)) {
+                availableSlotsBefore++;
               }
-              
-              // 단일 일정에서의 실제 인덱스 계산
-              final regularSlotIndex = slotIndex - usedPeriodSlots;
-              
-              // 총 5개 슬롯에서 기간 일정이 차지하는 슬롯을 제외한 사용 가능한 슬롯 수
-              int availableRegularSlots = 0;
-              for (int i = 0; i < 5; i++) {
-                if (!_hasPeriodTaskAtSlot(day, taskData.periodTasks, i)) {
-                  availableRegularSlots++;
-                }
+            }
+            
+            // 전체 5개 슬롯 중에서 기간 일정에 의해 사용되지 않는 슬롯들의 개수
+            int totalAvailableSlots = 0;
+            for (int i = 0; i < 5; i++) {
+              if (!usedSlots.contains(i)) {
+                totalAvailableSlots++;
               }
-              
-              if (totalTaskCount <= 5) {
-                // 총 일정이 5개 이하면 모든 일정 표시
-                if (regularSlotIndex >= 0 && regularSlotIndex < regularTaskCount) {
-                  taskWidget = _buildRegularTaskWidget(dayTasks[regularSlotIndex]);
-                } else {
-                  taskWidget = const SizedBox.shrink();
-                }
+            }
+            
+            // 총 일정 개수 (기간 일정 + 단일 일정)
+            final totalTaskCount = dayPeriodTasks.length + dayTasks.length;
+            
+            // 단일 일정에서의 실제 인덱스
+            final regularTaskIndex = availableSlotsBefore;
+            
+            if (totalTaskCount <= 5) {
+              // 총 일정이 5개 이하면 모든 일정 표시 가능
+              if (regularTaskIndex < dayTasks.length) {
+                taskWidget = _buildRegularTaskWidget(dayTasks[regularTaskIndex]);
               } else {
-                // 총 일정이 5개 초과하면 마지막 사용 가능한 슬롯에 +N 표시
-                final isLastAvailableSlot = _isLastAvailableRegularSlot(day, taskData.periodTasks, slotIndex);
-                
-                if (isLastAvailableSlot) {
-                  // 마지막 사용 가능한 슬롯에 +N 표시
-                  final displayedTasks = 4; // 총 4개까지 표시
-                  final remainingCount = totalTaskCount - displayedTasks;
-                  taskWidget = _buildOverflowWidget(remainingCount);
-                } else if (regularSlotIndex >= 0 && regularSlotIndex < availableRegularSlots - 1) {
-                  // 마지막 슬롯이 아니면 일정 표시
-                  taskWidget = _buildRegularTaskWidget(dayTasks[regularSlotIndex]);
-                } else {
-                  taskWidget = const SizedBox.shrink();
-                }
+                taskWidget = const SizedBox.shrink();
+              }
+            } else {
+              // 총 일정이 5개 초과하면 마지막 사용 가능한 슬롯에 +N 표시
+              final isLastAvailableSlot = _isLastAvailableSlotForDay(day, usedSlots, slotIndex);
+              
+              if (isLastAvailableSlot) {
+                // 마지막 사용 가능한 슬롯에 +N 표시
+                final displayedTaskCount = 4; // 기간 일정 포함하여 총 4개까지 표시
+                final remainingCount = totalTaskCount - displayedTaskCount;
+                taskWidget = _buildOverflowWidget(remainingCount);
+              } else if (regularTaskIndex < dayTasks.length && availableSlotsBefore < totalAvailableSlots - 1) {
+                // 마지막 슬롯이 아니고 표시할 단일 일정이 있으면 표시
+                taskWidget = _buildRegularTaskWidget(dayTasks[regularTaskIndex]);
+              } else {
+                taskWidget = const SizedBox.shrink();
               }
             }
           }
@@ -421,6 +487,16 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
         }).toList(),
       ),
     );
+  }
+
+  bool _isLastAvailableSlotForDay(DateTime day, Set<int> usedSlots, int currentSlotIndex) {
+    // 현재 슬롯부터 마지막 슬롯(4)까지 확인하여 사용 가능한 슬롯이 더 있는지 확인
+    for (int i = currentSlotIndex + 1; i < 5; i++) {
+      if (!usedSlots.contains(i)) {
+        return false; // 뒤에 더 사용 가능한 슬롯이 있음
+      }
+    }
+    return true; // 마지막 사용 가능한 슬롯임
   }
 
   // 특정 날짜의 특정 슬롯에 기간 일정이 있는지 확인
@@ -609,30 +685,38 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
         color: task.color,
         borderRadius: BorderRadius.circular(3.r),
       ),
-      child: task.isSecret ? Container() : Row(
-        children: [
-          if (task.isImportant)
-            Padding(
-              padding: EdgeInsets.only(right: 1.w),
-              child: Icon(
-                LucideIcons.alertTriangle,
-                size: 7.sp,
-                color: Colors.red,
-              ),
+      child: Center(
+      child: task.isSecret
+          ? Icon(
+              Icons.lock,
+              size: 9.sp,
+              color: AppColors.subText.withAlpha((0.3 * 255).toInt()),
+            )
+          : Row(
+              children: [
+                if (task.isImportant)
+                  Padding(
+                    padding: EdgeInsets.only(right: 1.w),
+                    child: Icon(
+                      LucideIcons.alertTriangle,
+                      size: 7.sp,
+                      color: Colors.red,
+                    ),
+                  ),
+                Flexible(
+                  child: Text(
+                    task.name,
+                    style: AppTextStyles.caption.copyWith(
+                      fontSize: 8.sp,
+                      color: task.isHoliday ? Colors.red : AppColors.text,
+                      height: 1.2,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.clip,
+                  ),
+                ),
+              ],
             ),
-          Flexible(
-            child: Text(
-              task.name,
-              style: AppTextStyles.caption.copyWith(
-                fontSize: 8.sp,
-                color: task.isHoliday ? Colors.red : AppColors.text,
-                height: 1.2,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.clip,
-            ),
-          ),
-        ],
       ),
     );
   }
