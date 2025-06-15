@@ -63,27 +63,91 @@ class _DailyTaskDialogState extends ConsumerState<DailyTaskDialog> {
   void _showRepeatInfo() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => Dialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(20.r),
         ),
-        title: Row(
-          children: [
-            Icon(Icons.info_outline, color: AppColors.primary, size: 24.sp),
-            SizedBox(width: 8.w),
-            Text('반복 설정 안내', style: AppTextStyles.title.copyWith(fontSize: 16.sp)),
-          ],
-        ),
-        content: Text(
-          '반복할 횟수를 정할 수 있습니다.\n횟수를 입력하지 않으면 일정을 제거하기 전까지 항상 반복됩니다.',
-          style: AppTextStyles.body,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('확인', style: TextStyle(color: AppColors.primary)),
+        insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+        child: Padding(
+          padding: EdgeInsets.all(24.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 아이콘과 제목
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(8.w),
+                    decoration: BoxDecoration(
+                      color: AppColors.lightPrimary,
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Icon(
+                      Icons.info_outline,
+                      color: AppColors.primary,
+                      size: 28.sp,
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Text(
+                    '반복 설정 안내',
+                    style: AppTextStyles.title.copyWith(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 20.h),
+              
+              // 설명 내용
+              Container(
+                padding: EdgeInsets.all(16.w),
+                decoration: BoxDecoration(
+                  color: AppColors.cardBackground,
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(
+                    color: AppColors.primary,
+                    width: 1.w,
+                  ),
+                ),
+                child: Text(
+                  '반복할 횟수를 정할 수 있습니다.\n횟수를 입력하지 않으면\n일정을 제거하기 전까지 항상 반복됩니다.',
+                  style: AppTextStyles.body.copyWith(
+                    fontSize: 14.sp,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              SizedBox(height: 24.h),
+              
+              // 확인 버튼
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                  ),
+                  child: Text(
+                    '확인',
+                    style: AppTextStyles.button.copyWith(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
