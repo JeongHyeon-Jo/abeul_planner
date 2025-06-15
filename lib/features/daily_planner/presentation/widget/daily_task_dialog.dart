@@ -60,6 +60,34 @@ class _DailyTaskDialogState extends ConsumerState<DailyTaskDialog> {
     super.dispose();
   }
 
+  void _showRepeatInfo() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        title: Row(
+          children: [
+            Icon(Icons.info_outline, color: AppColors.primary, size: 24.sp),
+            SizedBox(width: 8.w),
+            Text('반복 설정 안내', style: AppTextStyles.title.copyWith(fontSize: 16.sp)),
+          ],
+        ),
+        content: Text(
+          '반복할 횟수를 정할 수 있습니다.\n횟수를 입력하지 않으면 일정을 제거하기 전까지 항상 반복됩니다.',
+          style: AppTextStyles.body,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('확인', style: TextStyle(color: AppColors.primary)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isEditMode = widget.task != null;
@@ -182,6 +210,18 @@ class _DailyTaskDialogState extends ConsumerState<DailyTaskDialog> {
                         children: [
                           Text('반복', style: AppTextStyles.body),
                           Spacer(),
+                          GestureDetector(
+                            onTap: _showRepeatInfo,
+                            child: Container(
+                              padding: EdgeInsets.all(2.w),
+                              child: Icon(
+                                Icons.info_outline,
+                                size: 24.sp,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 4.w),
                           Expanded(
                             child: Container(
                               padding: EdgeInsets.symmetric(horizontal: 12.w),
@@ -203,7 +243,7 @@ class _DailyTaskDialogState extends ConsumerState<DailyTaskDialog> {
                                 textAlign: TextAlign.center,
                                 onChanged: (_) => setState(() {}),
                                 decoration: InputDecoration(
-                                  hintText: '여기에 숫자',
+                                  hintText: '숫자 입력',
                                   border: InputBorder.none,
                                 ),
                               ),
