@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 part 'timeofday_model.g.dart';
 
-/// 시간 모델 클래스
+// 시간 모델 클래스
 @HiveType(typeId: 11)
 class TimeOfDayModel {
   @HiveField(0)

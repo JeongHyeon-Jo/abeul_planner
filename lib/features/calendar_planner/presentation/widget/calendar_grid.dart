@@ -499,50 +499,6 @@ class _CalendarGridState extends ConsumerState<CalendarGrid> {
     return true; // 마지막 사용 가능한 슬롯임
   }
 
-  // 특정 날짜의 특정 슬롯에 기간 일정이 있는지 확인
-  bool _hasPeriodTaskAtSlot(DateTime day, List<PeriodTaskGroup> periodTasks, int slotIndex) {
-    final dayPeriodTasks = _getPeriodTasksForDay(day, periodTasks);
-    
-    if (dayPeriodTasks.isEmpty) return false;
-    
-    // 기간 일정들을 레이어별로 분리하여 해당 슬롯에 일정이 있는지 확인
-    final periodLayers = <List<PeriodTaskSegment>>[];
-    
-    for (final period in dayPeriodTasks) {
-      bool placed = false;
-      for (final layer in periodLayers) {
-        bool canPlace = true;
-        for (final existingPeriod in layer) {
-          if (_periodsOverlap(period, existingPeriod)) {
-            canPlace = false;
-            break;
-          }
-        }
-        if (canPlace) {
-          layer.add(period);
-          placed = true;
-          break;
-        }
-      }
-      if (!placed) {
-        periodLayers.add([period]);
-      }
-    }
-    
-    return slotIndex < periodLayers.length;
-  }
-
-  // 해당 슬롯이 단일 일정을 위한 마지막 사용 가능한 슬롯인지 확인
-  bool _isLastAvailableRegularSlot(DateTime day, List<PeriodTaskGroup> periodTasks, int currentSlotIndex) {
-    // 현재 슬롯부터 마지막 슬롯까지 확인하여 기간 일정이 없는 마지막 슬롯인지 판단
-    for (int i = currentSlotIndex + 1; i < 5; i++) {
-      if (!_hasPeriodTaskAtSlot(day, periodTasks, i)) {
-        return false; // 뒤에 더 사용 가능한 슬롯이 있음
-      }
-    }
-    return true; // 마지막 사용 가능한 슬롯임
-  }
-
   // "+N" 오버플로우 위젯
   Widget _buildOverflowWidget(int remainingCount) {
     return Container(

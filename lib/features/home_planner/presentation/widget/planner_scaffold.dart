@@ -20,7 +20,7 @@ class PlannerScaffold extends ConsumerStatefulWidget {
 
 class _PlannerScaffoldState extends ConsumerState<PlannerScaffold> {
   int _tabIndex = 2;
-  final GlobalKey _bottomNavKey = GlobalKey(); // 바텀 네비게이션 키 추가
+  final GlobalKey _bottomNavKey = GlobalKey();
 
   final List<String> _routes = [
     '/daily',

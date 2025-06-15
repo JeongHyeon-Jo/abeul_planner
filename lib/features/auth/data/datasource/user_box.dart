@@ -6,12 +6,12 @@ class UserBox {
   static const String boxName = 'user';
   static late Box<UserModel> box;
 
-  /// 어댑터 등록 함수
+  // 어댑터 등록 함수
   static Future<void> registerAdapters() async {
     Hive.registerAdapter(UserModelAdapter());
   }
 
-  /// 박스 열기 함수
+  // 박스 열기 함수
   static Future<void> openBox() async {
     box = await Hive.openBox<UserModel>(boxName);
   }

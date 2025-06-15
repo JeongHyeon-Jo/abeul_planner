@@ -9,7 +9,7 @@ class GlobalOnboardingState {
   final int currentStep;
   final String screenKey;
   final ScrollController? scrollController;
-  final GlobalKey? bottomNavKey; // 바텀 네비게이션 키 추가
+  final GlobalKey? bottomNavKey;
 
   const GlobalOnboardingState({
     this.isActive = false,
@@ -48,7 +48,6 @@ class GlobalOnboardingNotifier extends StateNotifier<GlobalOnboardingState> {
     ScrollController? scrollController,
     GlobalKey? bottomNavKey,
   }) {
-    // 네비게이션 바 단계의 targetKey를 설정
     final updatedSteps = steps.map((step) {
       if (step.title == '네비게이션 바' && step.targetKey == null) {
         return OnboardingStep(

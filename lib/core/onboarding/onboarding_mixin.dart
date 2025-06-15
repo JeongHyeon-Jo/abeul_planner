@@ -11,7 +11,6 @@ mixin OnboardingMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   List<OnboardingStep> get onboardingSteps;
   String get onboardingKey;
   
-  // 스크롤 컨트롤러 getter 추가
   ScrollController get scrollController => _scrollController;
 
   @override
@@ -51,7 +50,6 @@ mixin OnboardingMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   }
 
   Widget buildWithOnboarding(Widget child) {
-    // 온보딩은 PlannerScaffold에서 처리하므로 child만 반환
     return child;
   }
 }

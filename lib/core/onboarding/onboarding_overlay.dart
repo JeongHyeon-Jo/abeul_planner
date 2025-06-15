@@ -96,7 +96,6 @@ class _OnboardingOverlayState extends State<OnboardingOverlay> {
     final isFirstStep = widget.currentStep == 0;
     final isLastStep = widget.currentStep == widget.steps.length - 1;
 
-    // Material elevation 제거하고 단순한 Stack 구조로 변경
     return Stack(
       children: [
         // 반투명 배경과 하이라이트를 함께 처리
@@ -247,7 +246,6 @@ class _OnboardingOverlayState extends State<OnboardingOverlay> {
   }
 }
 
-// 수정된 OverlayPainter
 class OverlayPainter extends CustomPainter {
   final Rect? targetRect;
   final Color overlayColor;

@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:abeul_planner/core/styles/color.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
 
-/// 제목 클릭 시 섹션을 확장/축소할 수 있는 공통 위젯
+// 제목 클릭 시 섹션을 확장/축소할 수 있는 공통 위젯
 class ExpandableSection extends StatefulWidget {
   final String title;
   final String route;

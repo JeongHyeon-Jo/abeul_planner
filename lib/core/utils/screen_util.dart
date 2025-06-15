@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-/// 앱 전체에서 사용할 ScreenUtil 초기화 위젯
+// 앱 전체에서 사용할 ScreenUtil 초기화 위젯
 class ResponsiveInitializer extends StatelessWidget {
   final Widget Function(BuildContext) builder;
 
