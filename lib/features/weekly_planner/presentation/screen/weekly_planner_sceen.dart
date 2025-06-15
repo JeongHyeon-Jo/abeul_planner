@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:abeul_planner/core/widgets/custom_app_bar.dart';
 import 'package:abeul_planner/core/styles/text_styles.dart';
 import 'package:abeul_planner/core/styles/color.dart';
+import 'package:abeul_planner/core/onboarding/onboarding_mixin.dart';
+import 'package:abeul_planner/core/onboarding/onboarding_overlay.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:abeul_planner/features/weekly_planner/presentation/widget/weekly_task_dialog.dart';
@@ -19,12 +21,43 @@ class WeeklyPlannerScreen extends ConsumerStatefulWidget {
 }
 
 class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, OnboardingMixin {
   late TabController _tabController;
   final List<String> days = ['월', '화', '수', '목', '금', '토', '일'];
   final appBarTitle = DateFormat('yyyy년 M월 d일 (E)', 'ko_KR').format(DateTime.now());
   bool _isEditing = false;
   int _selectedIndex = 0;
+
+  // 온보딩을 위한 GlobalKey들
+  final GlobalKey _tabBarKey = GlobalKey();
+  final GlobalKey _editButtonKey = GlobalKey();
+  final GlobalKey _fabKey = GlobalKey();
+
+  @override
+  String get onboardingKey => 'weekly';
+
+  @override
+  List<OnboardingStep> get onboardingSteps => [
+    OnboardingStep(
+      title: '요일 탭',
+      description: '상단의 요일 탭을 눌러\n각 요일별 일정을 확인할 수 있습니다.\n오늘 요일이 기본으로 선택됩니다!',
+      targetKey: _tabBarKey,
+    ),
+    OnboardingStep(
+      title: '일정 추가하기',
+      description: '우측 하단의 + 버튼을 눌러\n새로운 주간 일정을 추가할 수 있습니다.\n요일별로 반복되는 일정을 계획해보세요!',
+      targetKey: _fabKey,
+    ),
+    OnboardingStep(
+      title: '편집 모드',
+      description: '우측 상단의 편집 버튼을 눌러\n일정을 수정하거나 삭제할 수 있습니다.\n각 요일별로 일정을 관리해보세요!',
+      targetKey: _editButtonKey,
+    ),
+    const OnboardingStep(
+      title: '주간 플래너 완료!',
+      description: '이제 요일별로 반복되는 일정을\n체계적으로 관리할 수 있습니다.\n매주 규칙적으로 해야 할 일들을\n미리 계획해보세요!',
+    ),
+  ];
 
   @override
   void initState() {
@@ -70,7 +103,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
   Widget build(BuildContext context) {
     final tabWidth = (MediaQuery.of(context).size.width - 32.w) / 7;
 
-    return DefaultTabController(
+    final mainContent = DefaultTabController(
       length: days.length,
       child: Scaffold(
         appBar: CustomAppBar(
@@ -81,6 +114,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
           isTransparent: true,
           actions: [
             IconButton(
+              key: _editButtonKey,
               icon: Icon(
                 _isEditing ? Icons.check : Icons.edit_calendar,
                 color: _isEditing ? AppColors.success : AppColors.text,
@@ -94,6 +128,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
         floatingActionButton: Transform.translate(
           offset: Offset(-6.w, -6.h),
           child: FloatingActionButton(
+            key: _fabKey,
             onPressed: () => _showAddTaskDialog(context),
             backgroundColor: AppColors.accent,
             child: Icon(Icons.add, size: 24.sp),
@@ -105,6 +140,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
           child: Column(
             children: [
               SizedBox(
+                key: _tabBarKey,
                 height: 48.h,
                 child: Stack(
                   children: [
@@ -184,6 +220,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
                           orElse: () => WeeklyTaskModel(day: day, tasks: []));
 
                       return SingleChildScrollView(
+                        controller: scrollController,
                         child: Padding(
                           padding: EdgeInsets.all(16.w),
                           child: Column(
@@ -209,5 +246,7 @@ class _WeeklyPlannerScreenState extends ConsumerState<WeeklyPlannerScreen>
         ),
       ),
     );
+
+    return buildWithOnboarding(mainContent);
   }
 }

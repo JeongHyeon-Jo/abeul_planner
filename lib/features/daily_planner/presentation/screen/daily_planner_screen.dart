@@ -43,7 +43,7 @@ class _DailyPlannerScreenState extends ConsumerState<DailyPlannerScreen> with On
   List<OnboardingStep> get onboardingSteps => [
     OnboardingStep(
       title: '일정 추가하기',
-      description: '우측 하단의 + 버튼을 눌러\n새로운 일정을 추가할 수 있습니다.\n언제, 어떤 행동을 할지 미리 계획해보세요!',
+      description: '우측 하단의 + 버튼을 눌러\n새로운 일상 일정을 추가할 수 있습니다.\n언제, 어떤 행동을 할지 미리 계획해보세요!',
       targetKey: _fabKey,
     ),
     OnboardingStep(
