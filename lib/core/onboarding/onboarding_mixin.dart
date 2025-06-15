@@ -28,8 +28,18 @@ mixin OnboardingMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     super.dispose();
   }
 
-  void _checkAndShowOnboarding() {
-    final isCompleted = ref.read(onboardingProvider.notifier).isOnboardingCompleted(onboardingKey);
+  void _checkAndShowOnboarding() async {
+    // 온보딩 상태가 로드될 때까지 대기
+    final onboardingNotifier = ref.read(onboardingProvider.notifier);
+    
+    // 최대 3초까지 대기
+    int attempts = 0;
+    while (!onboardingNotifier.isLoaded && attempts < 30) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      attempts++;
+    }
+    
+    final isCompleted = onboardingNotifier.isOnboardingCompleted(onboardingKey);
     if (!isCompleted) {
       // 글로벌 온보딩 시작
       ref.read(globalOnboardingProvider.notifier).startOnboarding(

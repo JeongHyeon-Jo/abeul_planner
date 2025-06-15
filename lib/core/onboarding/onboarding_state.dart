@@ -12,14 +12,28 @@ class OnboardingState extends StateNotifier<Map<String, bool>> {
   static const String _weeklyOnboardingKey = 'weekly_onboarding_completed';
   static const String _calendarOnboardingKey = 'calendar_onboarding_completed';
 
+  bool _isLoaded = false;
+
   Future<void> _loadOnboardingStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    state = {
-      'home': prefs.getBool(_homeOnboardingKey) ?? false,
-      'daily': prefs.getBool(_dailyOnboardingKey) ?? false,
-      'weekly': prefs.getBool(_weeklyOnboardingKey) ?? false,
-      'calendar': prefs.getBool(_calendarOnboardingKey) ?? false,
-    };
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      state = {
+        'home': prefs.getBool(_homeOnboardingKey) ?? false,
+        'daily': prefs.getBool(_dailyOnboardingKey) ?? false,
+        'weekly': prefs.getBool(_weeklyOnboardingKey) ?? false,
+        'calendar': prefs.getBool(_calendarOnboardingKey) ?? false,
+      };
+      _isLoaded = true;
+    } catch (e) {
+      // 에러 발생 시 기본값으로 설정
+      state = {
+        'home': false,
+        'daily': false,
+        'weekly': false,
+        'calendar': false,
+      };
+      _isLoaded = true;
+    }
   }
 
   Future<void> completeOnboarding(String screen) async {
@@ -48,8 +62,14 @@ class OnboardingState extends StateNotifier<Map<String, bool>> {
   }
 
   bool isOnboardingCompleted(String screen) {
+    // 로딩이 완료되지 않았으면 false 반환 (온보딩 표시 안함)
+    if (!_isLoaded) return true;
+    
     return state[screen] ?? false;
   }
+
+  // 로딩 상태 확인용 getter
+  bool get isLoaded => _isLoaded;
 }
 
 final onboardingProvider = StateNotifierProvider<OnboardingState, Map<String, bool>>((ref) {
