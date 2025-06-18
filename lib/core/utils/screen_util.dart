@@ -1,4 +1,3 @@
-// screen_util.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -10,11 +9,25 @@ class ResponsiveInitializer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ScreenUtilInit(
-      designSize: const Size(390, 844),
-      minTextAdapt: true,
-      splitScreenMode: true,
-      builder: (context, _) => builder(context),
+    return Builder(
+      builder: (context) {
+        final screenWidth = MediaQuery.of(context).size.width;
+
+        // 태블릿 기준 너비: 600 이상
+        final isTablet = screenWidth >= 600;
+
+        // 태블릿용 디자인 사이즈 예: 600x960
+        final targetDesignSize = isTablet
+            ? const Size(600, 960)
+            : const Size(390, 844);
+
+        return ScreenUtilInit(
+          designSize: targetDesignSize,
+          minTextAdapt: true,
+          splitScreenMode: true,
+          builder: (context, _) => builder(context),
+        );
+      },
     );
   }
 }
