@@ -127,7 +127,7 @@ flutter pub run build_runner build --delete-conflicting-outputs
 
 * 아블 플래너는 **외부 서버나 광고 SDK를 사용하지 않으며**, 모든 데이터는 로컬에 저장됩니다.
 * 앱 내 앱 정보 → 개인정보 처리방침 보기에서 확인 가능
-* HTML 파일로 제공 (`privacy_policy.html`)
+* HTML 파일로 제공 [privacy_policy.html](https://jeonghyeon-jo.github.io/privacy-policy.html)
 
 ---
 
