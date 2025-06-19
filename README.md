@@ -1,9 +1,16 @@
-# 아블 플래너
+# <img src="https://play-lh.googleusercontent.com/012amRuLYiykZkE-ZvseRopsPDPSQ8_w8uEW_4sA9v0CXpBqubS2_iruHsOrjc7wKwg=w240-h480-rw" width="40"/>  아블 플래너 
+
+<a href="https://play.google.com/store/apps/details?id=com.abeul_planner.abeul_planner&pcampaignid=web_share" target="_blank">
+  <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" width="200"/>
+</a>
 
 **일상, 주간, 달력 플래너를 하나로 통합한 스마트한 계획 앱**  
-Flutter 기반으로 개발된 1인 개발 프로젝트이며, NoSQL Hive를 이용한 기기 내 로컬 데이터를 활용해 서버 없이 제작한 플래너 앱입니다.
----
+
 <img src="https://postfiles.pstatic.net/MjAyNTA2MTlfMjg3/MDAxNzUwMzMwMTU0OTIw.ZpOXhlREH0-6MosIjmgLDWYgA5t9gisLKjzBWF3DsbIg.i3A5SxgDdSqdRvXXIbgGjXAV6Fk5rCM9e7c1E3SAqj8g.PNG/%EC%A2%85%ED%95%A9_%ED%94%8C%EB%9E%98%EB%84%88.png?type=w966" alt="종합 플래너" width="220"/> <img src="https://postfiles.pstatic.net/MjAyNTA2MTlfNzEg/MDAxNzUwMzMwMTU0OTAx.XtI9_Uwg_0-qEsZQ8hbGjzLxIIGO2BJnkliqaQvtmT4g.7gmWeMcq4p2bl420tIgnZuZ3b14xlYcRxm8a5v-eBd8g.PNG/%EC%9D%BC%EC%83%81_%ED%94%8C%EB%9E%98%EB%84%88.png?type=w966" alt="일상 플래너" width="220"/> <img src="https://postfiles.pstatic.net/MjAyNTA2MTlfMjUz/MDAxNzUwMzMwMTU0OTY0.-QUdFr7ijh5-3SbZ-Jiu9QTme4WjikP8xY8nMDm7YlMg.LEJfR-j6eECJuhk9A0gdFSHfg2sgbyQBr5d3JDl-Tmgg.PNG/%EC%A3%BC%EA%B0%84_%ED%94%8C%EB%9E%98%EB%84%88.png?type=w966" alt="주간 플래너" width="220"/> <img src="https://postfiles.pstatic.net/MjAyNTA2MTlfMTIw/MDAxNzUwMzMwMTU0OTYw.CPdatsq1qZ6HxCRcoDZQ3tufFRaojop7bkW-VSSOMWog.Nsjp5lXkMoNZQaqJFRES4bL0LrOGD4sf8uZnJfZ7KDIg.PNG/%EB%8B%AC%EB%A0%A5_%ED%94%8C%EB%9E%98%EB%84%88.png?type=w966" alt="달력 플래너" width="220"/>
+
+---
+## 프로젝트 설명
+Flutter 기반으로 개발된 1인 개발 프로젝트이며, NoSQL Hive를 이용한 기기 내 로컬 데이터를 활용해 서버 없이 제작한 플래너 앱입니다.
 
 ---
 ## 🗓️ 주요 기능 상세 설명
